@@ -1,0 +1,25 @@
+FROM tensorflow/tensorflow:latest-gpu
+
+# Set the working directory to /app
+WORKDIR ./app
+
+## Copy the current directory contents into the container at /app
+# COPY . ./app
+
+# RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq --no-install-recommends
+# RUN apt-get install --yes python-opencv 
+# RUN apt-get install -y libopencv-dev python3-opencv
+# RUN apt-get install libgl1 ffmpeg libsm6 libxext6  -y
+# RUN apt-get install -y opencv-python-headless
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --trusted-host pypi.python.org -U opencv-python-headless
+RUN python3 -m pip install --trusted-host pypi.python.org -U numpy scipy 
+RUN python3 -m pip install --trusted-host pypi.python.org -U matplotlib h5py 
+RUN python3 -m pip install --trusted-host pypi.python.org -U tqdm scikit-learn 
+RUN python3 -m pip install --trusted-host pypi.python.org -U rawpy pydicom scikit-image 
+RUN python3 -m pip install --trusted-host pypi.python.org -U imageio pillow
+
+# Run app.py when the container launches
+# CMD ["python3", "/app/GANartefacts.py"]
+
+CMD python3 /app/GANartefacts.py --trDatabase testamanda --tsDatabase testamanda --vdDatabase testamanda
