@@ -1,0 +1,6 @@
+FROM tensorflow/tensorflow:latest-gpu-py3
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN pip install --upgrade pip
+RUN pip install --upgrade h5py tables
