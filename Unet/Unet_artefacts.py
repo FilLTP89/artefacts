@@ -20,7 +20,7 @@ if __name__=="__main__":
     vdDatabaseList = utils.getPath(database=opt["database"],folder=opt["vdDatabase"])
 
     X_train, recon_X_train = preprocess.getImgs(trDatabaseList, mode = 0, **opt)
-    Y_train, _ = preprocess.getImgs(tsDatabaseList, mode = 1, **opt)
+    Y_train, _ = preprocess.getImgs(trDatabaseList, mode = 1, **opt)
     X_test, recon_X_test = preprocess.getImgs(vdDatabaseList, mode = 0, **opt)
 
 
