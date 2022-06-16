@@ -3,7 +3,7 @@
 import numpy as np
 import h5py
 from PIL import *
-from skimage.transform import radon, iradon
+from skimage.transform import radon, iradon, resize
 seed = 42
 np.random.seed = seed
 
