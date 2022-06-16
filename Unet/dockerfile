@@ -22,4 +22,4 @@ RUN python3 -m pip install --trusted-host pypi.python.org -U imageio pillow
 # Run app.py when the container launches
 # CMD ["python3", "/app/GANartefacts.py"]
 
-CMD python3 /app/GANartefacts.py --trDatabase testamanda --tsDatabase testamanda --vdDatabase testamanda
+CMD python3 /app/Unet_artefacts.py --trDatabase testamanda --tsDatabase testamanda --vdDatabase testamanda
