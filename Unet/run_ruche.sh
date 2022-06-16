@@ -1,8 +1,14 @@
-module load anaconda3/2021.05/gcc-9.2.0
-module load cuda/11.4.0/gcc-9.2.0
-conda create --name tf
-source activate tf
-conda install -c conda-forge cudatoolkit cudnn
-pip install tensorflow
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/gpfs/users/gattif/.conda/envs/tf/lib
-pip install opencv-python-headless pillow rawpy pydicom scikit-image h5py tqdm scikit-learn
+#!/bin/bash
+#SBATCH -J test
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:1
+#SBATCH --mem=120GB
+#SBATCH --time=24:00:00
+#SBATCH --partition=gpua100
+#SBATCH --output=oinfo.txt
+#SBATCH --error=hinfo.txt 
+#SBATCH --mail-type=FAIL
+#SBATCH --export=NONE 
+
+source load_tf.sh
+python3 Unet_artefacts.py --trDatabase ${WORKDIR}/train_artefacts --tsDatabase ${WORKDIR}/test_artefacts --vdDatabase ${WORKDIR}/test_artefacts
