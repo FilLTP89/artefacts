@@ -54,14 +54,5 @@ if __name__=="__main__":
     Unet_postprocess.plot_learning_curve(os.path.join("{:>s}".format(opt["database"]),"history.json"),"loss.png")
 
     # Prediction
-    trainLen = len(X_train)
-    Xhat_train = Unet_model.predict(X_train[:trainLen - 2], verbose = 1)
-    Xhat_test = Unet_model.predict(X_train[trainLen - 2:], verbose = 1)
-    Xhat_val = Unet_model.predict(X_test, verbose = 1)
-
-    Xhat_train_t = (Xhat_train > 0.25).astype(np.uint8)
-    Xhat_test_t = (Xhat_test > 0.25).astype(np.uint8)
-    Xhat_val_t = (Xhat_val > 0.25).astype(np.uint8)
-
-    Unet_postprocess.plot_train_samples(trDatabaseList,tsDatabaseList,
-        Xhat_train,recon_X_train,Y_train,opt["database"])
+    Unet_postprocess.plot_train_samples(Unet,trDatabaseList,tsDatabaseList,
+        X_train,Y_train,recon_X_train,opt["database"])
