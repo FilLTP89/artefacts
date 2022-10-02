@@ -11,4 +11,4 @@
 #SBATCH --export=NONE 
 
 source load_tf.sh
-python3 Unet_artefacts.py --trDatabase ${WORKDIR}/train_artefacts --tsDatabase ${WORKDIR}/test_artefacts --vdDatabase ${WORKDIR}/test_artefacts
+python3 Unet_artefacts.py --trDatabase ${WORKDIR}/train_artefacts --tsDatabase ${WORKDIR}/test_artefacts --vdDatabase ${WORKDIR}/test_artefacts --epochs $1
