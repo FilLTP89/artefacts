@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 import matplotlib.pyplot as plt
 import json
-from Unet_preprocess import reconstructSin 
+from Unet_preprocess import ReconstructSinogram
 from os.path import join as opj
 import numpy as np
 
@@ -73,12 +73,12 @@ def plot_train_samples(Unet,trDatabaseList,tsDatabaseList,X_train,Y_train,
         plt.subplot(1, 3, 2)
         plt.title("Reconstructed output data {}".format(trDatabaseList[i].split("/")[-1]))
         plt.axis("off")
-        plt.imshow(reconstructSin(Y_train[i][:,:,0], theta = np.linspace(0., 180., max(Y_train[i][:,:, 0].shape), endpoint=False)), cmap = plt.cm.gray)
+        plt.imshow(ReconstructSinogram(Y_train[i][:,:,0], theta = np.linspace(0., 180., max(Y_train[i][:,:, 0].shape), endpoint=False)), cmap = plt.cm.gray)
 
         plt.subplot(1, 3, 3)
         plt.title("Recon modelo dado {}".format(trDatabaseList[i].split("/")[-1]))
         plt.axis("off")
-        plt.imshow(reconstructSin(Xhat_train[i][:,:,0], theta = np.linspace(0., 180., max(Xhat_train[i][:, :, 0].shape), endpoint=False)), cmap = plt.cm.gray)
+        plt.imshow(ReconstructSinogram(Xhat_train[i][:,:,0], theta = np.linspace(0., 180., max(Xhat_train[i][:, :, 0].shape), endpoint=False)), cmap = plt.cm.gray)
 
         
         plt.savefig(opj(database,"train_recon_{}.png".format(trDatabaseList[i].split("/")[-1])))
