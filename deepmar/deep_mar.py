@@ -71,7 +71,7 @@ npix = 512.
 dpix = 475/512.
 nbins = 1024.
 
-def load_sparse_matrix(fname) :
+def load_sparse_matrix(fname):
     warnings.simplefilter("ignore", UserWarning)
     f = tables.open_file(fname)
     M = sparse.csc_matrix( (f.root.At.data[...], f.root.At.ir[...], f.root.At.jc[...]) )
