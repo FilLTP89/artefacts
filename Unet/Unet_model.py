@@ -7,7 +7,6 @@ from tensorflow.keras.layers import Dropout, Lambda
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization, LeakyReLU, ReLU
 from tensorflow.keras.layers import concatenate
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
 
