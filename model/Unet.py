@@ -72,15 +72,14 @@ def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
     # Block 11
     u11 = Conv2DTranspose(4, (2, 2), padding="same")(c10)
     u11 = concatenate([u11, c1])
-    # c11 = Dropout(0.1)(u11)
-    outputs = Dropout(0.1)(u11)
+    c11 = Dropout(0.1)(u11)
 
-    # outputs = Conv2D(1, (1, 1), activation="sigmoid") (c11)
+    outputs = Conv2D(1, (1, 1), activation="sigmoid")(c11)
 
     model = Model(inputs=[inputs], outputs=[outputs])
-    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-    model.summary()
-
+    model.compile(
+        optimizer="adam", loss=tf.keras.losses.MeanSquaredError(), metrics=["accuracy"]
+    )
     return model
 
 
