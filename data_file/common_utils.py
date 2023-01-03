@@ -3,6 +3,7 @@
 import os
 import json
 from fnmatch import fnmatch
+import numpy as np
 
 # Get train and test IDs
 def allDivs(n):

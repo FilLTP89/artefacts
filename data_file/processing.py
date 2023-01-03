@@ -4,10 +4,9 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
-from CBCT_preprocess import Raw_to_Sinogram
+from CBCT_preprocess import open_raw
 from visualize import visualize_from_datset
 import h5py
-
 
 """
 We know that corresponding image from the different folder 
@@ -102,17 +101,18 @@ class Dataset:
         def f(x, y):
             x = x.decode("utf-8")
             y = y.decode("utf-8")
-            theta = np.linspace(
-                0.0, 180.0, self.width, endpoint=False
-            )  # We need to save this theta parameter to be able to apply iranon on the sinongram after
-            _, sinogram_x, _ = Raw_to_Sinogram(
-                x, theta, self.width, self.height, 1
-            )  # -
-            _, sinogram_y, _ = Raw_to_Sinogram(y, theta, self.width, self.height, 1)
-            return sinogram_x, sinogram_y  # We store theta with the label
+            with_artefact = open_raw(
+                x, imageHeight=self.height, imageWidth=self.width
+            ).astype(np.float32)
+            without_artefact = open_raw(
+                y, imageHeight=self.height, imageWidth=self.width
+            ).astype(np.float32)
+            return with_artefact, without_artefact
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
-        input.set_shape([self.width, self.height, 1])  # ensure that the shape of the
+        input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
+        label = tf.expand_dims(label, axis=-1)  # (400,400) -> (400,400,1)
+        input.set_shape([self.width, self.height, 1])
         label.set_shape([self.width, self.height, 1])
         return input, label
 
