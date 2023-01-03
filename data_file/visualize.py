@@ -62,7 +62,7 @@ def visualize_from_datset(x, y):
         extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
         aspect="auto",
     )
-    ax1.set_title("With artefacts sinogram")
+    ax1.set_title("With artefacts image")
 
     ax2.imshow(
         y,
@@ -70,7 +70,7 @@ def visualize_from_datset(x, y):
         extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
         aspect="auto",
     )
-    ax2.set_title("Without artefacts sinogram")
+    ax2.set_title("Without artefacts image")
     plt.show()
 
 

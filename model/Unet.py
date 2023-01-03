@@ -83,4 +83,6 @@ def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
     return model
 
 
-Unet(400, 400, 1)
+if __name__ == "__main__":
+    model = Unet(400, 400, 1)
+    model.summary()

@@ -1,7 +1,7 @@
 data/
 example_image/
 paper/
-
+__pycache__/
 
 *.onnx
 

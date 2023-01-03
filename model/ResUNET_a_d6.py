@@ -203,4 +203,4 @@ if __name__ == "__main__":
         (256, 256, 1), 1
     ).build_model()  # width and height have to multiple of power of 2
     model.summary()
-    # model.save("ResUNet") save the mode
+    # model.save("ResUNet.h5")  # save the model
