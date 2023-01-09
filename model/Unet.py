@@ -78,7 +78,9 @@ def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
 
     model = Model(inputs=[inputs], outputs=[outputs])
     model.compile(
-        optimizer="adam", loss=tf.keras.losses.MeanSquaredError(), metrics=["accuracy"]
+        optimizer="adam",
+        loss=tf.keras.losses.MeanSquaredError(),
+        metrics=[tf.keras.metrics.MeanSquaredError(name="mean_squared_error")],
     )
     return model
 

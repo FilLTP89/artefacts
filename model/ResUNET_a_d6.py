@@ -13,7 +13,9 @@ class ResUNet(tf.keras.Model):
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4)
         self.loss = tf.keras.losses.MeanSquaredError()
-        self.metric = [tf.keras.metrics.BinaryAccuracy()]
+        self.metric = [
+            tf.keras.metrics.MeanSquaredError(name="mean_squared_error", dtype=None)
+        ]
 
     def ResBlock_a(
         self,
