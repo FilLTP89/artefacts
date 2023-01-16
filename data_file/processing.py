@@ -26,8 +26,8 @@ class Dataset:
     def __init__(
         self,
         path: str = "./data/",
-        width: int = 400,
-        height: int = 400,
+        width: int = 512,
+        height: int = 512,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
@@ -178,7 +178,8 @@ if __name__ == "__main__":
     train_ds = dataset.train_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
-        visualize_from_datset(x[0], y[0])
+        print(x.shape)
+        # visualize_from_datset(x[0], y[0])
 
     """ print("Saving dataset.... ")
     dataset.save()

@@ -9,10 +9,11 @@ from tensorflow.keras.layers import BatchNormalization, LeakyReLU, ReLU
 from tensorflow.keras.layers import concatenate
 
 
-def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
+def Unet(input_shape, learning_rate, **kwargs):
 
     # Build U-Net model
-    inputs = Input((imageHeight, imageWidth, imageChannels))
+    # inputs = Input((imageHeight, imageWidth, imageChannels))
+    inputs = Input(input_shape)
     s = Lambda(lambda x: x / 255)(inputs)
 
     # Block 1
@@ -78,7 +79,7 @@ def Unet(imageHeight=400, imageWidth=400, imageChannels=1, **kwargs):
 
     model = Model(inputs=[inputs], outputs=[outputs])
     model.compile(
-        optimizer="adam",
+        optimizer=tf.keras.optimizers.Adam(learning_rate),
         loss=tf.keras.losses.MeanSquaredError(),
         metrics=[tf.keras.metrics.MeanSquaredError(name="mean_squared_error")],
     )

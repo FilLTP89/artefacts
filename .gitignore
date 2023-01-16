@@ -2,6 +2,12 @@ data/
 example_image/
 paper/
 __pycache__/
+wandb/
 
+data.tar.gz
+.vscode/
 *.onnx
+
+sftp.json
+key.py 
 
