@@ -4,9 +4,10 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
-from CBCT_preprocess import open_raw
-from visualize import visualize_from_datset
+from CBCT_preprocess import open_raw, Raw_to_Sinogram
+from visualize import visualize_from_dataset
 import h5py
+
 
 """
 We know that corresponding image from the different folder 
@@ -26,8 +27,8 @@ class Dataset:
     def __init__(
         self,
         path: str = "./data/",
-        width: int = 512,
-        height: int = 512,
+        width: int = 800,
+        height: int = 800,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
@@ -41,6 +42,9 @@ class Dataset:
         self.saving_format = saving_format
         self.train_saving_path = path + train_saving_path
         self.test_saving_path = path + test_saving_path
+
+        self.original_width = 400
+        self.original_height = 400
 
     def collect_data(self):
         """
@@ -81,12 +85,8 @@ class Dataset:
         label = f1 + f1
         input = f2 + f4
 
-        X_train, X_test = train_test_split(
-            input, test_size=0.2, random_state=1, shuffle=True
-        )
-
-        y_train, y_test = train_test_split(
-            label, test_size=0.2, random_state=1, shuffle=True
+        X_train, X_test, y_train, y_test = train_test_split(
+            input, label, test_size=0.2, random_state=42, shuffle=True
         )
 
         return (X_train, y_train), (X_test, y_test)
@@ -102,11 +102,11 @@ class Dataset:
             x = x.decode("utf-8")
             y = y.decode("utf-8")
             with_artefact = open_raw(
-                x, imageHeight=self.height, imageWidth=self.width
-            ).astype(np.float32)
+                x, imageHeight=self.original_height, imageWidth=self.original_width
+            )
             without_artefact = open_raw(
-                y, imageHeight=self.height, imageWidth=self.width
-            ).astype(np.float32)
+                y, imageHeight=self.original_height, imageWidth=self.original_width
+            )
             return with_artefact, without_artefact
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
@@ -114,6 +114,9 @@ class Dataset:
         label = tf.expand_dims(label, axis=-1)  # (400,400) -> (400,400,1)
         input.set_shape([self.width, self.height, 1])
         label.set_shape([self.width, self.height, 1])
+
+        input = tf.image.resize(input, [self.width, self.height])
+        label = tf.image.resize(label, [self.width, self.height])
         return input, label
 
     def tf_dataset(self, x, y):
@@ -173,13 +176,13 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=1)
+    dataset = Dataset(path="../data/", batch_size=8)
     dataset.setup()
     train_ds = dataset.train_ds
     print("Sample Generated!")
-    for x, y in train_ds.take(1):
-        print(x.shape)
-        # visualize_from_datset(x[0], y[0])
+    for x, y in train_ds.take(2):
+        for i in range(8):
+            visualize_from_dataset(x[i], y[i])
 
     """ print("Saving dataset.... ")
     dataset.save()

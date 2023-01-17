@@ -33,7 +33,7 @@ def open_raw(
     rawRGBarray -= umin
     rawRGBarray = rawRGBarray / (umax - umin)
 
-    return rawRGBarray
+    return rawRGBarray.astype(np.float32)
 
 
 def CreateSinogram(image, theta=None, falag=1, plot=False, **kwargs):
@@ -67,7 +67,7 @@ def Raw_to_Sinogram(
     rawFilename: str,
     imageWidth: int,
     imageHeight: int,
-    mode: int,
+    mode: int = 0,
     theta=None,
     **kwargs,
 ):
@@ -95,7 +95,7 @@ def Raw_to_Sinogram(
 
 if __name__ == "__main__":
     Raw_to_Sinogram(
-        rawFilename="../data/3/IE1705794_P406.i180073.raw",
+        rawFilename="../data/1/IE1705794_P406.i180395.raw",
         imageHeight=400,
         imageWidth=400,
         mode=1,
