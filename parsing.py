@@ -11,13 +11,14 @@ default_config = SimpleNamespace(
     augment=False,  # use data augmentation
     epochs=10,  # for brevity, increase for better results :)
     learning_rate=2e-3,
-    mixed_precision=False,  # use automatic mixed precision
     log_preds=False,
     seed=42,
     wandb=False,
     save=False,
-    saving_path="saved_models/",
+    saving_path="model/saved_models/",
     gpus=1,
+    mixed_precision=False,  # use automatic mixed precision
+    run_name="training_run",
 )
 
 
@@ -89,6 +90,11 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.save,
         help="Save model",
+    )
+    argparser.add_argument(
+        "--run_name",
+        default=default_config.run_name,
+        help="Name of the run",
     )
 
     args = argparser.parse_args()

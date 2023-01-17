@@ -5,7 +5,6 @@ from parsing import parse_args, default_config
 import wandb
 import wandb_params
 from wandb.keras import WandbMetricsLogger
-import key
 
 
 def final_metrics(learn):
@@ -35,7 +34,7 @@ def train(config):
         )
 
     config = wandb.config if default_config.wandb else config
-    print("Generating sample ...")
+    print(f"Generating sample  with batch_size = {config.batch_size * config.gpus}")
     dataset = Dataset(
         height=config.img_size,
         width=config.img_size,
@@ -63,17 +62,31 @@ def train(config):
             callbacks=[WandbMetricsLogger()],
         )
     else:
-        model.fit(
-            train_ds,
-            validation_data=test_ds,
-            epochs=config.epochs,
-            verbose=1,
-        )
+        if config.save:
+            callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(
+                    filepath="model/saved_models/" + config.run_name + ".h5",
+                    save_best_only=True,
+                    monitor="val_loss",
+                    mode="min",
+                )
+            ]
+            model.fit(
+                train_ds,
+                validation_data=test_ds,
+                epochs=config.epochs,
+                verbose=1,
+                callbacks=callbacks,
+            )
+        else:
+            model.fit(
+                train_ds,
+                validation_data=test_ds,
+                epochs=config.epochs,
+                verbose=1,
+            )
+
     print("Training Done!")
-    if default_config.save:
-        print("Saving the model ...")
-        model.save(default_config.savig_path + default_config.model + ".h5")
-        print("Model Saved!")
 
 
 if __name__ == "__main__":

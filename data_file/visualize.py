@@ -54,24 +54,52 @@ def visualize_sample(raw_name: str, folder: list = [1, 2, 3, 4, 5], save_image=F
     plt.show()
 
 
-def visualize_from_datset(x, y):
+def visualize_from_dataset(x, y):
     fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.imshow(
         x,
         cmap=plt.cm.Greys_r,
-        extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
         aspect="auto",
+        # extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
     )
     ax1.set_title("With artefacts image")
 
     ax2.imshow(
         y,
         cmap=plt.cm.Greys_r,
-        extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
         aspect="auto",
+        # extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
     )
     ax2.set_title("Without artefacts image")
     plt.show()
+
+
+def save_image_result(x, preds, y, name):
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    ax1.imshow(
+        x,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        # extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
+    )
+    ax1.set_title("With artefacts image")
+
+    ax2.imshow(
+        preds,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        # extent=(0, 180, -preds[1].shape[0] / 2.0, preds[1].shape[0] / 2.0),
+    )
+    ax2.set_title("Predicted image")
+
+    ax3.imshow(
+        y,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        # extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
+    )
+    ax3.set_title("Without artefacts image")
+    plt.savefig(f"images/generated_images/{name}.png")
 
 
 if __name__ == "__main__":
