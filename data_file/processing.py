@@ -4,7 +4,7 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
-from CBCT_preprocess import open_raw, Raw_to_Sinogram
+from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
 
@@ -27,8 +27,8 @@ class Dataset:
     def __init__(
         self,
         path: str = "./data/",
-        width: int = 800,
-        height: int = 800,
+        width: int = 512,
+        height: int = 512,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
@@ -85,11 +85,13 @@ class Dataset:
         label = f1 + f1
         input = f2 + f4
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            input, label, test_size=0.2, random_state=42, shuffle=True
+        X, X_test, y, y_test = train_test_split(
+            input, label, test_size=0.1, random_state=42, shuffle=True
         )
-
-        return (X_train, y_train), (X_test, y_test)
+        X_train, X_valid, y_train, y_valid = train_test_split(
+            X, y, test_size=0.1, random_state=42, shuffle=True
+        )
+        return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
 
     def preprocess(self, x, y):
         """
@@ -101,11 +103,11 @@ class Dataset:
         def f(x, y):
             x = x.decode("utf-8")
             y = y.decode("utf-8")
-            with_artefact = open_raw(
-                x, imageHeight=self.original_height, imageWidth=self.original_width
+            with_artefact = read_raw(
+                x, image_size=(self.original_height, self.original_width)
             )
-            without_artefact = open_raw(
-                y, imageHeight=self.original_height, imageWidth=self.original_width
+            without_artefact = read_raw(
+                y, image_size=(self.original_height, self.original_width)
             )
             return with_artefact, without_artefact
 
@@ -136,15 +138,20 @@ class Dataset:
 
     def load_dataset(self):
         train_ds = self.tf_dataset(self.X_train, self.y_train)
+        valid_ds = self.tf_dataset(self.X_valid, self.y_valid)
         test_ds = self.tf_dataset(self.X_test, self.y_test)
-        return train_ds, test_ds
+        return train_ds, valid_ds, test_ds
 
     def setup(self):
         """
         Generate the different train and test sample either as array or tf.data.Dataset
         """
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.load_data()
-        self.train_ds, self.test_ds = self.load_dataset()
+        (
+            (self.X_train, self.y_train),
+            (self.X_valid, self.y_valid),
+            (self.X_test, self.y_test),
+        ) = self.load_data()
+        self.train_ds, self.valid_ds, self.test_ds = self.load_dataset()
 
     def save(self):
         """
@@ -178,12 +185,12 @@ if __name__ == "__main__":
     print("Generating sample ....")
     dataset = Dataset(path="../data/", batch_size=8)
     dataset.setup()
-    train_ds = dataset.train_ds
+    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
-    for x, y in train_ds.take(2):
+    for x, y in train_ds.take(1):
         for i in range(8):
-            visualize_from_dataset(x[i], y[i])
-
+            # visualize_from_dataset(x[i], y[i])
+            print(x[i].shape)
     """ print("Saving dataset.... ")
     dataset.save()
     print("Dataset saved!") """

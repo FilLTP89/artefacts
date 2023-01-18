@@ -81,7 +81,6 @@ def Unet(input_shape, learning_rate, **kwargs):
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate),
         loss=tf.keras.losses.MeanSquaredError(),
-        metrics=[tf.keras.metrics.MeanSquaredError(name="mean_squared_error")],
     )
     return model
 

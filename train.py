@@ -4,7 +4,8 @@ import tensorflow as tf
 from parsing import parse_args, default_config
 import wandb
 import wandb_params
-from wandb.keras import WandbMetricsLogger
+from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
+import time
 
 
 def final_metrics(learn):
@@ -17,20 +18,27 @@ def final_metrics(learn):
 
 
 def train(config):
+    tf.random.set_seed(config.seed)
+    t = time.localtime(time.time())
     if default_config.wandb:
         run = wandb.init(
             project=wandb_params.WANDB_PROJECT,
             job_type="train",
             config=config,
             name=default_config.model
-            + "_"
+            + "_img_size_"
             + str(default_config.img_size)
-            + "_"
+            + "_batchsize_"
             + str(default_config.batch_size)
-            + "_"
+            + "_nbepochs_"
             + str(default_config.epochs)
+            + "_lr_"
+            + str(default_config.learning_rate)
             + "_"
-            + str(default_config.learning_rate),
+            + str(t.tm_mday)
+            + "d"
+            + str(t.tm_hour)
+            + "h",
         )
 
     config = wandb.config if default_config.wandb else config
@@ -41,52 +49,67 @@ def train(config):
         batch_size=config.batch_size * config.gpus,
     )
     dataset.setup()
-    train_ds, test_ds = dataset.train_ds, dataset.test_ds
+    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
-    print("Num GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
+    print("Num GPUs Available:", len(tf.config.list_physical_devices("GPU")))
     gpus = tf.config.list_logical_devices("GPU")
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
         print("Creating the model ...")
-        print(config.model)
         model = Model(config.model, config.img_size, config.learning_rate).build_model()
         print("Model Created!")
 
     print("Start Training")
-    if default_config.wandb:
+    if config.wandb:
         model.fit(
             train_ds,
-            validation_data=test_ds,
+            validation_data=valid_ds,
             epochs=config.epochs,
             verbose=1,
-            callbacks=[WandbMetricsLogger()],
+            callbacks=[
+                WandbMetricsLogger(),
+                WandbModelCheckpoint(
+                    "model/saved_models/"
+                    + config.model
+                    + "_"
+                    + str(config.img_size)
+                    + "_"
+                    + "{loss:02d}",
+                    save_best_only=True,
+                ),
+            ],
+        )
+    elif config.save:
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath="model/saved_models/" + config.run_name + ".h5",
+                save_best_only=True,
+                monitor="val_loss",
+                mode="min",
+                verbose=1,
+            )
+        ]
+        model.fit(
+            train_ds,
+            validation_data=valid_ds,
+            epochs=config.epochs,
+            verbose=1,
+            callbacks=callbacks,
         )
     else:
-        if config.save:
-            callbacks = [
-                tf.keras.callbacks.ModelCheckpoint(
-                    filepath="model/saved_models/" + config.run_name + ".h5",
-                    save_best_only=True,
-                    monitor="val_loss",
-                    mode="min",
-                )
-            ]
-            model.fit(
-                train_ds,
-                validation_data=test_ds,
-                epochs=config.epochs,
-                verbose=1,
-                callbacks=callbacks,
-            )
-        else:
-            model.fit(
-                train_ds,
-                validation_data=test_ds,
-                epochs=config.epochs,
-                verbose=1,
-            )
+        model.fit(
+            train_ds,
+            validation_data=valid_ds,
+            epochs=config.epochs,
+            verbose=1,
+        )
 
     print("Training Done!")
+    """ 
+    print("Start Testing...")
+    preds = model.predict(test_ds)
+    print("Testing Done!") 
+    """
 
 
 if __name__ == "__main__":

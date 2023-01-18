@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import random
 from random import randint
 import os
+from PIL import Image, ImageEnhance
+import numpy as np
+import tensorflow as tf
 
 
 def visualize_sample(raw_name: str, folder: list = [1, 2, 3, 4, 5], save_image=False):
@@ -54,7 +57,16 @@ def visualize_sample(raw_name: str, folder: list = [1, 2, 3, 4, 5], save_image=F
     plt.show()
 
 
-def visualize_from_dataset(x, y):
+def visualize_from_dataset(x, y, brightness_fact=3):
+    x = Image.fromarray(np.array(tf.squeeze(x, axis=-1) * 255, dtype=np.uint8))
+    y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) * 255, dtype=np.uint8))
+
+    enhancer_x = ImageEnhance.Brightness(x)
+    enhancer_y = ImageEnhance.Brightness(y)
+
+    x = enhancer_x.enhance(brightness_fact)
+    y = enhancer_y.enhance(brightness_fact)
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.imshow(
         x,

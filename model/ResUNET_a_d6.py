@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
+from loss import ssim
 
 
 class ResUNet(tf.keras.Model):
@@ -14,9 +15,7 @@ class ResUNet(tf.keras.Model):
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
         self.loss = tf.keras.losses.MeanSquaredError()
-        self.metric = [
-            tf.keras.metrics.MeanSquaredError(name="mean_squared_error", dtype=None)
-        ]
+        self.metrics_list = [tf.keras.metrics.RootMeanSquaredError(), ssim]
 
     def ResBlock_a(
         self,
@@ -185,7 +184,6 @@ class ResUNet(tf.keras.Model):
             x = kl.Conv2D(1, 1, activation="sigmoid")(x)  # Layer 31
         else:
             x = kl.Conv2D(self.nb_class, 1, activation="softmax")(x)  # Layer 31
-
         return x
 
     def build_model(self):
@@ -195,7 +193,9 @@ class ResUNet(tf.keras.Model):
         output = self.up_part(x_firstconv, u1, u2, u3, u4, u5, x_bottleneck)
         model = tf.keras.Model(inputs=input, outputs=output)
         model.compile(
-            optimizer=self.optimizer, loss=self.loss, metrics=self.metric
+            optimizer=self.optimizer,
+            loss=self.loss,
+            metrics=self.metrics_list,
         )  # compile the model
 
         return model
