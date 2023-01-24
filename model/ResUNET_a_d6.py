@@ -1,6 +1,11 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
-from loss import ssim
+from metrics import ssim
+
+"""
+ResUNet_a_d6 is a model based on the paper "ResUNet: 
+A Deep Residual U-Net for Image Segmentation"
+"""
 
 
 class ResUNet(tf.keras.Model):

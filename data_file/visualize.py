@@ -114,6 +114,34 @@ def save_image_result(x, preds, y, name):
     plt.savefig(f"images/generated_images/{name}.png")
 
 
+def visualize_results(x, y, preds):
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    ax1.imshow(
+        x,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
+    )
+    ax1.set_title("With artefacts image")
+
+    ax2.imshow(
+        preds,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        extent=(0, 180, -preds[1].shape[0] / 2.0, preds[1].shape[0] / 2.0),
+    )
+    ax2.set_title("Predicted image")
+
+    ax3.imshow(
+        y,
+        cmap=plt.cm.Greys_r,
+        aspect="auto",
+        extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
+    )
+    ax3.set_title("Without artefacts image")
+    plt.show()
+
+
 if __name__ == "__main__":
     folder = f"{randint(1, 4)}"
     files = os.listdir(f"../data/{folder}/")
@@ -122,7 +150,6 @@ if __name__ == "__main__":
     visualize_sample(random_file, save_image=False)
 
     random_file_w_path = f"../data/{folder}/{random_file}"
-    # understand([random_file_w_path])
 
 
 """

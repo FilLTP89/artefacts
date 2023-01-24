@@ -3,11 +3,11 @@ example_image/
 paper/
 __pycache__/
 wandb/
-
-data.tar.gz
 .vscode/
-*.onnx
 
+
+*.onnx
+*.gz
 sftp.json
-key.py 
+
 

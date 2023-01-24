@@ -2,11 +2,17 @@
 #!/usr/bin/env python3
 import tensorflow as tf
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Dropout, Lambda
-from tensorflow.keras.layers import Conv2D, Conv2DTranspose
-from tensorflow.keras.layers import BatchNormalization, LeakyReLU, ReLU
-from tensorflow.keras.layers import concatenate
+from tensorflow.keras.layers import (
+    Input,
+    Dropout,
+    Lambda,
+    Conv2D,
+    Conv2DTranspose,
+    BatchNormalization,
+    LeakyReLU,
+    ReLU,
+    concatenate,
+)
 
 
 def Unet(input_shape, learning_rate, **kwargs):

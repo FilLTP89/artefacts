@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=artefacts
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:3
 #SBATCH --mem=80GB
-#SBATCH --output=$WORKDIR/artefacts/ruche_log/output.txt
-#SBATCH --error=$WORKDIR/artefacts/ruche_log/error.txt
+#SBATCH --output=ruche_log/output.txt
+#SBATCH --error=ruche_log/error.txt
 #SBATCH --time=2:00:00
 #SBATCH --ntasks=1
 #SBATCH --mail-type=FAIL
@@ -16,13 +16,15 @@
 module purge
 source $WORKDIR/launch_script.sh
 cd $WORKDIR/artefacts
-python3 train.py --gpus 2 \
+python3 train.py --gpus 3 \
 --model ResUnet \
---epochs 30 \
+--epochs 15 \
 --img_size 512 \
---run_name ResUnet_30_epochs \
---save \
+--learning_rate 3e-4 \
+--run_name test_low_endian \
 --wandb \
+--saving_path model/saved_models/50_epochs \
+--batch_size 8 \
 
 
 

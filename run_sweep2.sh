@@ -16,6 +16,5 @@
 module purge
 source $WORKDIR/launch_script.sh
 cd $WORKDIR/artefacts
-python3 run_sweep.py
-
+python3 run_sweep2.py --big_endian
 

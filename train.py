@@ -4,7 +4,7 @@ import tensorflow as tf
 from parsing import parse_args, default_config
 import wandb
 import wandb_params
-from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
+from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint, WandbEvalCallback
 import time
 
 
@@ -20,20 +20,20 @@ def final_metrics(learn):
 def train(config):
     tf.random.set_seed(config.seed)
     t = time.localtime(time.time())
-    if default_config.wandb:
+    if config.wandb:
         run = wandb.init(
             project=wandb_params.WANDB_PROJECT,
             job_type="train",
             config=config,
-            name=default_config.model
+            name=config.model
             + "_img_size_"
-            + str(default_config.img_size)
+            + str(config.img_size)
             + "_batchsize_"
-            + str(default_config.batch_size)
+            + str(config.batch_size)
             + "_nbepochs_"
-            + str(default_config.epochs)
+            + str(config.epochs)
             + "_lr_"
-            + str(default_config.learning_rate)
+            + str(config.learning_rate)
             + "_"
             + str(t.tm_mday)
             + "d"
@@ -41,7 +41,7 @@ def train(config):
             + "h",
         )
 
-    config = wandb.config if default_config.wandb else config
+    config = wandb.config if config.wandb else config
     print(f"Generating sample  with batch_size = {config.batch_size * config.gpus}")
     dataset = Dataset(
         height=config.img_size,
@@ -68,15 +68,6 @@ def train(config):
             verbose=1,
             callbacks=[
                 WandbMetricsLogger(),
-                WandbModelCheckpoint(
-                    "model/saved_models/"
-                    + config.model
-                    + "_"
-                    + str(config.img_size)
-                    + "_"
-                    + "{loss:02d}",
-                    save_best_only=True,
-                ),
             ],
         )
     elif config.save:

@@ -4,21 +4,21 @@ from types import SimpleNamespace
 
 # defaults
 default_config = SimpleNamespace(
-    framework="keras",
-    img_size=256,  # image size
+    img_size=512,  # image size has to be a power of two for resunet
     batch_size=8,  # Small batch size since we don't have much data
     model="ResUnet",  # resunet34d, unet
     augment=False,  # use data augmentation
-    epochs=10,  # for brevity, increase for better results :)
+    epochs=10,
     learning_rate=2e-3,
     log_preds=False,
     seed=42,
-    wandb=False,
+    wandb=True,
     save=False,
     saving_path="model/saved_models/",
     gpus=1,
-    mixed_precision=False,  # use automatic mixed precision
+    mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
+    big_endian=False,
 )
 
 
@@ -38,7 +38,10 @@ def parse_args():
         help="number of training epochs",
     )
     argparser.add_argument(
-        "--lr", type=float, default=default_config.learning_rate, help="learning rate"
+        "--learning_rate",
+        type=float,
+        default=default_config.learning_rate,
+        help="learning rate",
     )
     argparser.add_argument(
         "--model",
@@ -57,6 +60,12 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.wandb,
         help="Use wandb",
+    )
+    argparser.add_argument(
+        "--big_endian",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.big_endian,
+        help="Use big endian",
     )
     argparser.add_argument(
         "--seed", type=int, default=default_config.seed, help="random seed"
@@ -80,12 +89,6 @@ def parse_args():
         help="use fp16",
     )
     argparser.add_argument(
-        "--umin", type=int, default=137, help="Lower grayscale integer"
-    )
-    argparser.add_argument(
-        "--umax", type=int, default=52578, help="Upper grayscale integer"
-    )
-    argparser.add_argument(
         "--save",
         action=argparse.BooleanOptionalAction,
         default=default_config.save,
@@ -95,6 +98,11 @@ def parse_args():
         "--run_name",
         default=default_config.run_name,
         help="Name of the run",
+    )
+    argparser.add_argument(
+        "--saving_path",
+        default=default_config.saving_path,
+        help="Path to save model",
     )
 
     args = argparser.parse_args()

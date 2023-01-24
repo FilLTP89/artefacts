@@ -191,6 +191,6 @@ def read_raw(
     fp.close()
     img = sitk.ReadImage(fp.name)
     os.remove(fp.name)
-    image = np.array(sitk.GetArrayFromImage(img))
-    image = (image - umin) / (umax - umin)
+    image = np.array(sitk.GetArrayFromImage(img))  # convert to numpy array
+    image = (image - umin) / (umax - umin)  # normalize the array
     return image.astype(np.float32)

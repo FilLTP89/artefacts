@@ -1,2 +1,2 @@
-WANDB_PROJECT = "artefact-detection_test"
-ENTITY = "hugo"
+WANDB_PROJECT = "artefact-detection-without-deletion-low_endian"
+ENTITY = "yuuuugo"

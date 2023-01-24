@@ -33,6 +33,8 @@ class Dataset:
         saving_format: str = None,
         train_saving_path: str = "train/",
         test_saving_path: str = "data/",
+        seed: int = 42,
+        big_endian: bool = False,
     ) -> None:
 
         self.path = path
@@ -45,6 +47,9 @@ class Dataset:
 
         self.original_width = 400
         self.original_height = 400
+
+        self.seed = seed
+        self.big_endian = big_endian
 
     def collect_data(self):
         """
@@ -86,10 +91,10 @@ class Dataset:
         input = f2 + f4
 
         X, X_test, y, y_test = train_test_split(
-            input, label, test_size=0.1, random_state=42, shuffle=True
+            input, label, test_size=0.1, random_state=self.seed, shuffle=True
         )
         X_train, X_valid, y_train, y_valid = train_test_split(
-            X, y, test_size=0.1, random_state=42, shuffle=True
+            X, y, test_size=0.1, random_state=self.seed, shuffle=True
         )
         return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
 
@@ -104,10 +109,14 @@ class Dataset:
             x = x.decode("utf-8")
             y = y.decode("utf-8")
             with_artefact = read_raw(
-                x, image_size=(self.original_height, self.original_width)
+                x,
+                image_size=(self.original_height, self.original_width),
+                big_endian=self.big_endian,
             )
             without_artefact = read_raw(
-                y, image_size=(self.original_height, self.original_width)
+                y,
+                image_size=(self.original_height, self.original_width),
+                big_endian=self.big_endian,
             )
             return with_artefact, without_artefact
 
@@ -183,14 +192,14 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=8)
+    dataset = Dataset(path="../data/", batch_size=8, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
-            # visualize_from_dataset(x[i], y[i])
-            print(x[i].shape)
+            print(x.shape)
+            # visualize_from_dataset(x[i], y[i], brightness_fact=4)
     """ print("Saving dataset.... ")
     dataset.save()
     print("Dataset saved!") """
