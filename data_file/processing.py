@@ -111,12 +111,16 @@ class Dataset:
 
         label = 2 * no_metal_list
         input = high_metal_list + low_metal_list
-        X, X_test, y, y_test = train_test_split(
-            input, label, test_size=0.1, random_state=self.seed, shuffle=True
-        )
-        X_train, X_valid, y_train, y_valid = train_test_split(
-            X, y, test_size=0.1, random_state=self.seed, shuffle=True
-        )
+        X_train, X_test_1, y_train, y_test_1 = train_test_split(
+            input, label, test_size=2 / 11, random_state=self.seed, shuffle=False
+        )  # no shuffle so we can separate the different acquisition
+        X_test, X_valid, y_test, y_valid = train_test_split(
+            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=False
+        )  # no shuffle so we can separate the different acquisition
+
+        # Train : acquisition 0 to 8
+        # Test : acquisition 9
+        # Valid : acquisition 10
         return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
 
     def preprocess(self, x, y):
