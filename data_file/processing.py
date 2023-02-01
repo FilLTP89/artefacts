@@ -64,32 +64,53 @@ class Dataset:
         sorted_folder_2_name(list) : list of the path of all image in folder 2 path
         sorted_folder_4_name(list) : list of the path of all image in folder 4 path
         """
+        no_metal_folder = [
+            sorted(
+                glob(os.path.join(self.path, "No_metal/acquisition_" + str(i) + "/*")),
+                key=lambda x: [
+                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
+                ],
+            )
+            for i in range(11)
+        ]
+        high_metal_folder = [
+            sorted(
+                glob(
+                    os.path.join(self.path, "High_metal/acquisition_" + str(i) + "/*")
+                ),
+                key=lambda x: [
+                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
+                ],
+            )
+            for i in range(11)
+        ]
+        low_metal_folder = [
+            sorted(
+                glob(os.path.join(self.path, "Low_metal/acquisition_" + str(i) + "/*")),
+                key=lambda x: [
+                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
+                ],
+            )
+            for i in range(11)
+        ]
+        no_metal_list = [item for sublist in no_metal_folder for item in sublist]
+        high_metal_list = [item for sublist in high_metal_folder for item in sublist]
+        low_metal_list = [item for sublist in low_metal_folder for item in sublist]
 
-        sorted_folder_1_name = sorted(
-            glob(os.path.join(self.path, "1" + "/*")),
-            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
+        return (
+            no_metal_list,
+            high_metal_list,
+            low_metal_list,
         )
-
-        sorted_folder_2_name = sorted(
-            glob(os.path.join(self.path, "2" + "/*")),
-            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
-        )
-
-        sorted_folder_4_name = sorted(
-            glob(os.path.join(self.path, "4" + "/*")),
-            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
-        )
-
-        return sorted_folder_1_name, sorted_folder_2_name, sorted_folder_4_name
 
     def load_data(self):
         """
         Generate the training and testing (X,y) couple using the previously generated list
         """
-        f1, f2, f4 = self.collect_data()
-        label = f1 + f1
-        input = f2 + f4
+        no_metal_list, high_metal_list, low_metal_list = self.collect_data()
 
+        label = 2 * no_metal_list
+        input = high_metal_list + low_metal_list
         X, X_test, y, y_test = train_test_split(
             input, label, test_size=0.1, random_state=self.seed, shuffle=True
         )
@@ -192,14 +213,19 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=8, big_endian=True)
+    dataset = Dataset(path="../data/", batch_size=8, big_endian=False)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
             print(x.shape)
-            # visualize_from_dataset(x[i], y[i], brightness_fact=4)
+            """ visualize_from_dataset(
+                x[i],
+                y[i],
+                big_endian=dataset.big_endian,
+                brightness_fact=4,
+            ) """
     """ print("Saving dataset.... ")
     dataset.save()
     print("Dataset saved!") """

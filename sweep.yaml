@@ -25,7 +25,7 @@ parameters:
     values:
       - "ResUnet"
   epochs:
-    values: [50, 100]
+    value: 10
   gpus:
     value: 3
   seed:

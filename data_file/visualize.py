@@ -57,33 +57,51 @@ def visualize_sample(raw_name: str, folder: list = [1, 2, 3, 4, 5], save_image=F
     plt.show()
 
 
-def visualize_from_dataset(x, y, brightness_fact=3):
-    x = Image.fromarray(np.array(tf.squeeze(x, axis=-1) * 255, dtype=np.uint8))
-    y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) * 255, dtype=np.uint8))
+def visualize_from_dataset(x, y, big_endian=True, brightness_fact=3):
+    if big_endian:
+        x = Image.fromarray(np.array(tf.squeeze(x, axis=-1) * 255, dtype=np.uint8))
+        y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) * 255, dtype=np.uint8))
 
-    enhancer_x = ImageEnhance.Brightness(x)
-    enhancer_y = ImageEnhance.Brightness(y)
+        enhancer_x = ImageEnhance.Brightness(x)
+        enhancer_y = ImageEnhance.Brightness(y)
 
-    x = enhancer_x.enhance(brightness_fact)
-    y = enhancer_y.enhance(brightness_fact)
+        x = enhancer_x.enhance(brightness_fact)
+        y = enhancer_y.enhance(brightness_fact)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.imshow(
-        x,
-        cmap=plt.cm.Greys_r,
-        aspect="auto",
-        # extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
-    )
-    ax1.set_title("With artefacts image")
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.imshow(
+            x,
+            cmap=plt.cm.Greys_r,
+            aspect="auto",
+            # extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
+        )
+        ax1.set_title("With metal image")
 
-    ax2.imshow(
-        y,
-        cmap=plt.cm.Greys_r,
-        aspect="auto",
-        # extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
-    )
-    ax2.set_title("Without artefacts image")
-    plt.show()
+        ax2.imshow(
+            y,
+            cmap=plt.cm.Greys_r,
+            aspect="auto",
+            # extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
+        )
+        ax2.set_title("Without metal image")
+        plt.show()
+    else:
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.imshow(
+            x,
+            cmap=plt.cm.Greys_r,
+            aspect="auto",
+            # extent=(0, 180, -x[1].shape[0] / 2.0, x[1].shape[0] / 2.0),
+        )
+        ax1.set_title("With artefacts image")
+        ax2.imshow(
+            y,
+            cmap=plt.cm.Greys_r,
+            aspect="auto",
+            # extent=(0, 180, -y[1].shape[0] / 2.0, y[1].shape[0] / 2.0),
+        )
+        ax2.set_title("Without metal image")
+        plt.show()
 
 
 def save_image_result(x, preds, y, name):

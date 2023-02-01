@@ -6,6 +6,9 @@ from data_file.processing import Dataset
 from model.model import Model
 from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint, WandbEvalCallback
 import argparse
+import os
+
+os.environ["WANDB_CACHE_DIR"] = "$WORKDIR/artefacts/wandb/"
 
 
 def train():
@@ -32,11 +35,14 @@ def train():
         model = Model(config.model, config.img_size, config.learning_rate).build_model()
         print("Model Created!")
     print(f"save = {config.save}")
+    print(f"{config.saving_path}{config.model}")
     if config.save:
         callbacks = callbacks = [
             WandbMetricsLogger(),
             WandbModelCheckpoint(
-                config.saving_path + config.name + ".h5",
+                filepath=f"{config.saving_path}{config.model}" + "{val_loss:02f}.h5",
+                save_best_only=True,
+                monitor="val_loss",
             ),
         ]
     else:
@@ -54,7 +60,7 @@ def train():
 
 def sweep(sweep_config=None):
     sweep_id = wandb.sweep(sweep=sweep_config, project=sweep_config["project"])
-    wandb.agent(sweep_id, function=train, count=50)
+    wandb.agent(sweep_id, function=train, count=5)
 
 
 if __name__ == "__main__":
@@ -75,7 +81,10 @@ if __name__ == "__main__":
     yaml_dict["parameters"]["big_endian"]["value"] = argparser.parse_args().big_endian
     yaml_dict["parameters"]["save"]["value"] = argparser.parse_args().save
     if argparser.parse_args().big_endian:
-        yaml_dict["project"] = "artefact-detection-big_endian"
+        yaml_dict["project"] = "artefact-detection-big_endian_fulldata"
+        yaml_dict["parameters"]["saving_path"][
+            "value"
+        ] = "models/saved_models/big_endian/"
     else:
-        yaml_dict["project"] = "artefact-detection-low_endian"
+        yaml_dict["project"] = "artefact-detection-low_endian_fulldata"
     sweep(yaml_dict)
