@@ -4,6 +4,8 @@ paper/
 __pycache__/
 wandb/
 .vscode/
+images/
+playground/
 
 
 *.onnx

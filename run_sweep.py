@@ -35,7 +35,7 @@ def train():
         model = Model(config.model, config.img_size, config.learning_rate).build_model()
         print("Model Created!")
     print(f"save = {config.save}")
-    print(f"{config.saving_path}{config.model}")
+    print(f"saving_path = {config.saving_path}{config.model}")
     if config.save:
         callbacks = callbacks = [
             WandbMetricsLogger(),
@@ -60,7 +60,7 @@ def train():
 
 def sweep(sweep_config=None):
     sweep_id = wandb.sweep(sweep=sweep_config, project=sweep_config["project"])
-    wandb.agent(sweep_id, function=train, count=5)
+    wandb.agent(sweep_id, function=train, count=2)
 
 
 if __name__ == "__main__":
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         yaml_dict["project"] = "artefact-detection-big_endian_fulldata"
         yaml_dict["parameters"]["saving_path"][
             "value"
-        ] = "models/saved_models/big_endian/"
+        ] = "model/saved_models/big_endian/"
     else:
         yaml_dict["project"] = "artefact-detection-low_endian_fulldata"
     sweep(yaml_dict)

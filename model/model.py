@@ -1,10 +1,11 @@
 import tensorflow as tf
 from ResUNET_a_d6 import ResUNet
 from Unet import Unet
+from Baseline import Baseline
 
 
 class Model:
-    def __init__(self, model_name, input_shape, learning_rate) -> None:
+    def __init__(self, model_name, input_shape=512, learning_rate=3e-4) -> None:
         super().__init__()
 
         self.model_name = model_name
@@ -24,3 +25,7 @@ class Model:
                 input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
             )
+        elif self.model_name == "Baseline":
+            return Baseline(
+                input_shape=(self.height, self.width, 1),
+            ).build_model()

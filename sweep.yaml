@@ -14,9 +14,9 @@ parameters:
   log_preds:
     value: False
   learning_rate:
-    distribution: log_uniform_values
-    min: 1e-5
-    max: 1e-2
+    values:
+      - 0.00023600745336969237
+      - 0.0003
   batch_size:
     value: 8
   img_size:

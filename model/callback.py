@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from wandb.keras import WandbCallback
 
 
 class Callback(tf.keras.callbacks.Callback):
@@ -14,3 +15,8 @@ class Callback(tf.keras.callbacks.Callback):
         if epoch % 10 == 0:
             x_train, y_train = tf.expand_dims(self.test_ds.take(1)[0], axis=0)
             x_test, y_test = tf.expand_dims(self.train_ds.take(1)[0], axis=0)
+
+
+class save_best_only(WandbCallback):
+    def __init__(self) -> None:
+        super().__init__()
