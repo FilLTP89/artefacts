@@ -106,7 +106,29 @@ class PatchGAn(tf.keras.Model):
         self.input_shape = input_shape
         self.patch_size = patch_size
 
-    pass
+    def into_patch(self, input):
+        bs = input.shape[0]
+        patches = tf.image.extract_patches(
+            images=input,
+            sizes=[1, 16, 16, 1],
+            strides=[1, 16, 16, 1],
+            rates=[1, 1, 1, 1],
+            padding="VALID",
+        )
+
+        # Calculate the number of patches that can be extracted from the image
+        num_patches = tf.shape(patches)[1] * tf.shape(patches)[2]
+
+        # Reshape the patches tensor to [num_patches, 16, 16, 1]
+        patches = tf.reshape(patches, [bs, num_patches, 16, 16, 1])
+        return patches
+
+    def call(self, input):
+        x = self.into_patch(input)
+        x = kl.Conv2D(64, 3, 1, "same")(input)
+        x = kl.Conv2D(128, 3, 1, "same")(x)
+        x = kl.BatchNormalization()(x)
+        x = kl.LeakyReLU()(x)
 
 
 class VGG199_feature_extractor(tf.keras.Model):
@@ -120,9 +142,6 @@ class VGG199_feature_extractor(tf.keras.Model):
             classes=1000,
             classifier_activation="softmax",
         )
-
-    def call(self, input):
-        pass
 
 
 class MEDGAN(tf.keras.Model):
