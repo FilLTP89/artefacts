@@ -1,16 +1,9 @@
-# TODO : Implement the loss function for the model if needed
-
 import tensorflow as tf
 from tensorflow.signal import fft2d
 
 
 def SSIMLoss(y_true, y_pred):
     return 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, 1.0))
-
-
-def content_loss(y_true, y_pred):
-
-    pass
 
 
 def MSE_loss(y_true, y_pred):
@@ -29,7 +22,7 @@ def perceptual_loss(y_true_discriminator, y_pred_discriminator):
 
 def style_loss(style_grams, generated_grams, lambda_list=[]):
     """
-    list of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
+    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
     Need to be list since Hi,Wi,Ci are different for each block
     """
 
@@ -48,30 +41,19 @@ def style_loss(style_grams, generated_grams, lambda_list=[]):
         return gram
 
     # Use lambda_list as hyperparameter for the weight contribution of the different convolutional block
-    """ 
-    B = len(y_true)
-    loss = 0
-    for i in range(B):
-        loss += (
-            lambda_list[i]
-            * tf.norm(gram_matrix(y_true[i]) - gram_matrix(y_pred[i])) ** 2
-        )  # Frobenius squared norm between the two Gram matrix 
-    """
-
     loss = 0
     for style, generated in zip(style_grams, generated_grams):
         # Get the number of channels for this feature map
-        channels = style.shape[-1]
 
         # Calculate the mean squared difference between the two Gram matrices for this feature map
         map_loss = tf.reduce_mean(
-            tf.square(gram_matrix(style) - gram_matrix(generated))
+            tf.norm(gram_matrix(style) - gram_matrix(generated), ord="fro")
         )  # Frobenius norm
 
         # Add the map loss to the total loss, weighted by 1/4 * (1/channels)^2
         loss += (
-            1 / (4 * channels**2) * map_loss
-        )  # Multiply by a constant to make the loss more stable
+            1 / 4
+        ) * map_loss  # Multiply by a constant to make the loss more stable
 
     return loss
 
@@ -92,16 +74,15 @@ def discriminator_loss(y_true, y_pred):
     return -tf.reduce_mean(tf.math.log(y_true) + tf.math.log(1 - y_pred), axis=0)[0]
 
 
-def understanding_generator_gan_loss():
+def content_loss(y_true_features, y_pred_features):
     """
-    Here what is evaluated is the ability of the generator too fool the discriminator
-    We want the discriminator to predict 1 for the fake image
+    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
+    Need to be list since Hi,Wi,Ci are different for each block
     """
-    y_pred = tf.abs(tf.random.normal((3, 1)))
-    y_wanted = tf.ones_like(y_pred)
-    print(-tf.reduce_mean(tf.math.log(y_pred), axis=0, keepdims=False)[0])
-    print(tf.keras.losses.BinaryCrossentropy()(y_wanted, y_pred))
-    # The results should be the same
+    loss = 0
+    for feature_ytrue, feature_ypred in zip(y_true_features, y_pred_features):
+        loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
+    return loss
 
 
 class FocalFrequencyLoss(tf.keras.layers.Layer):
