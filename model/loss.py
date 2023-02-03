@@ -1,5 +1,9 @@
 import tensorflow as tf
 from tensorflow.signal import fft2d
+from tensorflow.python.ops.numpy_ops import np_config
+import tensorflow.keras.backend as K
+
+np_config.enable_numpy_behavior()  # allow the use of @ and T
 
 
 def SSIMLoss(y_true, y_pred):
@@ -13,43 +17,37 @@ def MSE_loss(y_true, y_pred):
     return tf.reduce_mean(tf.square(y_true - y_pred))
 
 
-def perceptual_loss(y_true_discriminator, y_pred_discriminator):
-    loss = 0
-    for feature_ytrue, feature_ypred in zip(y_true_discriminator, y_pred_discriminator):
-        loss += tf.reduce_mean(tf.abs(feature_ytrue - feature_ypred))
-    return loss
-
-
-def style_loss(style_grams, generated_grams, lambda_list=[]):
+# Loss for the generator, the input does generator -> feature extractor
+def style_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list=[]):
     """
-    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
-    Need to be list since Hi,Wi,Ci are different for each block
+    y_true_extractor # B elements list of (bs,Hi,Wi,Ci)
+    y_pred_extractor # B elements list of (bs,Hi,Wi,Ci)
     """
 
     def gram_matrix(input_tensor):
         # Get the batch size, width, height, and number of channels
-        batch_size, width, height, num_channels = tf.shape(input_tensor)
-
-        # Reshape the input tensor to shape (batch_size * width * height, num_channels)
-        features = tf.reshape(input_tensor, (batch_size * width * height, num_channels))
-
-        # Calculate the Gram matrix by multiplying the features with its transpose
-        gram = tf.matmul(features, tf.transpose(features)) / (
-            num_channels * width * height
+        batch_size, width, height, channels = input_tensor.shape  # (bs,Hi,Wi,Ci)
+        input_tensor = tf.reshape(
+            input_tensor, (batch_size, width * height, channels)
+        )  # (bs,Hi*Wi,Ci)
+        gram = (
+            tf.transpose(input_tensor, perm=[0, 2, 1])
+            @ input_tensor
+            / (channels * width * height)  # (bs,Ci,Ci)
         )
-
         return gram
 
     # Use lambda_list as hyperparameter for the weight contribution of the different convolutional block
     loss = 0
-    for style, generated in zip(style_grams, generated_grams):
+    for style, generated in zip(y_true_extractor_features, y_pred_extractor_features):
         # Get the number of channels for this feature map
 
         # Calculate the mean squared difference between the two Gram matrices for this feature map
+        gram_style = gram_matrix(style)
+        gram_generated = gram_matrix(generated)
         map_loss = tf.reduce_mean(
-            tf.norm(gram_matrix(style) - gram_matrix(generated), ord="fro")
+            tf.norm((gram_style - gram_generated), ord="fro", axis=(1, 2))
         )  # Frobenius norm
-
         # Add the map loss to the total loss, weighted by 1/4 * (1/channels)^2
         loss += (
             1 / 4
@@ -58,6 +56,21 @@ def style_loss(style_grams, generated_grams, lambda_list=[]):
     return loss
 
 
+# Loss for the generator, the input does generator -> feature extractor
+def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list=[]):
+    """
+    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
+    Need to be list since Hi,Wi,Ci are different for each block
+    """
+    loss = 0
+    for feature_ytrue, feature_ypred in zip(
+        y_true_extractor_features, y_pred_extractor_features
+    ):
+        loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
+    return loss
+
+
+# Loss for the generator the input does generator -> discriminator
 def generator_gan_loss(y_pred):
     """
     Also called discriminator loss]
@@ -66,23 +79,22 @@ def generator_gan_loss(y_pred):
     return -tf.reduce_mean(tf.math.log(y_pred), axis=0)[0]
 
 
+# Loss for the generator, the input does generator -> discriminator
+def perceptual_loss(y_true_discriminator_features, y_pred_discriminator_features):
+    loss = 0
+    for feature_ytrue, feature_ypred in zip(
+        y_true_discriminator_features, y_pred_discriminator_features
+    ):
+        loss += tf.reduce_mean(tf.abs(feature_ytrue - feature_ypred))
+    return loss
+
+
 def discriminator_loss(y_true, y_pred):
     """
     y_true are the true label : 1 for real image and 0 for fake image
     y_pred is the output of the discriminator # (bs, 1)
     """
     return -tf.reduce_mean(tf.math.log(y_true) + tf.math.log(1 - y_pred), axis=0)[0]
-
-
-def content_loss(y_true_features, y_pred_features):
-    """
-    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
-    Need to be list since Hi,Wi,Ci are different for each block
-    """
-    loss = 0
-    for feature_ytrue, feature_ypred in zip(y_true_features, y_pred_features):
-        loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
-    return loss
 
 
 class FocalFrequencyLoss(tf.keras.layers.Layer):
@@ -241,7 +253,20 @@ class FocalFrequencyLoss(tf.keras.layers.Layer):
 
 if __name__ == "__main__":
     # understanding_generator_gan_loss()
-    loss = MSE_loss
-    y = tf.random.uniform((32, 256, 256, 1))
-    y_pred = tf.random.uniform((32, 256, 256, 1))
-    print(FocalFrequencyLoss()(y_pred, y))
+    y_true_discriminator_features = [
+        tf.random.normal((32, 256, 256, 1)),
+        tf.random.normal((32, 26, 26, 12)),
+    ]
+    y_pred_discriminator_features = [
+        tf.random.normal((32, 256, 256, 1)),
+        tf.random.normal((32, 26, 26, 12)),
+    ]
+    gpus = tf.config.list_logical_devices("GPU")
+    try:
+        gpu = gpus[0]
+        with tf.device(gpu.name):
+            print(
+                style_loss(y_true_discriminator_features, y_pred_discriminator_features)
+            )
+    except:
+        print(style_loss(y_true_discriminator_features, y_pred_discriminator_features))

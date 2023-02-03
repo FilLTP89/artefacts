@@ -101,9 +101,10 @@ class PatchGAn(tf.keras.Model):
     and used in the MedGan model
     """
 
-    def __init__(self, input_shape) -> None:
+    def __init__(self, input_shape, patch_size) -> None:
         super().__init__()
         self.input_shape = input_shape
+        self.patch_size = patch_size
 
     pass
 
