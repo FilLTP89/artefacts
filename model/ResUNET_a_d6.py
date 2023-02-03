@@ -1,6 +1,8 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
 from metrics import ssim
+from loss import FocalFrequencyLoss as FFL
+from loss import MSE_loss, SSIMLoss
 
 """
 ResUNet_a_d6 is a model based on the paper "ResUNet: 
@@ -11,16 +13,27 @@ A Deep Residual U-Net for Image Segmentation"
 class ResUNet(tf.keras.Model):
     def __init__(
         self,
-        input_shape,
-        nb_class,
+        input_shape=(512, 512, 1),
+        nb_class=1,
         learning_rate=3e-4,
     ):
         super().__init__()
         self.shape = input_shape  # Input shape has to be power of 2, 256x256 or 512x512
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
-        self.loss = tf.keras.losses.MeanSquaredError()
+        self.loss = self.loss_function
         self.metrics_list = [tf.keras.metrics.RootMeanSquaredError(), ssim]
+
+    def loss_function(
+        self,
+        y_true,
+        y_pred,
+        use_focal=True,
+    ):
+        if use_focal:  # if use focal we use the sum of the MSE and the Focal loss
+            return MSE_loss(y_true, y_pred) + FFL()(y_true, y_pred)
+        # else we use only the MSE
+        return MSE_loss(y_true, y_pred)
 
     def ResBlock_a(
         self,
@@ -207,8 +220,13 @@ class ResUNet(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    model = ResUNet(
+    """model = ResUNet(
         (256, 256, 1), 1
     ).build_model()  # width and height have to multiple of power of 2
     model.summary()
     # model.save("ResUNet.h5")  # save the model
+    #"""
+    loss = ResUNet.loss_function
+    y_true = tf.random.uniform((1, 256, 256, 1))
+    y_pred = tf.random.uniform((1, 256, 256, 1))
+    print(loss(y_true, y_pred, use_focal=True))

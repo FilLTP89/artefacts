@@ -1,8 +1,13 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
 
-from loss import style_loss
-from loss import feature_loss
+from loss import (
+    style_loss,
+    content_loss,
+    perceptual_loss,
+    generator_gan_loss,
+    discriminator_loss,
+)
 
 
 class U_block(kl):
@@ -103,6 +108,22 @@ class PatchGAn(tf.keras.Model):
     pass
 
 
+class VGG199_feature_extractor(tf.keras.Model):
+    def __init__(self, input_shape) -> None:
+        super().__init__()
+        self.input_shape = input_shape
+        self.model = tf.keras.applications.VGG19(
+            weights="imagenet",
+            input_shape=self.input_shape,
+            pooling=None,
+            classes=1000,
+            classifier_activation="softmax",
+        )
+
+    def call(self, input):
+        pass
+
+
 class MEDGAN(tf.keras.Model):
     """
     Implementation of the MedGAN model presented in the paper
@@ -115,16 +136,25 @@ class MEDGAN(tf.keras.Model):
         generator=None,
         discriminator=None,
         style_loss=None,
+        N_g=3,
     ):
         super().__init__()
+
         self.shape = input_shape
-        self.optimizer = tf.keras.optimizers.Adam()
+        self.d_optimizer = tf.keras.optimizers.Adam(learning_rate)
+        self.g_optimizer = tf.keras.optimizers.Adam(learning_rate)
+
         self.style_loss = style_loss
         self.metrics_list = [tf.keras.metrics.RootMeanSquaredError()]
+        self.N_g = N_g  # number of training iterations for generator
 
-        generator = generator or ConsNet(6, self.shape)
-        discriminator = PatchGAn()
-        feature_extractor = tf.keras.applications.VGG19(
+        self.lambda_1 = 10
+        self.lambda_2 = 5
+        self.lambda_3 = 1
+
+        self.generator = generator or ConsNet(6, self.shape)
+        self.discriminator = PatchGAn()
+        self.feature_extractor = tf.keras.applications.VGG19(
             weights="imagenet",
             input_shape=(512, 512, 1),
             pooling=None,
@@ -138,18 +168,45 @@ class MEDGAN(tf.keras.Model):
         output = self.discriminator(x)
         return model
 
-    def training_step(self, x, y):
+    def training_step(self, data):
+        x, y = data
+        for _ in range(self.N_g):
+            with tf.GradientTape() as tape:
+                y_pred = self.generator(x)
+                y_pred_discriminator = self.discriminator(y_pred)
+                y_pred_feature = self.feature_extractor(y_pred)
+
+                y_true_discriminator = self.discriminator(y)
+                y_true_feature = self.feature_extractor(y)
+
+                # gan loss
+                generator_gan_l = generator_gan_loss(y_pred_discriminator)
+                # perceptual loss
+                perceptual_l = perceptual_loss(y_pred_discriminator, y_true_feature)
+                # style loss
+                style_l = style_loss(y_pred_feature, y_true_feature)
+                # content loss
+                content_l = content_loss(y_pred_feature, y_true_feature)
+
+                generator_loss = (
+                    generator_gan_l
+                    + self.lambda_1 * perceptual_l
+                    + self.lambda_2 * style_loss
+                    + self.lambda_3 * content_loss
+                )
+            grads = tape.gradient(generator_loss, self.generator.trainable_weights)
+            self.d_optimizer.apply_gradients(
+                zip(grads, self.generator.trainable_weights)
+            )
+
         with tf.GradientTape() as tape:
-            y_pred = self.model(x)
-            y_pred_discriminator = self.discriminator(y_pred)
-            y_pred_feature = self.feature_extractor(y_pred)
-
-            y_discriminator = self.discriminator(y)
-            y_feature = self.feature_extractor(y)
-
-            style_loss = style_loss(y_pred_feature, y_feature)
-
-        return loss
+            discriminator_l = discriminator_loss(
+                y_true_discriminator, y_pred_discriminator
+            )
+        grads = tape.gradient(discriminator_loss, self.discriminator.trainable_weights)
+        self.d_optimizer.apply_gradients(
+            zip(grads, self.discriminator.trainable_weights)
+        )
 
 
 if __name__ == "__main__":
