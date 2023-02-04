@@ -95,17 +95,24 @@ class PatchGAn(tf.keras.Model):
     and used in the MedGan model
     """
 
-    def __init__(self, input_shape, patch_size) -> None:
+    def __init__(self, input_shape=(512, 512, 1), patch_size=70) -> None:
         super().__init__()
         self.shape = input_shape
         self.patch_size = patch_size
+
+        self.conv1 = kl.Conv2D(64, 3, 1, "same")
+        self.conv2 = kl.Conv2D(128, 3, 1, "same")
+        self.batch_norm1 = kl.BatchNormalization()
+        self.relu = kl.LeakyReLU()
+
+        self.dense = kl.Dense(1, activation="sigmoid")
 
     def into_patch(self, input):
         bs = input.shape[0]
         patches = tf.image.extract_patches(
             images=input,
-            sizes=[1, 16, 16, 1],
-            strides=[1, 16, 16, 1],
+            sizes=[1, self.patch_size, self.patch_size, 1],
+            strides=[1, self.patch_size, self.patch_size, 1],
             rates=[1, 1, 1, 1],
             padding="VALID",
         )
@@ -114,15 +121,20 @@ class PatchGAn(tf.keras.Model):
         num_patches = tf.shape(patches)[1] * tf.shape(patches)[2]
 
         # Reshape the patches tensor to [num_patches, 16, 16, 1]
-        patches = tf.reshape(patches, [bs, num_patches, 16, 16, 1])
+        patches = tf.reshape(
+            patches, [bs, num_patches, self.patch_size, self.patch_size, 1]
+        )
         return patches
 
     def call(self, input):
         x = self.into_patch(input)
-        x = kl.Conv2D(64, 3, 1, "same")(input)
-        x = kl.Conv2D(128, 3, 1, "same")(x)
-        x = kl.BatchNormalization()(x)
-        x = kl.LeakyReLU()(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.batch_norm1(x)
+        x = self.relu(x)
+        x = kl.Flatten()(x)
+        x = self.dense(x)
+        return x
 
 
 class VGG199_feature_extractor(tf.keras.Model):
@@ -225,6 +237,7 @@ class MEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    casnet = ConsNet()
-    casnet.build((None, 512, 512, 1))
-    casnet.summary()
+    patchgan = PatchGAn()
+    input = tf.random.normal((3, 512, 512, 1))
+    y = patchgan(input)
+    print(y.shape)
