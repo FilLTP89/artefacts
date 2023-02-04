@@ -10,7 +10,7 @@ from loss import (
 )
 
 
-class U_block(kl):
+class U_block(tf.keras.Model):
 
     """
     One U_block is composed of 16 convolutional layer
@@ -20,12 +20,12 @@ class U_block(kl):
     Interrogation : why do the last layer 128 filters and not 1 ?
     """
 
-    def __init__(self, shape) -> None:
+    def __init__(self, shape=(512, 512, 1)) -> None:
         super().__init__()
         self.shape = shape
 
-    def down_conv_block(self, input, filters, kernel_size=4, strides=2):
-        x = kl.Conv2D(filters, kernel_size, strides)(input)
+    def down_conv_block(self, input, filters, kernel_size=4, strides=2, padding="same"):
+        x = kl.Conv2D(filters, kernel_size, strides, padding)(input)
         x = kl.BatchNormalization()(x)
         x = kl.LeakyReLU()(x)
         return x
@@ -38,11 +38,8 @@ class U_block(kl):
         kernel_size=4,
         strides=2,
         padding="same",
-        activation="relu",
     ):
-        x = kl.Conv2DTranspose(filters, kernel_size, strides, padding, activation)(
-            input
-        )
+        x = kl.Conv2DTranspose(filters, kernel_size, strides, padding)(input)
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
         x = kl.Concatenate()([x, skip_input])
@@ -62,36 +59,33 @@ class U_block(kl):
     def decoder_block(
         self, encoder_list, filters=[512, 1024, 1024, 1024, 1024, 512, 256, 128]
     ):
-        for i, filter in enumerate(filters):
-            if i == 0:
-                y = self.up_conv_block(encoder_list[-1], encoder_list[-2], filter)
-            elif i == len(filters) - 1:
-                y = self.up_conv_block(
-                    y, encoder_list[-i - 2], filter, strides=1, activation="tanh"
-                )
-            else:
-                y = self.up_conv_block(y, encoder_list[-i - 2], filter)
+        encoder_list = encoder_list[::-1]
+        y = self.up_conv_block(encoder_list[0], encoder_list[1], filters[0])
+        for i, filter in enumerate(filters[2:]):
+            y = self.up_conv_block(y, encoder_list[i + 2], filter)
+        y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
         return y
 
-    def __call__(self, input):
+    def build_model(self):
+        input = kl.Input(shape=self.shape)
         encoder_list = self.encoder_block(input)
-        output = self.decoder_block(encoder_list)
-        return output
+        decoder_output = self.decoder_block(encoder_list)
+        model = tf.keras.Model(inputs=input, outputs=decoder_output)
+        return model
 
 
 class ConsNet(tf.keras.Model):
-    def __init__(self, n_block, input_shape) -> None:
+    def __init__(self, n_block=6, input_shape=(512, 512, 1)) -> None:
         super().__init__()
         self.n_block = n_block
-        self.input_shape = input_shape
+        self.shape = input_shape
+        self.Ublock = [U_block().build_model() for _ in range(n_block)]
 
-    def build_model(self):
-        input = kl.Input(shape=self.input_shape)
-        for _ in range(self.n_block):
-            x = U_block(x)
-        output = x
-        model = tf.keras.Model(input, output)
-        return model
+    def call(self, inputs, training=False):
+        x = inputs
+        for i in range(self.n_block):
+            x = self.Ublock[i](x)
+        return x
 
 
 class PatchGAn(tf.keras.Model):
@@ -103,7 +97,7 @@ class PatchGAn(tf.keras.Model):
 
     def __init__(self, input_shape, patch_size) -> None:
         super().__init__()
-        self.input_shape = input_shape
+        self.shape = input_shape
         self.patch_size = patch_size
 
     def into_patch(self, input):
@@ -186,6 +180,7 @@ class MEDGAN(tf.keras.Model):
         input = kl.Input(shape=self.shape)
         x = self.generator(input)
         output = self.discriminator(x)
+        model = tf.keras.Model(input, output)
         return model
 
     def training_step(self, data):
@@ -211,8 +206,8 @@ class MEDGAN(tf.keras.Model):
                 generator_loss = (
                     generator_gan_l
                     + self.lambda_1 * perceptual_l
-                    + self.lambda_2 * style_loss
-                    + self.lambda_3 * content_loss
+                    + self.lambda_2 * style_l
+                    + self.lambda_3 * content_l
                 )
             grads = tape.gradient(generator_loss, self.generator.trainable_weights)
             self.d_optimizer.apply_gradients(
@@ -230,9 +225,6 @@ class MEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    U_block = U_block((256, 256, 1))
-    x = tf.random.normal((1, 256, 256, 1))
-    model = U_block.build_model()
-    y = model(x)
-
-    print(y.shape)
+    casnet = ConsNet()
+    casnet.build((None, 512, 512, 1))
+    casnet.summary()
