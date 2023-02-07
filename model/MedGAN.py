@@ -9,6 +9,8 @@ from loss import (
     discriminator_loss,
 )
 
+from vgg19 import VGG19
+
 
 class U_block(tf.keras.Model):
 
@@ -128,26 +130,13 @@ class PatchGAn(tf.keras.Model):
 
     def call(self, input):
         x = self.into_patch(input)
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.batch_norm1(x)
-        x = self.relu(x)
-        x = kl.Flatten()(x)
-        x = self.dense(x)
-        return x
-
-
-class VGG199_feature_extractor(tf.keras.Model):
-    def __init__(self, input_shape) -> None:
-        super().__init__()
-        self.input_shape = input_shape
-        self.model = tf.keras.applications.VGG19(
-            weights="imagenet",
-            input_shape=self.input_shape,
-            pooling=None,
-            classes=1000,
-            classifier_activation="softmax",
-        )
+        x1 = self.conv1(x)
+        x2 = self.conv2(x1)
+        x_ = self.batch_norm1(x2)
+        x_ = self.relu(x_)
+        x_ = kl.Flatten()(x_)
+        x_ = self.dense(x_)
+        return [x, x1, x2]
 
 
 class MEDGAN(tf.keras.Model):
@@ -161,7 +150,7 @@ class MEDGAN(tf.keras.Model):
         learning_rate=3e-4,
         generator=None,
         discriminator=None,
-        style_loss=None,
+        feature_extracor=None,
         N_g=3,
     ):
         super().__init__()
@@ -170,7 +159,6 @@ class MEDGAN(tf.keras.Model):
         self.d_optimizer = tf.keras.optimizers.Adam(learning_rate)
         self.g_optimizer = tf.keras.optimizers.Adam(learning_rate)
 
-        self.style_loss = style_loss
         self.metrics_list = [tf.keras.metrics.RootMeanSquaredError()]
         self.N_g = N_g  # number of training iterations for generator
 
@@ -179,14 +167,8 @@ class MEDGAN(tf.keras.Model):
         self.lambda_3 = 1
 
         self.generator = generator or ConsNet(6, self.shape)
-        self.discriminator = PatchGAn()
-        self.feature_extractor = tf.keras.applications.VGG19(
-            weights="imagenet",
-            input_shape=(512, 512, 1),
-            pooling=None,
-            classes=1000,
-            classifier_activation="softmax",
-        )
+        self.discriminator = discriminator or PatchGAn()
+        self.feature_extractor = feature_extracor or VGG19()
 
     def build_model(self):
         input = kl.Input(shape=self.shape)
@@ -230,7 +212,7 @@ class MEDGAN(tf.keras.Model):
             discriminator_l = discriminator_loss(
                 y_true_discriminator, y_pred_discriminator
             )
-        grads = tape.gradient(discriminator_loss, self.discriminator.trainable_weights)
+        grads = tape.gradient(discriminator_l, self.discriminator.trainable_weights)
         self.d_optimizer.apply_gradients(
             zip(grads, self.discriminator.trainable_weights)
         )
@@ -239,5 +221,16 @@ class MEDGAN(tf.keras.Model):
 if __name__ == "__main__":
     patchgan = PatchGAn()
     input = tf.random.normal((3, 512, 512, 1))
-    y = patchgan(input)
-    print(y.shape)
+    y_patchgan = patchgan(input)
+    print("PatchGAN output shapes:")
+    for i in y_patchgan:
+        print(i.shape)
+    vgg = VGG19()
+    y_vgg = vgg(input)
+    print("VGG19 output shapes:")
+    for i in y_vgg:
+        print(i.shape)
+    print("ConsNet output shape:")
+    consnet = ConsNet(6, (512, 512, 1))
+    y_consnet = consnet(input)
+    print(y_consnet.shape)
