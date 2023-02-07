@@ -136,7 +136,7 @@ class PatchGAn(tf.keras.Model):
         x_ = self.relu(x_)
         x_ = kl.Flatten()(x_)
         x_ = self.dense(x_)
-        return [x, x1, x2]
+        return ([x, x1, x2], x_)
 
 
 class MEDGAN(tf.keras.Model):
@@ -218,19 +218,42 @@ class MEDGAN(tf.keras.Model):
         )
 
 
-if __name__ == "__main__":
-    patchgan = PatchGAn()
+def test():
     input = tf.random.normal((3, 512, 512, 1))
-    y_patchgan = patchgan(input)
-    print("PatchGAN output shapes:")
-    for i in y_patchgan:
-        print(i.shape)
-    vgg = VGG19()
-    y_vgg = vgg(input)
-    print("VGG19 output shapes:")
-    for i in y_vgg:
-        print(i.shape)
-    print("ConsNet output shape:")
+    input2 = tf.random.normal((3, 512, 512, 1))
+
     consnet = ConsNet(6, (512, 512, 1))
-    y_consnet = consnet(input)
-    print(y_consnet.shape)
+    generator_output = consnet(input)
+
+    vgg19 = VGG19()
+    feature_extractor_pred_features, feature_extractor_pred__last_layer = vgg19(
+        generator_output
+    )
+    feature_extrator_true_features, feature_extractor_true_last_layer = vgg19(input2)
+
+    patchgan = PatchGAn()
+    discriminato_pred_output, discriminator_pred_last_layer = patchgan(generator_output)
+    discriminator_true_output, discriminator_true_last_layer = patchgan(input2)
+
+    style_loss_ = style_loss(
+        feature_extractor_pred_features, feature_extrator_true_features
+    )
+    content_loss_ = content_loss(
+        feature_extractor_pred_features, feature_extrator_true_features
+    )
+    perceptual_loss_ = perceptual_loss(
+        discriminato_pred_output, discriminator_true_output
+    )
+    generator_gan_loss_ = generator_gan_loss(discriminator_pred_last_layer)
+    discriminator_loss_ = discriminator_loss(
+        discriminator_true_last_layer, discriminator_pred_last_layer
+    )
+    print("style_loss", style_loss_)
+    print("content_loss", content_loss_)
+    print("perceptual_loss", perceptual_loss_)
+    print("generator_gan_loss", generator_gan_loss_)
+    print("discriminator_loss", discriminator_loss_)
+
+
+if __name__ == "__main__":
+    test()
