@@ -3,7 +3,7 @@ from tensorflow.signal import fft2d
 from tensorflow.python.ops.numpy_ops import np_config
 import tensorflow.keras.backend as K
 
-np_config.enable_numpy_behavior()  # allow the use of @ and T
+np_config.enable_numpy_behavior()  # allow the use of numpy operator such as : @ and T
 
 
 def SSIMLoss(y_true, y_pred):
