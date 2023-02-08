@@ -1,8 +1,14 @@
-
 import tensorflow as tf
 from vgg19 import VGG19
-from MedGAN import MEDGAN
+from MedGAN import MEDGAN, ConsNet
 from PatchGAN import PatchGAN
+from loss import (
+    style_loss,
+    content_loss,
+    perceptual_loss,
+    generator_gan_loss,
+    discriminator_loss,
+)
 
 
 def test():
@@ -80,4 +86,3 @@ def medgann_test():
     y = tf.random.normal((3, 512, 512, 1))
     medgan.compile()
     medgan.fit(x, y, epochs=1, batch_size=1)
-
