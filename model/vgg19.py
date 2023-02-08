@@ -24,12 +24,6 @@ class VGG19(tf.keras.Model):
         self.conv7 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.conv8 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
 
-        self.maxpool5 = kl.MaxPool2D((2, 2), strides=(2, 2))
-        self.flatten = kl.Flatten()
-        self.dense1 = kl.Dense(4096, activation="relu")
-        self.dense2 = kl.Dense(4096, activation="relu")
-        self.output_layer = kl.Dense(1000, activation="softmax")
-
     def call(self, input):
         x = self.conv1(input)
         x2 = self.maxpool1(x)
@@ -44,11 +38,5 @@ class VGG19(tf.keras.Model):
         x7 = self.conv7(x7)
         x8 = self.conv8(x7)
 
-        x9 = self.maxpool5(x8)
-        x9 = self.flatten(x9)
-        x9 = self.dense1(x9)
-        x9 = self.dense2(x9)
-        output = self.output_layer(x9)
-
-        return ([input, x, x2, x3, x4, x5, x6, x7, x8], output)
+        return [x, x2, x3, x4, x5, x6, x7, x8]
         # return the list of outut of each convolutional layer
