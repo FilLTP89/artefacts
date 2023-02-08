@@ -69,6 +69,7 @@ def train(config):
             callbacks=[
                 WandbMetricsLogger(),
             ],
+            batch_size = 8
         )
     elif config.save:
         callbacks = [

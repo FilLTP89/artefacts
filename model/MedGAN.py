@@ -4,6 +4,7 @@ import tensorflow.keras.backend as K
 
 
 from vgg19 import VGG19
+from PatchGAN import PatchGAN
 from loss import (
     style_loss,
     content_loss,
@@ -90,53 +91,6 @@ class ConsNet(tf.keras.Model):
             x = self.Ublock[i](x)
         return x
 
-
-class PatchGAN(tf.keras.Model):
-    """
-    Implementation of the PatchGAN discriminator presented in the paper
-    "Image-to-Image Translation with Conditional Adversarial Networks"
-    and used in the MedGan model
-    """
-
-    def __init__(self, input_shape=(512, 512, 1), patch_size=70) -> None:
-        super().__init__()
-        self.shape = input_shape
-        self.patch_size = patch_size
-
-        self.conv1 = kl.Conv2D(64, 3, 1, "same")
-        self.conv2 = kl.Conv2D(128, 3, 1, "same")
-        self.batch_norm1 = kl.BatchNormalization()
-        self.relu = kl.LeakyReLU()
-
-        self.dense = kl.Dense(1, activation="sigmoid")
-
-    def into_patch(self, input):
-        bs = input.shape[0]
-        patches = tf.image.extract_patches(
-            images=input,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-
-        # Calculate the number of patches that can be extracted from the image
-        num_patches = tf.shape(patches)[1] * tf.shape(patches)[2]
-        # Reshape the patches tensor to [num_patches, 16, 16, 1]
-        patches = tf.reshape(
-            patches, [bs, num_patches, self.patch_size, self.patch_size, 1]
-        )
-        return patches
-
-    def call(self, input):
-        x = self.into_patch(input)
-        x1 = self.conv1(x)
-        x2 = self.conv2(x1)
-        x_ = self.batch_norm1(x2)
-        x_ = self.relu(x_)
-        x_ = kl.Flatten()(x_)
-        x_ = self.dense(x_)
-        return ([x, x1, x2], x_)  # return features and the result of the output layer
 
 
 class MEDGAN(tf.keras.Model):
