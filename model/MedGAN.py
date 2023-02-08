@@ -1,6 +1,9 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
+import tensorflow.keras.backend as K
 
+
+from vgg19 import VGG19
 from loss import (
     style_loss,
     content_loss,
@@ -8,8 +11,6 @@ from loss import (
     generator_gan_loss,
     discriminator_loss,
 )
-
-from vgg19 import VGG19
 
 
 class U_block(tf.keras.Model):
@@ -81,7 +82,7 @@ class ConsNet(tf.keras.Model):
         super().__init__()
         self.n_block = n_block
         self.shape = input_shape
-        self.Ublock = [U_block().build_model() for _ in range(n_block)]
+        self.Ublock = [U_block(self.shape).build_model() for _ in range(n_block)]
 
     def call(self, inputs, training=False):
         x = inputs
@@ -121,7 +122,6 @@ class PatchGAN(tf.keras.Model):
 
         # Calculate the number of patches that can be extracted from the image
         num_patches = tf.shape(patches)[1] * tf.shape(patches)[2]
-
         # Reshape the patches tensor to [num_patches, 16, 16, 1]
         patches = tf.reshape(
             patches, [bs, num_patches, self.patch_size, self.patch_size, 1]
@@ -157,17 +157,18 @@ class MEDGAN(tf.keras.Model):
         self.shape = input_shape
 
         self.N_g = N_g  # number of training iterations for generator
+        # TO DO : Do training as 1-1 and change the learning rate of the generator to be higher ?
 
-        self.lambda_1 = 10
-        self.lambda_2 = 5
-        self.lambda_3 = 1
+        self.lambda_1 = 20
+        self.lambda_2 = 1e-4
+        self.lambda_3 = 1e-4
 
         self.g_optimizer = tf.keras.optimizers.Adam(0.0002, 0.5)
         self.d_optimizer = tf.keras.optimizers.Adam(0.0002, 0.5)
 
         self.generator = generator or ConsNet(6, self.shape)
-        self.discriminator = discriminator or PatchGAN()
-        self.feature_extractor = feature_extractor or VGG19()
+        self.discriminator = discriminator or PatchGAN(self.shape)
+        self.feature_extractor = feature_extractor or VGG19(self.shape)
 
         self.style_loss_tracker = tf.keras.metrics.Mean(name="style_loss")
         self.content_loss_tracker = tf.keras.metrics.Mean(name="content_loss")
@@ -193,10 +194,8 @@ class MEDGAN(tf.keras.Model):
 
     def train_step(self, data):
         x, y = data
-        for _ in range(
-            self.N_g
-        ):  # as the paper suggest it is three iterations for the generator and one for the discriminator
-            with tf.GradientTape() as tape:
+        for _ in range(self.N_g):  # N_g = 3
+            with tf.GradientTape() as gen_tape:
                 y_pred = self.generator(x)
 
                 (
@@ -236,29 +235,36 @@ class MEDGAN(tf.keras.Model):
                     + self.lambda_3 * content_l
                 )
             # Compute the gradiants of the loss with respect to the weights of the generator
-            grads = tape.gradient(generator_loss, self.generator.trainable_weights)
+            gen_grads = gen_tape.gradient(
+                generator_loss, self.generator.trainable_weights
+            )
+
             # Update the weights of the generator
             self.g_optimizer.apply_gradients(
-                zip(grads, self.generator.trainable_weights)
+                zip(gen_grads, self.generator.trainable_weights)
             )
-        # We create the label for the discriminator
-        true_label = tf.concat(
-            [
-                tf.zeros_like(y_pred_discriminator_last_layer),
-                tf.ones_like(y_pred_discriminator_last_layer),
-            ]
-        )
-        y_hat = tf.concat(
-            [y_pred_discriminator_last_layer, y_true_discriminator_last_layer]
+
+        with tf.GradientTape() as disc_tape:
+            _, y_pred_discriminator = self.discriminator(y_pred)
+            _, y_true_discriminator = self.discriminator(y)
+            y_hat = tf.concat([y_pred_discriminator, y_true_discriminator], axis=0)
+            true_label = tf.concat(
+                [
+                    tf.zeros_like(y_pred_discriminator),
+                    tf.ones_like(y_true_discriminator),
+                ],
+                axis=0,
+            )
+            discriminator_l = discriminator_loss(true_label, y_hat)
+
+            # Compute the gradiants of the loss with respect to the weights of the discriminator
+        disc_grads = disc_tape.gradient(
+            discriminator_l, self.discriminator.trainable_weights
         )
 
-        with tf.GradientTape() as tape:
-            discriminator_l = discriminator_loss(y_hat, true_label)
-        # Compute the gradiants of the loss with respect to the weights of the discriminator
-        grads = tape.gradient(discriminator_l, self.discriminator.trainable_weights)
         # Update the weights of the discriminator
         self.d_optimizer.apply_gradients(
-            zip(grads, self.discriminator.trainable_weights)
+            zip(disc_grads, self.discriminator.trainable_weights)
         )
 
         # Update the loss trackers
@@ -378,12 +384,16 @@ def test():
 
 def patchgan_test():
     patchgan = PatchGAN()
-    x = tf.random.normal((3, 512, 512, 1))
+    """ x = tf.random.normal((3, 512, 512, 1))
     y = tf.random.normal((3, 512, 512, 1))
     y_hat_feature, y_hat_lastlayer = patchgan(x)
     y_feature, y_last_layer = patchgan(y)
     print(perceptual_loss(y_hat_feature, y_feature))
-    print(generator_gan_loss(y_hat_lastlayer))
+    print(generator_gan_loss(y_hat_lastlayer)) """
+    x = tf.random.normal((3, 512, 512, 1))
+    y_hat = patchgan(x)
+    print(y_hat[0][0].shape)
+    print(patchgan.trainable_weights)
 
 
 def vgg19_test():
@@ -401,14 +411,15 @@ def consnet_test():
     x = tf.random.normal((3, 512, 512, 1))
     y_hat = consnet(x)
     print(y_hat.shape)
+    print(consnet.trainable_weights.shape)
 
 
 def medgann_test():
-    medgan = MEDGAN()
+    medgan = MEDGAN((512, 512, 1))
     x = tf.random.normal((3, 512, 512, 1))
     y = tf.random.normal((3, 512, 512, 1))
     medgan.compile()
-    medgan.fit(x, y, epochs=1)
+    medgan.fit(x, y, epochs=1, batch_size=1)
 
 
 if __name__ == "__main__":

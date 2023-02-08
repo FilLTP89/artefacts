@@ -29,3 +29,5 @@ class Model:
             return Baseline(
                 input_shape=(self.height, self.width, 1),
             ).build_model()
+        elif self.model_name == "MedGan":
+            return

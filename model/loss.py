@@ -70,15 +70,6 @@ def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_li
     return loss
 
 
-# Loss for the generator the input does generator -> discriminator
-def generator_gan_loss(y_pred):
-    """
-    Also called discriminator loss]
-    y_pred is the output of the discriminator # (bs, 1)
-    """
-    return -tf.reduce_mean(tf.math.log(y_pred), axis=0)[0]
-
-
 # Loss for the generator, the input does generator -> discriminator
 def perceptual_loss(y_true_discriminator_features, y_pred_discriminator_features):
     loss = 0
@@ -89,12 +80,23 @@ def perceptual_loss(y_true_discriminator_features, y_pred_discriminator_features
     return loss
 
 
+# Loss for the generator the input does generator -> discriminator
+def generator_gan_loss(y_pred):
+    """
+    Also called discriminator loss]
+    y_pred is the output of the discriminator # (bs, 1)
+    """
+    return -tf.reduce_mean(tf.math.log(y_pred), axis=0)[0]
+
+
 def discriminator_loss(y_true, y_pred):
     """
     y_true are the true label : 1 for real image and 0 for fake image
     y_pred is the output of the discriminator # (bs, 1)
     """
-    return -tf.reduce_mean(tf.math.log(y_true) + tf.math.log(1 - y_pred), axis=0)[0]
+    return -tf.reduce_mean(
+        (1 - y_true) * tf.math.log(y_pred) + y_true * tf.math.log(1 - y_pred), axis=0
+    )[0]
 
 
 class FocalFrequencyLoss(tf.keras.layers.Layer):
@@ -252,21 +254,7 @@ class FocalFrequencyLoss(tf.keras.layers.Layer):
 
 
 if __name__ == "__main__":
-    # understanding_generator_gan_loss()
-    y_true_discriminator_features = [
-        tf.random.normal((32, 256, 256, 1)),
-        tf.random.normal((32, 26, 26, 12)),
-    ]
-    y_pred_discriminator_features = [
-        tf.random.normal((32, 256, 256, 1)),
-        tf.random.normal((32, 26, 26, 12)),
-    ]
-    gpus = tf.config.list_logical_devices("GPU")
-    try:
-        gpu = gpus[0]
-        with tf.device(gpu.name):
-            print(
-                style_loss(y_true_discriminator_features, y_pred_discriminator_features)
-            )
-    except:
-        print(style_loss(y_true_discriminator_features, y_pred_discriminator_features))
+    y_pred = tf.random.uniform(shape=(32, 1))
+    y_true = tf.ones_like(y_pred)
+    loss = discriminator_loss(y_true, y_pred)
+    print(loss)

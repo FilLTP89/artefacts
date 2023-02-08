@@ -8,21 +8,32 @@ Implement a vgg19 model from scratch in order to control it outputs and use it a
 
 # TODO: Train this model on a public dataset of medical image keyworkd : Dental CT scans
 class VGG19(tf.keras.Model):
-    def __init__(self, shape=(512, 512, 1)) -> None:
+    def __init__(self, shape=(512, 512, 1)):
         super().__init__()
         self.shape = shape
+
+        # block 1
         self.conv1 = kl.Conv2D(64, (3, 3), activation="relu", padding="same")
         self.maxpool1 = kl.MaxPool2D((2, 2), strides=(2, 2))
+
+        # block 2
         self.conv2 = kl.Conv2D(128, (3, 3), activation="relu", padding="same")
         self.maxpool2 = kl.MaxPool2D((2, 2), strides=(2, 2))
+        # block 3
         self.conv3 = kl.Conv2D(256, (3, 3), activation="relu", padding="same")
         self.conv4 = kl.Conv2D(256, (3, 3), activation="relu", padding="same")
         self.maxpool3 = kl.MaxPool2D((2, 2), strides=(2, 2))
+        # block 4
         self.conv5 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.conv6 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.maxpool4 = kl.MaxPool2D((2, 2), strides=(2, 2))
+        # block 5
         self.conv7 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.conv8 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
+
+        """
+        The fully connected layers are not implemented because we don't need them.
+        """
 
     def call(self, input):
         x = self.conv1(input)
