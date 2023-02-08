@@ -17,28 +17,27 @@ class PatchGAN(tf.keras.Model):
             [
                 kl.Conv2D(64, 4, 2, padding="same"),
                 kl.LeakyReLU(),
-                kl.BatchNormalization(),
             ]
         )
         self.block_2 = tf.keras.Sequential(
             [
                 kl.Conv2D(128, 4, 2, padding="same"),
-                kl.LeakyReLU(),
                 kl.BatchNormalization(),
+                kl.LeakyReLU(),
             ]
         )
         self.block_3 = tf.keras.Sequential(
             [
                 kl.Conv2D(256, 4, 2, padding="same"),
-                kl.LeakyReLU(),
                 kl.BatchNormalization(),
+                kl.LeakyReLU(),
             ]
         )
         self.block_4 = tf.keras.Sequential(
             [
                 kl.Conv2D(512, 4, 2, padding="same"),
-                kl.LeakyReLU(),
                 kl.BatchNormalization(),
+                kl.LeakyReLU(),
             ]
         )
 
