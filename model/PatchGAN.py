@@ -9,45 +9,57 @@ class PatchGAN(tf.keras.Model):
     and used in the MedGan model
     """
 
-    def __init__(self, input_shape=(512, 512, 1), patch_size=70) -> None:
+    def __init__(self, input_shape=(512, 512, 1)) -> None:
         super().__init__()
         self.shape = input_shape
-        self.patch_size = patch_size
 
         self.block_1 = tf.keras.Sequential(
-            [ kl.Conv2D(64, 3, 1, padding = "same")
-              kl.LeakyReLU(),
-              kl.BatchNormalization()]
+            [
+                kl.Conv2D(64, 4, 2, padding="same"),
+                kl.LeakyReLU(),
+                kl.BatchNormalization(),
+            ]
         )
         self.block_2 = tf.keras.Sequential(
-            [ kl.Conv2D(128, 3, 1, padding = "same")
-              kl.LeakyReLU(),
-              kl.BatchNormalization()]
+            [
+                kl.Conv2D(128, 4, 2, padding="same"),
+                kl.LeakyReLU(),
+                kl.BatchNormalization(),
+            ]
         )
-    
+        self.block_3 = tf.keras.Sequential(
+            [
+                kl.Conv2D(256, 4, 2, padding="same"),
+                kl.LeakyReLU(),
+                kl.BatchNormalization(),
+            ]
+        )
+        self.block_4 = tf.keras.Sequential(
+            [
+                kl.Conv2D(512, 4, 2, padding="same"),
+                kl.LeakyReLU(),
+                kl.BatchNormalization(),
+            ]
+        )
+
         self.dense = kl.Dense(1, activation="sigmoid")
 
-    def into_patch(self, input):
-        bs = input.shape[0]
-        patches = tf.image.extract_patches(
-            images=input,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-
-        # Calculate the number of patches that can be extracted from the image
-        num_patches = tf.shape(patches)[1] * tf.shape(patches)[2]
-        # Reshape the patches tensor to [num_patches, 16, 16, 1]
-        patches = tf.reshape(
-            patches, [bs, num_patches, self.patch_size, self.patch_size, 1]
-        )
-        return patches
-
     def call(self, input):
-        x = self.into_patch(input)
+        x = input
         x1 = self.block_1(x)
-        x2 = self.block2(x)
-        x_ = self.dense(x2)
-        return ([x, x1, x2], x_)  # return features and the result of the output layer
+        x2 = self.block_2(x1)
+        x3 = self.block_3(x2)
+        x4 = self.block_4(x3)
+        x_ = self.dense(x4)
+        return (
+            [x, x1, x2, x3, x4],
+            x_,
+        )  # return features and the result of the output layer
+
+
+if __name__ == "__main__":
+    patchgan = PatchGAN((256, 256, 1))
+    x = tf.random.normal((3, 256, 256, 1))
+    y_hat, _ = patchgan(x)
+    for block in y_hat:
+        print(block.shape)

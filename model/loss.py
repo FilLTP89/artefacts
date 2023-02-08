@@ -18,6 +18,8 @@ def MSE_loss(y_true, y_pred):
 
 
 # Loss for the generator, the input does generator -> feature extractor
+
+
 def style_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list=[]):
     """
     y_true_extractor # B elements list of (bs,Hi,Wi,Ci)
@@ -26,9 +28,10 @@ def style_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list
 
     def gram_matrix(input_tensor):
         # Get the batch size, width, height, and number of channels
-        batch_size, width, height, channels = input_tensor.shape  # (bs,Hi,Wi,Ci)
-        input_tensor = tf.reshape(
-            input_tensor, (batch_size, width * height, channels)
+        _, width, height, channels = K.int_shape(input_tensor)  # (bs,Hi,Wi,Ci)
+        # pool_shape = tf.pack([batch_size, width * height, channels])
+        input_tensor = K.reshape(
+            input_tensor, [-1, width * height, channels]
         )  # (bs,Hi*Wi,Ci)
         gram = (
             tf.transpose(input_tensor, perm=[0, 2, 1])
