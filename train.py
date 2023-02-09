@@ -42,17 +42,17 @@ def train(config):
         )
 
     config = wandb.config if config.wandb else config
-    print(f"Generating sample  with batch_size = {config.batch_size * config.gpus}")
+    gpus = tf.config.list_logical_devices("GPU")
+    print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
     dataset = Dataset(
         height=config.img_size,
         width=config.img_size,
-        batch_size=config.batch_size * config.gpus,
+        batch_size=config.batch_size * len(gpus),
     )
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
-    print("Num GPUs Available:", len(tf.config.list_physical_devices("GPU")))
-    gpus = tf.config.list_logical_devices("GPU")
+    print("Num GPUs Available:", len(gpus))
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
         print("Creating the model ...")
