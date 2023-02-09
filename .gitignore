@@ -6,7 +6,7 @@ wandb/
 .vscode/
 images/
 playground/
-
+ruche_log/
 
 *.onnx
 *.gz

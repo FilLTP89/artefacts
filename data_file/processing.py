@@ -154,7 +154,7 @@ class Dataset:
         input = tf.image.resize(input, [self.width, self.height])
         label = tf.image.resize(label, [self.width, self.height])
         return input, label
-
+        
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size

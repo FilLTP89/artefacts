@@ -51,3 +51,17 @@ class VGG19(tf.keras.Model):
 
         return [x, x2, x3, x4, x5, x6, x7, x8]
         # return the list of outut of each convolutional layer
+
+
+class pretrained_VGG19(tf.keras.Model):
+    def __init__(self):
+        self.vgg19 =tf.keras.applications.VGG19(
+            include_top=False,
+            weights="imagenet",
+            input_tensor=(512,512,1),
+            input_shape=None,
+            pooling=True,
+        )
+    def call(self,input):
+        return
+        
