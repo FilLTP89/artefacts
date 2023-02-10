@@ -4,6 +4,7 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
@@ -46,7 +47,7 @@ class VGGDataset:
         self.seed = seed
         self.big_endian = big_endian
 
-        np.seed(seed)
+
 
     def collect_data(self):
         """
@@ -120,7 +121,7 @@ class VGGDataset:
             X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=False
         )  # 1 acquisition for validation & 1 acquisition for testing 
 
-            
+        X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
@@ -161,7 +162,6 @@ class VGGDataset:
             self.preprocess
         )  # apply the processing function on the couple (from path of raw image to sinongram)
         ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
-        ds = ds.shuffle()
         # ds = ds.prefetch(buffer_size=1024)
         return ds
 
@@ -218,5 +218,5 @@ if __name__ == "__main__":
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
-            print(x.shape)
-            print(y.shape)
+            print(x[i].shape)
+            print(y[i])
