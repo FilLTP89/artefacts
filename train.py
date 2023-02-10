@@ -42,7 +42,7 @@ def train(config):
         )
 
     config = wandb.config if config.wandb else config
-    gpus = tf.config.list_logical_devices("GPU")
+    gpus = tf.config.list_logical_devices("GPU") if len(tf.config.list_physical_devices("GPU")) > 0 else 1
     print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
     dataset = Dataset(
         height=config.img_size,
