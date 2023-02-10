@@ -10,13 +10,12 @@ import time
 
 
 def train():
-
     gpus = tf.config.list_logical_devices("GPU") if len(tf.config.list_physical_devices("GPU")) > 0 else 1
     print(f"Generating sample  with batch_size = {16 * len(gpus)}")
     dataset = VGGDataset(
         height=512,
         width=512,
-        batch_size=16 *len(gpus),
+        batch_size=32 *len(gpus),
         big_endian = True
     )
     
