@@ -48,6 +48,7 @@ def train(config):
         height=config.img_size,
         width=config.img_size,
         batch_size=config.batch_size * len(gpus),
+        big_endian = config.big_endian
     )
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
@@ -89,8 +90,8 @@ def train(config):
         )
     else:
         model.fit(
-            train_ds,
-            validation_data=valid_ds,
+            train_ds.take(5),
+            validation_data=valid_ds.take(5),
             epochs=config.epochs,
             verbose=1,
         )

@@ -10,12 +10,7 @@ import h5py
 
 
 """
-We know that corresponding image from the different folder 
-have the same name and that the input are in folder 2 & 4 while the the 
-label are in folder 1.
-So we will create couple 
-(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
-We will exploit that in order to create the training and test couples.
+Train VGG as a classifier between the different types of images in order to use it later as a feature extractor
 """
 
 
@@ -23,7 +18,7 @@ We will exploit that in order to create the training and test couples.
 # See how much volume they take, and how long we take to load them
 
 
-class Dataset:
+class VGGDataset:
     def __init__(
         self,
         path: str = "./data/",
@@ -109,8 +104,13 @@ class Dataset:
         """
         no_metal_list, high_metal_list, low_metal_list = self.collect_data()
 
-        label = 2 * no_metal_list
-        input = high_metal_list + low_metal_list
+        no_metal_label = np.zeros((len(no_metal_list), 1), dtype=np.int8) # label 0 for no_metal_image
+        low_metal_label = np.zeros((len(low_metal_list), 1), dtype=np.int8) + 1 # label 1 for low_metal images
+        high_metal_label = np.zeros((len(high_metal_list), 1), dtype=np.int8) + 2 # label 2 for high_metal images
+        
+
+        label =  np.concatenate([no_metal_label,higmetal_label, low_metal_label], axis = 0)
+        input = no_metal_list high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
             input, label, test_size=(2 / 11), random_state=self.seed, shuffle=False
         )  # 8 acquisition for training 
@@ -132,27 +132,17 @@ class Dataset:
 
         def f(x, y):
             x = x.decode("utf-8")
-            y = y.decode("utf-8")
             with_artefact = read_raw(
                 x,
                 image_size=(self.original_height, self.original_width),
                 big_endian=self.big_endian,
             )
-            without_artefact = read_raw(
-                y,
-                image_size=(self.original_height, self.original_width),
-                big_endian=self.big_endian,
-            )
-            return with_artefact, without_artefact
+            return with_artefact, y
 
-        input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
+        input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])
         input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
-        label = tf.expand_dims(label, axis=-1)  # (400,400) -> (400,400,1)
         input.set_shape([self.width, self.height, 1])
-        label.set_shape([self.width, self.height, 1])
-
         input = tf.image.resize(input, [self.width, self.height])
-        label = tf.image.resize(label, [self.width, self.height])
         return input, label
         
     def tf_dataset(self, x, y):
@@ -160,6 +150,7 @@ class Dataset:
         TO DO : Understand the buffer size
         TO DO : Add other parameters (maybe look on youtube)
         """
+        y =  tf.constant(y)
         ds = tf.data.Dataset.from_tensor_slices(
             (x, y)
         )  # Create a tf.data.Dataset from the couple
@@ -217,19 +208,11 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=8, big_endian=False)
+    dataset = VGGDataset(path="../data/", batch_size=8, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
             print(x.shape)
-            """ visualize_from_dataset(
-                x[i],
-                y[i],
-                big_endian=dataset.big_endian,
-                brightness_fact=4,
-            ) """
-    """ print("Saving dataset.... ")
-    dataset.save()
-    print("Dataset saved!") """
+            print(y.shape)

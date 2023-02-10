@@ -118,8 +118,8 @@ class MEDGAN(tf.keras.Model):
         self.lambda_2 = 1e-4
         self.lambda_3 = 1e-4
 
-        self.g_optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
-        self.d_optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
+        self.g_optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5, clipvalue = 5)
+        self.d_optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5, clipvalue = 5)
 
         self.generator = generator or ConsNet(6, self.shape)
         self.discriminator = discriminator or PatchGAN(self.shape)
@@ -167,7 +167,7 @@ class MEDGAN(tf.keras.Model):
                 y_true_feature = self.feature_extractor(y)
                 (
                     y_true_discriminator_features,
-                    y_true_discriminator_last_layer,
+                    _,
                 ) = self.discriminator(
                     y
                 )  # get the features of the discriminator and the output of the last layer for the true samples
@@ -242,32 +242,17 @@ class MEDGAN(tf.keras.Model):
     def test_step(self, data):
         x, y = data
         y_pred = self.generator(x)
-
-        (
-            y_pred_discriminator_features,
-            y_pred_discriminator_last_layer,
-        ) = self.discriminator(
-            y_pred
-        )  # get the features of the discriminator and the output of the last layer for the output of the generator
-
-        y_pred_feature = self.feature_extractor(
-            y_pred
-        )  # get the features of the feature extractor for the true samples
-
+        (y_pred_discriminator_features,y_pred_discriminator_last_layer) = self.discriminator(y_pred)  
+        # get the features of the discriminator and the output of the last layer for the output of the generator
+        y_pred_feature = self.feature_extractor(y_pred)  # get the features of the feature extractor for the true samples
         y_true_feature = self.feature_extractor(y)
-        (
-            y_true_discriminator_features,
-            y_true_discriminator_last_layer,
-        ) = self.discriminator(
-            y
-        )  # get the features of the discriminator and the output of the last layer for the true samples
+        (y_true_discriminator_features,y_true_discriminator_last_layer) = self.discriminator(y)  
+        # get the features of the discriminator and the output of the last layer for the true samples
 
         # gan loss
-        generator_gan_l = generator_gan_loss(y_pred_discriminator_features)
+        generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
         # perceptual loss
-        perceptual_l = perceptual_loss(
-            y_pred_discriminator_features, y_true_discriminator_features
-        )
+        perceptual_l = perceptual_loss(y_pred_discriminator_features, y_true_discriminator_features)
         # style loss
         style_l = style_loss(y_pred_feature, y_true_feature)
         # content loss
@@ -278,21 +263,21 @@ class MEDGAN(tf.keras.Model):
             + self.lambda_1 * perceptual_l
             + self.lambda_2 * style_l
             + self.lambda_3 * content_l
-        )
+            )
+            # Compute the gradiants of the loss with respect to the weights of the generator
+        y_hat = tf.concat([y_pred_discriminator_last_layer, y_true_discriminator_last_layer], axis=0)
         true_label = tf.concat(
-            [
-                tf.zeros_like(y_pred_discriminator_last_layer),
-                tf.ones_like(y_pred_discriminator_last_layer),
-            ]
-        )
-        y_hat = tf.concat(
-            [y_pred_discriminator_last_layer, y_true_discriminator_last_layer]
-        )
-        discriminator_l = discriminator_loss(y_hat, true_label)
-
+                [
+                    tf.zeros_like(y_pred_discriminator_last_layer),
+                    tf.ones_like(y_true_discriminator_last_layer),
+                ],
+                axis=0,
+            )
+        discriminator_l = discriminator_loss(true_label, y_hat)
+        # Compute the gradiants of the loss with respect to the weights of the discriminator
         return {
-            "content_loss": content_l,
             "style_loss": style_l,
+            "content_loss": content_l,
             "perceptual_loss": perceptual_l,
             "generator_gan_loss": generator_gan_l,
             "generator_loss": generator_loss,

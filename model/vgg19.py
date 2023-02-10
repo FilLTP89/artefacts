@@ -8,9 +8,10 @@ Implement a vgg19 model from scratch in order to control it outputs and use it a
 
 # TODO: Train this model on a public dataset of medical image keyworkd : Dental CT scans
 class VGG19(tf.keras.Model):
-    def __init__(self, shape=(512, 512, 1)):
+    def __init__(self, shape=(512, 512, 1), classifier_training = False):
         super().__init__()
         self.shape = shape
+        self.classifier_training = classifier_training
 
         # block 1
         self.conv1 = kl.Conv2D(64, (3, 3), activation="relu", padding="same")
@@ -31,9 +32,16 @@ class VGG19(tf.keras.Model):
         self.conv7 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.conv8 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
 
-        """
-        The fully connected layers are not implemented because we don't need them.
-        """
+
+        # Only need the last part in case we are training vgg as a classifier 
+        if self.classifier_training:
+            self.maxpool3 = kl.MaxPool2D((2, 2), strides=(2, 2))
+            self.flat = kl.Flatten()
+            self.dense1 = kl.Dense(4096, activation = "relu")
+            self.dense2 = kl.Dense(4096, activation = "relu")
+            self.dense3 = kl.Dense(4096, activation = "relu")
+            self.classifier = kl.Dense(3, activation = "softmax")
+        
 
     def call(self, input):
         x = self.conv1(input)
@@ -49,19 +57,14 @@ class VGG19(tf.keras.Model):
         x7 = self.conv7(x7)
         x8 = self.conv8(x7)
 
+        if self.classifier_training:
+            x = self.maxpool3(x8)
+            x = self.flat(x)
+            x = self.dense1(x)
+            x = self.dense2(x)
+            x = self.dense3(x)
+            x = self.classifier(x)
+            return x
+
         return [x, x2, x3, x4, x5, x6, x7, x8]
         # return the list of outut of each convolutional layer
-
-
-class pretrained_VGG19(tf.keras.Model):
-    def __init__(self):
-        self.vgg19 =tf.keras.applications.VGG19(
-            include_top=False,
-            weights="imagenet",
-            input_tensor=(512,512,1),
-            input_shape=None,
-            pooling=True,
-        )
-    def call(self,input):
-        return
-        

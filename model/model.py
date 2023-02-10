@@ -30,6 +30,6 @@ class Model:
                 input_shape=(self.height, self.width, 1),
             ).build_model()
         elif self.model_name == "MedGAN":
-            model = MEDGAN()
+            model = MEDGAN(learning_rate = self.learning_rate)
             model.compile()
             return model
