@@ -46,6 +46,8 @@ class VGGDataset:
         self.seed = seed
         self.big_endian = big_endian
 
+        np.seed(seed)
+
     def collect_data(self):
         """
         Create list of path of the raw image from each folder
@@ -109,8 +111,8 @@ class VGGDataset:
         high_metal_label = np.zeros((len(high_metal_list), 1), dtype=np.int8) + 2 # label 2 for high_metal images
         
 
-        label =  np.concatenate([no_metal_label,higmetal_label, low_metal_label], axis = 0)
-        input = no_metal_list high_metal_list + low_metal_list
+        label =  np.concatenate([no_metal_label,high_metal_label, low_metal_label], axis = 0)
+        input = no_metal_list +  high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
             input, label, test_size=(2 / 11), random_state=self.seed, shuffle=False
         )  # 8 acquisition for training 
@@ -118,6 +120,7 @@ class VGGDataset:
             X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=False
         )  # 1 acquisition for validation & 1 acquisition for testing 
 
+            
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
@@ -158,6 +161,7 @@ class VGGDataset:
             self.preprocess
         )  # apply the processing function on the couple (from path of raw image to sinongram)
         ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
+        ds = ds.shuffle()
         # ds = ds.prefetch(buffer_size=1024)
         return ds
 
