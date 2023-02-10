@@ -146,6 +146,7 @@ class VGGDataset:
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])
         input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
         input.set_shape([self.width, self.height, 1])
+        label.set_shape([1])
         input = tf.image.resize(input, [self.width, self.height])
         return input, label
         
@@ -217,6 +218,5 @@ if __name__ == "__main__":
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
-        for i in range(8):
-            print(x[i].shape)
-            print(y[i])
+        print(x.shape)
+        print(y)

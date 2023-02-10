@@ -68,3 +68,10 @@ class VGG19(tf.keras.Model):
 
         return [x, x2, x3, x4, x5, x6, x7, x8]
         # return the list of outut of each convolutional layer
+
+if __name__ == "__main__":
+    vgg = VGG19(classifier_training= True)
+    y = vgg(tf.random.normal((1, 512, 512, 1)))
+    print(y)
+    
+    
