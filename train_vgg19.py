@@ -42,8 +42,8 @@ def train():
         model = VGG19(classifier_training = True)
         model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=config.learning_rate),
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"],
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
         )
     print("Model Created!")
 
@@ -56,6 +56,10 @@ def train():
         epochs = config.epochs,
         callbacks=callbacks,
     )
+    """ y_pred = model.predict(test_ds)
+    y_pred = tf.argmax(y_pred, axis=1)
+    y_true = tf.concat([y for x, y in test_ds], axis=0)
+    wandb.log({"test_accuracy": tf.reduce_mean(tf.cast(tf.equal(y_true, y_pred), tf.float32))}) """
     model.save(f"{config.saving_path}/vgg19.h5")
 
 if __name__ == "__main__":

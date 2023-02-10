@@ -8,7 +8,8 @@ from sklearn.utils import shuffle
 from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
-
+import matplotlib.pyplot as plt
+from PIL import Image, ImageEnhance
 
 """
 Train VGG as a classifier between the different types of images in order to use it later as a feature extractor
@@ -213,10 +214,27 @@ class VGGDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = VGGDataset(path="../data/", batch_size=8, big_endian=True)
+    dataset = VGGDataset(path="../data/", batch_size=8, big_endian=False)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
-    for x, y in train_ds.take(1):
-        print(x.shape)
-        print(y)
+    if dataset.big_endian:
+        for x, y in train_ds.take(1):
+            for i in range(8):
+                image = Image.fromarray(np.array(tf.squeeze(x[i], axis=-1) * 255, dtype=np.uint8))
+                enhancer = ImageEnhance.Brightness(image)
+                image = enhancer.enhance(3)
+                image = np.array(image)
+                plt.subplot(2, 4, i + 1)
+                plt.imshow(image, cmap="gray")
+                plt.title(f"Label : {y[i]}")
+                plt.axis("off")
+            plt.show()
+    else:
+        for x, y in train_ds.take(1):
+            for i in range(8):
+                plt.subplot(2, 4, i + 1)
+                plt.imshow(x[i, :, :, :], cmap="gray")
+                plt.title(f"Label : {y[i]}")
+                plt.axis("off")
+            plt.show()
