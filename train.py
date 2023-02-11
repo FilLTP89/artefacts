@@ -20,6 +20,7 @@ def final_metrics(learn):
 def train(config):
     tf.random.set_seed(config.seed)
     t = time.localtime(time.time())
+    endian_path = "big_endian/" if config.big_endian else "little_endian/"
     if config.wandb:
         run = wandb.init(
             project=wandb_params.WANDB_PROJECT,
@@ -69,24 +70,15 @@ def train(config):
             verbose=1,
             callbacks=[
                 WandbMetricsLogger(),
+                WandbModelCheckpoint(
+                    filepath=config.saving_path + endian_path + "config.model{val_loss:.4f}",
+                    monitor="generator_loss",
+                    mode="min",
+                    save_weights_only=True,
+                    save_best_only=True,
+                    verbose=1,
+                ),
             ],
-        )
-    elif config.save:
-        callbacks = [
-            tf.keras.callbacks.ModelCheckpoint(
-                filepath="model/saved_models/" + config.run_name + ".h5",
-                save_best_only=True,
-                monitor="val_loss",
-                mode="min",
-                verbose=1,
-            )
-        ]
-        model.fit(
-            train_ds,
-            validation_data=valid_ds,
-            epochs=config.epochs,
-            verbose=1,
-            callbacks=callbacks,
         )
     else:
         model.fit(
@@ -95,13 +87,8 @@ def train(config):
             epochs=config.epochs,
             verbose=1,
         )
-
+    model.save(config.saving_path + endian_path + config.model)
     print("Training Done!")
-    """ 
-    print("Start Testing...")
-    preds = model.predict(test_ds)
-    print("Testing Done!") 
-    """
 
 
 if __name__ == "__main__":
