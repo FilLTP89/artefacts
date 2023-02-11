@@ -16,7 +16,7 @@ def train():
         epochs = 10,
         learning_rate = 3e-4,
         big_endian = True,
-        saving_path = "model/saved_models/vgg19",
+        saving_path = "model/saved_models/VGG19",
         project_name = "Training_VGG19",
     )
     wandb.init(
@@ -60,7 +60,11 @@ def train():
     y_pred = tf.argmax(y_pred, axis=1)
     y_true = tf.concat([y for x, y in test_ds], axis=0)
     wandb.log({"test_accuracy": tf.reduce_mean(tf.cast(tf.equal(y_true, y_pred), tf.float32))}) """
-    model.save(f"{config.saving_path}/vgg19.h5")
+    if config.big_endian:
+        model.save_weights(config.saving_path + "/big_endian/cpkt")
+    else:
+        model.save_weights(config.saving_path + "/little_endian/cpkt")
+
 
 if __name__ == "__main__":
     train()

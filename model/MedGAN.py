@@ -275,6 +275,8 @@ class MEDGAN(tf.keras.Model):
             )
         discriminator_l = discriminator_loss(true_label, y_hat)
         # Compute the gradiants of the loss with respect to the weights of the discriminator
+        
+        
         return {
             "style_loss": style_l,
             "content_loss": content_l,
