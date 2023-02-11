@@ -32,7 +32,7 @@ class Dataset:
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
-        test_saving_path: str = "data/",
+        test_saving_path: str = "test/",
         seed: int = 42,
         big_endian: bool = False,
     ) -> None:
@@ -207,13 +207,15 @@ class Dataset:
         else:
             self.train_ds.save(self.train_saving_path)
             self.test_ds.save(self.test_saving_path)
+            self.valid_ds.save(self.valid_saving_path)
 
-    def load(self, path):
+    def load(self):
         """
         TO DO : Loading h5 file.
         """
-        dataset = tf.data.Dataset.load(path)
-        return dataset
+        self.train_ds = tf.data.Dataset.load(self.train_saving_path)
+        self.test_ds = tf.data.Dataset.load(self.test_saving_path)
+        self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
 
 
 if __name__ == "__main__":
