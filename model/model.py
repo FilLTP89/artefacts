@@ -3,6 +3,7 @@ from ResUNET_a_d6 import ResUNet
 from Unet import Unet
 from baseline import Baseline
 from MedGAN import MEDGAN
+from VGG19 import VGG19
 
 class Model:
     def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = False) -> None:
@@ -39,6 +40,14 @@ class Model:
                 model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg)
                 model.compile()
             else :
-                model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg)
+                model = MEDGAN(learning_rate = self.learning_rate)
                 model.compile()
+            return model
+        elif self.model_name == "VGG19":
+            model = VGG19(classifier_training = True)
+            model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+            metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
+            )
             return model
