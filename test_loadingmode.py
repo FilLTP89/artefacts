@@ -6,7 +6,7 @@ from data_file.processing_vgg import VGGDataset
 if __name__ == "__main__":
     model = VGG19(classifier_training=True)
     model.build(input_shape = (None,512,512,1))
-    model.load_weights("model/saved_models/VGG19/low_endian/VGG1902.")
+    model.load_weights("model/saved_models/VGG19/low_endian/VGG1902")
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=3e-4),
             loss=tf.keras.losses.SparseCategoricalCrossentropy(),
             metrics=tf.keras.metrics.SparseCategoricalAccuracy(),

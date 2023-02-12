@@ -50,9 +50,9 @@ class Model:
             return model
 
 def load_vgg19():
-    vgg = VGG19(classifier_training=False)
-    vgg.build(input_shape = (None,512,512,1))
-    vgg.load_weights("model/saved_models/VGG19/low_endian/cp.ckpt")
-    for layer in vgg.layers:
+    model = VGG19(classifier_training=False)
+    model.build(input_shape = (None,512,512,1))
+    model.load_weights("model/saved_models/VGG19/low_endian/VGG1902")
+    for layer in model.layers:
         layer.trainable = False
-    return vgg
+    return model
