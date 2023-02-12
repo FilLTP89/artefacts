@@ -22,17 +22,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     endian_path = "big_endian/" if config.big_endian else "low_endian/"
     if config.wandb :
         callbacks = [
-            WandbMetricsLogger(),
-            WandbModelCheckpoint(
-                filepath= config.saving_path + endian_path + "cp.ckpt",
-                monitor="val_loss",
-                mode="min",
-                save_best_only=True,
-                save_weights_only=True,
-                save_freq="epoch",
-                verbose=1,
-            ),
-            ]
+            WandbMetricsLogger(),]
     if config.model == "VGG19":
         model.fit(
                 train_ds,
@@ -49,6 +39,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 callbacks=callbacks,
         
             )
+    model.save(config.saving_path + endian_path + "model.hdf5")
 
 def initalize_project_name(config):
     project_name = "MedGAN" if config.model == "MedGAN" else "VGG19"

@@ -118,7 +118,7 @@ class Dataset:
             X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
         )  # 1 acquisition for validation & 1 acquisition for testing 
 
-        X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
+        #X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
