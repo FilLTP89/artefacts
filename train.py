@@ -19,12 +19,12 @@ def final_metrics(learn):
 
 def fit_model(model, config, train_ds, valid_ds, test_ds):
     callbacks = []
-    endian_path = "big_endian/" if config.big_endian else "little_endian/"
+    endian_path = "big_endian/" if config.big_endian else "low_endian/"
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
             WandbModelCheckpoint(
-                filepath= config.saving_path + endian_path + "config.model{val_loss:.4f}",
+                filepath= config.saving_path + endian_path + "cp.ckpt",
                 monitor="val_loss",
                 mode="min",
                 save_best_only=True,

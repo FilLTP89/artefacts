@@ -33,11 +33,8 @@ class Model:
             ).build_model()
         elif self.model_name == "MedGAN":
             if self.pretrained_vgg:
-                vgg = tf.keras.models.load_model("saved_models/vgg19/vgg19.h5")
-                # Freeze the layers
-                for layer in vgg.layers:
-                    layer.trainable = False
-                model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg)
+                vgg19 = load_vgg19()
+                model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg19)
                 model.compile()
             else :
                 model = MEDGAN(learning_rate = self.learning_rate)
@@ -51,3 +48,10 @@ class Model:
             metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
             )
             return model
+
+def load_vgg19():
+    vgg = VGG19()
+    vgg.load_weights("model/saved_models/VGG19/big_endian")
+    for layer in vgg.layers:
+        layer.trainable = False
+    return vgg
