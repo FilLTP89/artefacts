@@ -50,13 +50,18 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         
             )
 
+def initalize_project_name(config):
+    project_name = "MedGAN" if config.model == "MedGAN" else "VGG19"
+    project_name += "_big_endian" if config.big_endian else "_little_endian"
+    return project_name
+
 
 def train(config):
     tf.random.set_seed(config.seed)
-    t = time.localtime(time.time())
+    t = time.localtime(time.time())   
     if config.wandb:
         run = wandb.init(
-            project=wandb_params.WANDB_PROJECT,
+            project=initalize_project_name(config),
             job_type="train",
             config=config,
             name=config.model
@@ -78,7 +83,7 @@ def train(config):
     config = wandb.config if config.wandb else config
     gpus = tf.config.list_logical_devices("GPU") if len(tf.config.list_physical_devices("GPU")) > 0 else 1
     print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
-    if config.model == "vgg19":
+    if config.model == "VGG19":
         dataset = VGGDataset(
             height=config.img_size,
             width=config.img_size,
