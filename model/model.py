@@ -6,7 +6,7 @@ from MedGAN import MEDGAN
 from vgg19 import VGG19
 
 class Model:
-    def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = False) -> None:
+    def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = True) -> None:
         super().__init__()
 
         self.model_name = model_name
@@ -50,8 +50,9 @@ class Model:
             return model
 
 def load_vgg19():
-    vgg = VGG19()
-    vgg.load_weights("model/saved_models/VGG19/big_endian")
+    vgg = VGG19(classifier_training=False)
+    vgg.build(input_shape = (None,512,512,1))
+    vgg.load_weights("model/saved_models/VGG19/low_endian/cp.ckpt")
     for layer in vgg.layers:
         layer.trainable = False
     return vgg

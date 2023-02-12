@@ -19,4 +19,6 @@ if __name__ == "__main__":
     )
     dataset.setup()
     _, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
+    for layer in model.layers:
+        layer.trainable = False
     model.evaluate(valid_ds)
