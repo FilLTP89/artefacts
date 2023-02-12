@@ -24,7 +24,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         callbacks = [
             WandbMetricsLogger(),
             WandbModelCheckpoint(
-                filepath=config.saving_path + endian_path + "cp.ckpt",
+                filepath=config.saving_path + endian_path +config.model +"{epoch:02d}",
                 monitor="val_loss",
                 mode="min",
                 save_best_only=True,
@@ -46,7 +46,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 callbacks=callbacks,
         
             )
-    model.save(config.saving_path + endian_path + "model.hdf5")
+    model.save(config.saving_path + endian_path + "model.ckpt")
 
 def initalize_project_name(config):
     project_name = "MedGAN" if config.model == "MedGAN" else "VGG19"
