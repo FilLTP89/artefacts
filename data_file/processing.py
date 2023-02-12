@@ -112,10 +112,10 @@ class Dataset:
         label = 2 * no_metal_list
         input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=False
+            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
         )  # 8 acquisition for training 
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=False
+            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
         )  # 1 acquisition for validation & 1 acquisition for testing 
 
         X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)

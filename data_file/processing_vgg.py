@@ -96,33 +96,29 @@ class VGGDataset:
         high_metal_list = [item for sublist in high_metal_folder for item in sublist]
         low_metal_list = [item for sublist in low_metal_folder for item in sublist]
 
-        return (
-            no_metal_list,
-            high_metal_list,
-            low_metal_list,
-        )
+        return (no_metal_list, high_metal_list, low_metal_list)
 
     def load_data(self):
         """
         Generate the training and testing (X,y) couple using the previously generated list
         """
         no_metal_list, high_metal_list, low_metal_list = self.collect_data()
-
         no_metal_label = np.zeros((len(no_metal_list), 1), dtype=np.int8) # label 0 for no_metal_image
         low_metal_label = np.zeros((len(low_metal_list), 1), dtype=np.int8) + 1 # label 1 for low_metal images
         high_metal_label = np.zeros((len(high_metal_list), 1), dtype=np.int8) + 2 # label 2 for high_metal images
-        
 
         label =  np.concatenate([no_metal_label,high_metal_label, low_metal_label], axis = 0)
         input = no_metal_list +  high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=False
+            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
         )  # 8 acquisition for training 
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=False
+            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
         )  # 1 acquisition for validation & 1 acquisition for testing 
 
         X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
+        X_test, y_test = shuffle(X_test, y_test, random_state=self.seed)
+        X_valid, y_valid = shuffle(X_valid, y_valid, random_state=self.seed)
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
@@ -219,7 +215,7 @@ if __name__ == "__main__":
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     if dataset.big_endian:
-        for x, y in train_ds.take(1):
+        for x, y in test_ds.take(1):
             for i in range(8):
                 image = Image.fromarray(np.array(tf.squeeze(x[i], axis=-1) * 255, dtype=np.uint8))
                 enhancer = ImageEnhance.Brightness(image)
@@ -231,10 +227,11 @@ if __name__ == "__main__":
                 plt.axis("off")
             plt.show()
     else:
-        for x, y in train_ds.take(1):
+        for x, y in test_ds.take(3):
+            print(y)
             for i in range(8):
-                plt.subplot(2, 4, i + 1)
+                """plt.subplot(2, 4, i + 1)
                 plt.imshow(x[i, :, :, :], cmap="gray")
                 plt.title(f"Label : {y[i]}")
-                plt.axis("off")
-            plt.show()
+                plt.axis("off") """
+            #plt.show()

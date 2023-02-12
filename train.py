@@ -52,7 +52,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
 
 def initalize_project_name(config):
     project_name = "MedGAN" if config.model == "MedGAN" else "VGG19"
-    project_name += "_big_endian" if config.big_endian else "_little_endian"
+    project_name += "_big_endian" if config.big_endian else "_low_endian"
     return project_name
 
 
