@@ -18,7 +18,7 @@ default_config = SimpleNamespace(
     gpus=1,
     mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
-    big_endian=True,
+    big_endian=False,
 )
 
 

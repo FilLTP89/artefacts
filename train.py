@@ -33,7 +33,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 verbose=1,
             ),
             ]
-    if config.model == "vgg19":
+    if config.model == "VGG19":
         model.fit(
                 train_ds,
                 validation_data=valid_ds,
@@ -54,7 +54,6 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
 def train(config):
     tf.random.set_seed(config.seed)
     t = time.localtime(time.time())
-    
     if config.wandb:
         run = wandb.init(
             project=wandb_params.WANDB_PROJECT,

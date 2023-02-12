@@ -3,7 +3,7 @@ from ResUNET_a_d6 import ResUNet
 from Unet import Unet
 from baseline import Baseline
 from MedGAN import MEDGAN
-from VGG19 import VGG19
+from vgg19 import VGG19
 
 class Model:
     def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = False) -> None:
