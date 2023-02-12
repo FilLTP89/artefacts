@@ -20,7 +20,7 @@ class Model:
             return ResUNet(
                 input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
-                nb_class=1,
+                  nb_class=1,
             ).build_model()
         elif self.model_name == "Unet":
             return Unet(

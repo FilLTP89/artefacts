@@ -7,7 +7,7 @@ wandb/
 images/
 playground/
 ruche_log/
-
+model/saved_models/
 *.onnx
 *.gz
 sftp.json
