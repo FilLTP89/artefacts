@@ -22,7 +22,14 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     endian_path = "big_endian/" if config.big_endian else "low_endian/"
     if config.wandb :
         callbacks = [
-            WandbMetricsLogger(),]
+            WandbMetricsLogger(),
+            WandbModelCheckpoint(
+                filepath=config.saving_path + endian_path + "cp.ckpt",
+                monitor="val_loss",
+                mode="min",
+                save_best_only=True,
+                save_weights_only=True,
+            )]
     if config.model == "VGG19":
         model.fit(
                 train_ds,
