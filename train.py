@@ -24,7 +24,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
-            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/")]
+            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/", save_weights_only=True)]
     model.fit(
                 train_ds,
                 validation_data=valid_ds,
@@ -93,7 +93,10 @@ def train(config):
         print("Model Created!")
 
     print("Start Training")
-    fit_model(model, config, train_ds, valid_ds, test_ds)
+    if config.one_batch_training :
+        fit_model(model, config, train_ds.take(1), valid_ds.take(1), test_ds.take(1))
+    else:
+        fit_model(model, config, train_ds, valid_ds, test_ds)
     print("Training Done!")
 
 

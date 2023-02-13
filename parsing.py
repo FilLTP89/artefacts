@@ -19,6 +19,7 @@ default_config = SimpleNamespace(
     mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
     big_endian=False,
+    one_batch_training =False
 )
 
 

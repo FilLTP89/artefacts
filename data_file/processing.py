@@ -226,7 +226,6 @@ if __name__ == "__main__":
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
-            print(x.shape)
             visualize_from_dataset(
                 x[i],
                 y[i],
