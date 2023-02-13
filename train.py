@@ -24,7 +24,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
-            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/", save_weights_only=True)]
+            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/.h5")]
     model.fit(
                 train_ds,
                 validation_data=valid_ds,
