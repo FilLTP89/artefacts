@@ -20,6 +20,7 @@ def final_metrics(learn):
 def fit_model(model, config, train_ds, valid_ds, test_ds):
     callbacks = []
     endian_path = "big_endian/" if config.big_endian else "low_endian/"
+    model.compute_output_shape(input_shape=(None, 512, 512, 1))
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),

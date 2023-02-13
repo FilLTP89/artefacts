@@ -136,6 +136,15 @@ class MEDGAN(tf.keras.Model):
             name="discriminator_loss"
         )
 
+    @property
+    def metrics(self):
+        # We list our `Metric` objects here so that `reset_states()` can be
+        # called automatically at the start of each epoch
+        # or at the start of `evaluate()`.
+        # If you don't implement this property, you have to call
+        # `reset_states()` yourself at the time of your choosing.
+        return [self.style_loss_tracker, self.content_loss_tracker,
+         self.perceptual_loss_tracker, self.generator_gan_loss_tracker, self.generator_loss_tracker, self.discriminator_loss_tracker]
 
     def train_step(self, data):
         x, y = data
@@ -231,14 +240,33 @@ class MEDGAN(tf.keras.Model):
         true_label = tf.concat([tf.zeros_like(y_pred_discriminator_last_layer),tf.ones_like(y_true_discriminator_last_layer)],axis=0,)
         discriminator_l = discriminator_loss(true_label, y_hat)
         # Compute the gradiants of the loss with respect to the weights of the discriminator
+
+
+
+        # Try to do it the same way as the training step
+        self.style_loss_tracker.update_state(style_l)
+        self.content_loss_tracker.update_state(content_l)
+        self.perceptual_loss_tracker.update_state(perceptual_l)
+        self.generator_gan_loss_tracker.update_state(generator_gan_l)
+        self.generator_loss_tracker.update_state(generator_loss)
+        self.discriminator_loss_tracker.update_state(discriminator_l)
+
         return {
+            "style_loss": self.style_loss_tracker.result(),
+            "content_loss": self.content_loss_tracker.result(),
+            "perceptual_loss": self.perceptual_loss_tracker.result(),
+            "generator_gan_loss": self.generator_gan_loss_tracker.result(),
+            "generator_loss": self.generator_loss_tracker.result(),
+            "discriminator_loss": self.discriminator_loss_tracker.result(),
+        }
+        """ return {
             "style_loss": style_l,
             "content_loss": content_l,
             "perceptual_loss": perceptual_l,
             "generator_gan_loss": generator_gan_l,
             "generator_loss": generator_loss,
             "discriminator_loss": discriminator_l,
-        }
+        } """
     def call(self, x):
         return self.generator(x)
 
