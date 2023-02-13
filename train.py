@@ -107,7 +107,7 @@ def train(config):
         print("Model Created!")
 
     print("Start Training")
-    fit_model(model, config, train_ds, valid_ds, test_ds)
+    fit_model(model, config, train_ds.take(1), valid_ds.take(1), test_ds)
     print("Training Done!")
 
 
