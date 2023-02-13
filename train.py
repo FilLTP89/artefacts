@@ -23,13 +23,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
-            WandbModelCheckpoint(
-                filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/",
-                monitor="generator_loss",
-                mode="min",
-                save_best_only=True,
-                save_weights_only=True,
-            )]
+            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/")]
     if config.model == "VGG19":
         model.fit(
                 train_ds,
