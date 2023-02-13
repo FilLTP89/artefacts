@@ -8,7 +8,7 @@ from model.model import Model
 def load_model(model_name="ResUnet", model_path=None):
     model = Model("MedGAN", pretrained_vgg=False).build_model()
     model.build(input_shape = (None,512,512,1))
-    model.load_weights("/Users/hugo/DeepLearning/projet_these/artefacts/model/saved_models/low_endian/model.ckpt")
+    model.load_weights("model/saved_models/MedGAN/low_endian/MedGAN01/model.ckpt")
     return model
 
 
