@@ -6,16 +6,13 @@ from model.model import Model
 
 
 def load_model(model_name="ResUnet", model_path=None):
-    if model_name == "ResUnet":
-        model = tf.keras.models.load_model(
-            "model/saved_models/big_endian/ResUnet.h5", custom_objects={"ssim": ssim}
-        )
-    elif model_name == "Baseline":
-        model = Model("Baseline").build_model()
+    model = Model("MedGAN", pretrained_vgg=False).build_model()
+    model.build(input_shape = (None,512,512,1))
+    model.load_weights("/Users/hugo/DeepLearning/projet_these/artefacts/model/saved_models/low_endian/model.ckpt")
     return model
 
 
-def test(big_endian=True, model_name="ResUnet"):
+def test(big_endian=False, model_name="ResUnet"):
     gpus = tf.config.list_logical_devices("GPU")
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
@@ -33,37 +30,25 @@ def test(big_endian=True, model_name="ResUnet"):
 
 def generate_image():
     print("Generate model...")
-    model = tf.keras.models.load_model(
-        "model/saved_models/ResUnet.h5", custom_objects={"ssim": ssim}
-    )
+    model = Model("MedGAN", pretrained_vgg=False).build_model()
+    model.build(input_shape = (None,512,512,1))
+    model.load_weights("/Users/hugo/DeepLearning/projet_these/artefacts/model/saved_models/low_endian/model.ckpt")
+    model = model.generator
     print("Model generated!")
-    dataset = Dataset(height=512, width=512, batch_size=32, big_endian=True)
+
+    dataset = Dataset(height=512, width=512, batch_size=32, big_endian=False)
     dataset.setup()
     batch = 0
-    """ 
-    print("Generating test images...")
-    for x, y in dataset.test_ds:
-        preds = model(x)
-        for i in range(8):
-            save_file(x[i], preds[i], y[i], name=f"test_batch{batch}_sample_{i}")
-        batch += 1 
-    """
     print("Generating train images...")
-    for x, y in dataset.train_ds:
+    for x, y in dataset.train_ds.take(1):
         preds = model(x)
+        print("t2")
         for i in range(8):
-            save_file(x[i], preds[i], y[i], name=f"train_batch{batch}_sample_{i}")
+            save_file(x[i], preds[i], y[i], name=f"train_batch{batch}_sample_{i}",big_endian=False)
         batch += 1
-    print("Generating valid images...")
-    """"
-    for x, y in valid_ds.train_ds:
-        preds = model(x)
-        for i in range(8):
-            save_file(x[i], preds[i], y[i], name=f"valid_batch{batch}_sample_{i}")
-        batch += 1 
-    """
+
 
 
 if __name__ == "__main__":
-    # generate_image()
-    test(model_name="Baseline")
+    generate_image()
+    #test(model_name="Baseline")

@@ -136,16 +136,6 @@ class MEDGAN(tf.keras.Model):
             name="discriminator_loss"
         )
 
-    @property
-    def metrics(self):
-        return [
-            self.style_loss_tracker,
-            self.content_loss_tracker,
-            self.perceptual_loss_tracker,
-            self.generator_gan_loss_tracker,
-            self.generator_loss_tracker,
-            self.discriminator_loss_tracker,
-        ]
 
     def train_step(self, data):
         x, y = data
@@ -224,9 +214,9 @@ class MEDGAN(tf.keras.Model):
         # gan loss
         generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
         # perceptual loss
-        perceptual_l = perceptual_loss(y_true_discriminator_features,y_pred_discriminator_features )
+        perceptual_l = perceptual_loss(y_true_discriminator_features,y_pred_discriminator_features)
         # style loss
-        style_l = style_loss(y_true_feature,y_pred_feature )
+        style_l = style_loss(y_true_feature,y_pred_feature)
         # content loss
         content_l = content_loss(y_true_feature,y_pred_feature)
 
@@ -249,7 +239,8 @@ class MEDGAN(tf.keras.Model):
             "generator_loss": generator_loss,
             "discriminator_loss": discriminator_l,
         }
-
+    def call(self, x):
+        return self.generator(x)
 
         
 if __name__ == "__main__":

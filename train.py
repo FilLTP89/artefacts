@@ -24,16 +24,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         callbacks = [
             WandbMetricsLogger(),
             WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/")]
-    if config.model == "VGG19":
-        model.fit(
-                train_ds,
-                validation_data=valid_ds,
-                epochs=config.epochs,
-                callbacks=callbacks,
-        
-            )
-    elif config.model == "MedGAN":
-        model.fit(
+    model.fit(
                 train_ds,
                 validation_data=valid_ds,
                 epochs=config.epochs,
@@ -101,7 +92,7 @@ def train(config):
         print("Model Created!")
 
     print("Start Training")
-    fit_model(model, config, train_ds.take(1), valid_ds.take(1), test_ds)
+    fit_model(model, config, train_ds, valid_ds, test_ds)
     print("Training Done!")
 
 

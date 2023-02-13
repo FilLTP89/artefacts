@@ -147,8 +147,8 @@ class Dataset:
             return with_artefact, without_artefact
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
-        input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
-        label = tf.expand_dims(label, axis=-1)  # (400,400) -> (400,400,1)
+        input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
+        label = tf.expand_dims(label, axis=-1)  # (Height,Width) -> (Height,Width,1)
         input.set_shape([self.width, self.height, 1])
         label.set_shape([self.width, self.height, 1])
 

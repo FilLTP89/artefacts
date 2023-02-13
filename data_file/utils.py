@@ -12,18 +12,24 @@ def save_file(
     path="images/generated_images/",
     extension=".png",
     brightness_fact=3,
+    big_endian=False,
 ):
-    x = Image.fromarray(np.array(tf.squeeze(x, axis=-1) * 255, dtype=np.uint8))
-    preds = Image.fromarray(np.array(tf.squeeze(preds, axis=-1) * 255, dtype=np.uint8))
-    y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) * 255, dtype=np.uint8))
+    if big_endian:
+        x = Image.fromarray(np.array(tf.squeeze(x, axis=-1) * 255, dtype=np.uint8))
+        preds = Image.fromarray(np.array(tf.squeeze(preds, axis=-1) * 255, dtype=np.uint8))
+        y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) * 255, dtype=np.uint8))
 
-    enhancer_x = ImageEnhance.Brightness(x)
-    enhancer_preds = ImageEnhance.Brightness(preds)
-    enhancer_y = ImageEnhance.Brightness(y)
+        enhancer_x = ImageEnhance.Brightness(x)
+        enhancer_preds = ImageEnhance.Brightness(preds)
+        enhancer_y = ImageEnhance.Brightness(y)
 
-    x = enhancer_x.enhance(brightness_fact)
-    preds = enhancer_preds.enhance(brightness_fact)
-    y = enhancer_y.enhance(brightness_fact)
+        x = enhancer_x.enhance(brightness_fact)
+        preds = enhancer_preds.enhance(brightness_fact)
+        y = enhancer_y.enhance(brightness_fact)
+    else:
+        x = Image.fromarray(np.array(tf.squeeze(x, axis=-1),))
+        preds = Image.fromarray(np.array(tf.squeeze(preds) ))
+        y = Image.fromarray(np.array(tf.squeeze(y, axis=-1) ))
 
     plt.imsave(
         path + name + "_original_image" + extension,
