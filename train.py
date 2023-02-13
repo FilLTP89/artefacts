@@ -25,7 +25,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
             WandbMetricsLogger(),
             WandbModelCheckpoint(
                 filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/",
-                monitor="val_loss",
+                monitor="generator_loss",
                 mode="min",
                 save_best_only=True,
                 save_weights_only=True,
