@@ -79,7 +79,8 @@ def train(config):
         learning_rate= config.learning_rate, 
         big_endian= config.big_endian).build_model()
 
-        model.compute_output_shape(input_shape=(None, 512, 512, 1))
+        if config.model == "MedGAN":
+            model.compute_output_shape(input_shape=(None, 512, 512, 1))
         print("Model Created!")
 
     print("Start Training")
