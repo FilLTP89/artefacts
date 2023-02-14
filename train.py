@@ -31,7 +31,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 callbacks=callbacks,
         
             )
-    #tf.saved_model.save(model,config.saving_path + endian_path + config.model+ "/")
+    model.save_weights(config.saving_path + endian_path + config._settings.run_name +"/last_save/model.ckpt")
     model.evaluate(test_ds)
 
 def initalize_project_name(config):
@@ -74,7 +74,12 @@ def train(config):
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
         print("Creating the model ...")
-        model = Model(config.model, config.img_size, config.learning_rate).build_model()
+        model = Model(
+        model_name = config.model,
+        input_shape =config.img_size,
+        learning_rate= config.learning_rate, 
+        big_endian= config.big_endian).build_model()
+
         model.compute_output_shape(input_shape=(None, 512, 512, 1))
         print("Model Created!")
 

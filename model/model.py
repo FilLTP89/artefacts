@@ -6,7 +6,7 @@ from MedGAN import MEDGAN
 from vgg19 import VGG19
 
 class Model:
-    def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = True) -> None:
+    def __init__(self, model_name, input_shape=512, learning_rate=3e-4, pretrained_vgg = True, big_endian = True) -> None:
         super().__init__()
 
         self.model_name = model_name
@@ -14,6 +14,7 @@ class Model:
         self.width = input_shape
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
+        self.big_endian = big_endian
 
     def build_model(self):
         if self.model_name == "ResUnet":
@@ -33,7 +34,7 @@ class Model:
             ).build_model()
         elif self.model_name == "MedGAN":
             if self.pretrained_vgg:
-                vgg19 = load_vgg19()
+                vgg19 = load_vgg19(big_endian= self.big_endian)
                 model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg19)
                 model.compile()
             else :

@@ -19,7 +19,7 @@ default_config = SimpleNamespace(
     mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
     big_endian=False,
-    one_batch_training =True
+    one_batch_training=False
 )
 
 
@@ -104,6 +104,12 @@ def parse_args():
         "--saving_path",
         default=default_config.saving_path,
         help="Path to save model",
+    )
+    argparser.add_argument(
+        "--one_batch_training",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.one_batch_training,
+        help="Train on one batch",
     )
 
     args = argparser.parse_args()
