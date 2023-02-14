@@ -24,7 +24,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
-            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}.h5")] # Try saving using hdf5
+            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.run_name +"{epoch:02d}.h5")] # Try saving using hdf5
             #WandbModelCheckpoint(filepath=config.saving_path + endian_path + config.model +"{epoch:02d}/cp.ckpt")] # Try not making it a directory ?
     model.fit(
                 train_ds,
@@ -50,20 +50,6 @@ def train(config):
             project=initalize_project_name(config),
             job_type="train",
             config=config,
-            name=config.model
-            + "_img_size_"
-            + str(config.img_size)
-            + "_batchsize_"
-            + str(config.batch_size)
-            + "_nbepochs_"
-            + str(config.epochs)
-            + "_lr_"
-            + str(config.learning_rate)
-            + "_"
-            + str(t.tm_mday)
-            + "d"
-            + str(t.tm_hour)
-            + "h",
         )
 
     config = wandb.config if config.wandb else config
