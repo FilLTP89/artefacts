@@ -49,10 +49,13 @@ class Model:
             )
             return model
 
-def load_vgg19():
+def load_vgg19(big_endian = True):
     model = VGG19(classifier_training=False)
     model.build(input_shape = (None,512,512,1))
-    model.load_weights("model/saved_models/VGG19/low_endian/VGG1902")
+    if big_endian:
+        model.load_weights("model/saved_models/VGG19/big_endian/VGG1910")
+    else:
+        model.load_weights("model/saved_models/VGG19/low_endian/VGG1902")
     for layer in model.layers:
         layer.trainable = False
     return model
