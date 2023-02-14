@@ -106,6 +106,7 @@ class MEDGAN(tf.keras.Model):
         feature_extractor=None,
         learning_rate = 3e-5,
         N_g=3,
+        vgg_whole_arc = False
     ):
         super().__init__()
 
@@ -123,7 +124,7 @@ class MEDGAN(tf.keras.Model):
 
         self.generator = generator or ConsNet(6, self.shape)
         self.discriminator = discriminator or PatchGAN(self.shape)
-        self.feature_extractor = feature_extractor or VGG19(self.shape)
+        self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture = vgg_whole_arc)
 
         self.style_loss_tracker = tf.keras.metrics.Mean(name="style_loss")
         self.content_loss_tracker = tf.keras.metrics.Mean(name="content_loss")
@@ -259,14 +260,6 @@ class MEDGAN(tf.keras.Model):
             "generator_loss": self.generator_loss_tracker.result(),
             "discriminator_loss": self.discriminator_loss_tracker.result(),
         }
-        """ return {
-            "style_loss": style_l,
-            "content_loss": content_l,
-            "perceptual_loss": perceptual_l,
-            "generator_gan_loss": generator_gan_l,
-            "generator_loss": generator_loss,
-            "discriminator_loss": discriminator_l,
-        } """
     def call(self, x):
         return self.generator(x)
 

@@ -5,7 +5,7 @@
 #SBATCH --mem=80GB
 #SBATCH --output=ruche_log/output.txt
 #SBATCH --error=ruche_log/error.txt
-#SBATCH --time=10:00:00
+#SBATCH --time=24:00:00
 #SBATCH --ntasks=1
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100

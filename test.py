@@ -6,9 +6,9 @@ from model.model import Model
 
 
 def load_model(model_name="ResUnet", model_path=None):
-    model = Model("MedGAN", pretrained_vgg=False).build_model()
+    model = Model("MedGAN", vgg_whole_arc = True).build_model()
     model.build(input_shape = (None,512,512,1))
-    model.load_weights("model/saved_models/MedGAN/low_endian/MedGAN01/model.ckpt")
+    model.load_weights("model/saved_models/MedGAN/bi_endian/MedGAN09/model.ckpt").expect_partial()
     return model
 
 
