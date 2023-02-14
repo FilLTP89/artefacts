@@ -53,7 +53,7 @@ def load_vgg19(big_endian = True):
     model = VGG19(classifier_training=False)
     model.build(input_shape = (None,512,512,1))
     if big_endian:
-        model.load_weights("model/saved_models/VGG19/big_endian/VGG1910")
+        model.load_weights("model/saved_models/VGG19/big_endian/VGG1910/model.ckpt")
     else:
         model.load_weights("model/saved_models/VGG19/low_endian/VGG1902")
     for layer in model.layers:
