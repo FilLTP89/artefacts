@@ -183,10 +183,8 @@ class MEDGAN(tf.keras.Model):
         with tf.GradientTape() as disc_tape:
             _, y_pred_discriminator = self.discriminator(y_pred)
             _, y_true_discriminator = self.discriminator(y)
-            y_hat = tf.concat([y_pred_discriminator, y_true_discriminator], axis=0)
-            true_label = tf.concat([tf.zeros_like(y_pred_discriminator),tf.ones_like(y_true_discriminator)],axis=0)
             # Discriminator loss
-            discriminator_l = discriminator_loss(true_label, y_hat)
+            discriminator_l = discriminator_loss(y_true_discriminator, y_pred_discriminator)
 
             # Compute the gradiants of the loss with respect to the weights of the discriminator
         disc_grads = disc_tape.gradient(discriminator_l, self.discriminator.trainable_weights)
@@ -237,9 +235,7 @@ class MEDGAN(tf.keras.Model):
             + self.lambda_3 * content_l
             )
             # Compute the gradiants of the loss with respect to the weights of the generator
-        y_hat = tf.concat([y_pred_discriminator_last_layer, y_true_discriminator_last_layer], axis=0)
-        true_label = tf.concat([tf.zeros_like(y_pred_discriminator_last_layer),tf.ones_like(y_true_discriminator_last_layer)],axis=0,)
-        discriminator_l = discriminator_loss(true_label, y_hat)
+        discriminator_l = discriminator_loss( y_true_discriminator_last_layer,y_pred_discriminator_last_layer)
         # Compute the gradiants of the loss with respect to the weights of the discriminator
 
 
@@ -261,8 +257,13 @@ class MEDGAN(tf.keras.Model):
             "discriminator_loss": self.discriminator_loss_tracker.result(),
         }
     def call(self, x):
-        return self.generator(x)
+        y = self.generator(x)
+        y_pred_discriminator = self.discriminator(y)
+        y_pred_feature = self.feature_extractor(y)
+        return y
 
         
 if __name__ == "__main__":
-    pass
+    model = MEDGAN()
+    model(tf.random.normal((1, 512, 512, 1)))
+    model.summary()
