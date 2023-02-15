@@ -17,7 +17,7 @@ class Model:
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
         self.pretrained_MedGAN = pretrained_MedGAN
-        self.pretrained_MedGAN_path = "model/saved_models/MedGAN/big_endian/blazing-rose-13/08"
+        self.pretrained_MedGAN_path = "model/saved_models/MedGAN/big_endian/genuine-caress-15/03"
         self.pretrained_vgg_big_endian_path = "model/saved_models/VGG19/big_endian/VGG1910/model.ckpt"
         self.pretrained_vgg_low_endian_path = "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
 
@@ -39,12 +39,7 @@ class Model:
             ).build_model()
         elif self.model_name == "MedGAN":
             if self.pretrained_MedGAN:
-                model = tf.keras.models.load_model(self.pretrained_MedGAN_path, custom_objects=
-                {'style_loss':style_loss, 
-                'content_loss':content_loss, 
-                'perceptual_loss':perceptual_loss, 
-                'generator_gan_loss':generator_gan_loss, 
-                'discriminator_loss':discriminator_loss })
+                model = load_MedGAN(self.pretrained_MedGAN_path)
             else:
                 if self.pretrained_vgg:
                     print("Using pretrained VGG19")
@@ -63,6 +58,15 @@ class Model:
             metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
             )
             return model
+
+def load_MedGAN(path = None):
+    model = tf.keras.models.load_model(path, custom_objects=
+                {'style_loss':style_loss, 
+                'content_loss':content_loss, 
+                'perceptual_loss':perceptual_loss, 
+                'generator_gan_loss':generator_gan_loss, 
+                'discriminator_loss':discriminator_loss })
+    return model
 
 def load_vgg19(path = None ):
     model = VGG19(classifier_training=False)
