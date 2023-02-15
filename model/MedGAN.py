@@ -29,7 +29,7 @@ class U_block(tf.keras.Model):
         self.shape = shape
 
     def down_conv_block(self, input, filters, kernel_size=4, strides=2, padding="same"):
-        x = kl.Conv2D(filters, kernel_size, strides, padding)(input)
+        x = kl.Conv2D(filters, kernel_size, strides, padding,)(input)
         x = kl.BatchNormalization()(x)
         x = kl.LeakyReLU()(x)
         return x

@@ -88,7 +88,9 @@ def train(config):
         model_name = config.model,
         input_shape =config.img_size,
         learning_rate= config.learning_rate, 
-        big_endian= config.big_endian).build_model()
+        big_endian= config.big_endian,
+        pretrained_MedGAN= config.pretrained_MedGAN,
+        ).build_model()
         print("Model Created!")
 
     print("Start Training")

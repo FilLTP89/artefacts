@@ -19,7 +19,8 @@ default_config = SimpleNamespace(
     mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
     big_endian=False,
-    one_batch_training=False
+    one_batch_training=False,
+    pretrained_MedGAN=True,
 )
 
 
@@ -111,6 +112,11 @@ def parse_args():
         default=default_config.one_batch_training,
         help="Train on one batch",
     )
-
+    argparser.add_argument(
+        "--pretrained_MedGAN",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.pretrained_MedGAN,
+        help="Use pretrained MedGAN",
+    )   
     args = argparser.parse_args()
     vars(default_config).update(vars(args))

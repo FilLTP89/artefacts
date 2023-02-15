@@ -17,4 +17,5 @@ source $WORKDIR/launch_script.sh
 cd $WORKDIR/artefacts
 #python3 train.py --model VGG19 --epochs 2 --batch_size 32 --wandb --saving_path "model/saved_models/VGG19/"
 #python3 train.py --model MedGAN --epochs 20 --batch_size 3 --wandb --saving_path "model/saved_models/MedGAN/" --big_endian
-python3 train.py --model ResUnet --epochs 20 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --big_endian
+#python3 train.py --model ResUnet --epochs 20 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --big_endian
+python3 train.py --model MedGAN --epochs 1 --batch_size 3 --big_endian
