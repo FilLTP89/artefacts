@@ -32,10 +32,8 @@ def reconstruction_3d(input_dir, output_dir):
         projections[:, i, :] = im
 
 
-    proj_geom = \
-    astra.create_proj_geom('cone', 1, 1, detector_rows, detector_cols, angles,
-                            (distance_source_origin + distance_origin_detector) /
-                            detector_pixel_size, 0)
+    proj_geom = astra.create_proj_geom('cone', 1, 1, detector_rows, detector_cols, angles,(distance_source_origin + distance_origin_detector) /detector_pixel_size, 0)
+    print(proj_geom)
     projections_id = astra.data3d.create('-sino', proj_geom, projections)
 
     vol_geom = astra.creators.create_vol_geom(detector_cols, detector_cols,
