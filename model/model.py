@@ -17,7 +17,7 @@ class Model:
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
         self.pretrained_MedGAN = pretrained_MedGAN
-        self.pretrained_MedGAN_path = "model/saved_models/MedGAN/big_endian/blazing-rose-13/"
+        self.pretrained_MedGAN_path = "model/saved_models/MedGAN/big_endian/blazing-rose-13/08"
         self.pretrained_vgg_big_endian_path = "model/saved_models/VGG19/big_endian/VGG1910/model.ckpt"
         self.pretrained_vgg_low_endian_path = "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
 

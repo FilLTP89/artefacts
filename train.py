@@ -32,8 +32,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
             tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
             WandbMetricsLogger(),
             WandbModelCheckpoint(
-                filepath=config.saving_path + endian_path + config._settings.run_name +"/{epoch:02d}/model.ckpt",
-                save_weights_only=True,
+                filepath=config.saving_path + endian_path + config._settings.run_name +"/{epoch:02d}/",
                 )] 
     model.fit(
                 train_ds,

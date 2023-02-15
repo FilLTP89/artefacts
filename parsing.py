@@ -9,7 +9,7 @@ default_config = SimpleNamespace(
     model="ResUnet",  # resunet34d, unet
     augment=False,  # use data augmentation
     epochs=10,
-    learning_rate=2e-4,
+    learning_rate=0.000002,
     log_preds=False,
     seed=42,
     wandb=False,
@@ -20,7 +20,7 @@ default_config = SimpleNamespace(
     run_name="training_run",
     big_endian=False,
     one_batch_training=False,
-    pretrained_MedGAN=True,
+    pretrained_MedGAN=False,
 )
 
 
