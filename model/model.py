@@ -47,6 +47,7 @@ class Model:
                 'discriminator_loss':discriminator_loss })
             else:
                 if self.pretrained_vgg:
+                    print("Using pretrained VGG19")
                     vgg19 = load_vgg19(big_endian= self.big_endian, path = self.pretrained_vgg_big_endian_path if self.big_endian else self.pretrained_vgg_low_endian_path)
                     model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg19)
                 else :
@@ -63,13 +64,10 @@ class Model:
             )
             return model
 
-def load_vgg19(big_endian = True, path = None ):
+def load_vgg19(path = None ):
     model = VGG19(classifier_training=False)
     model.build(input_shape = (None,512,512,1))
-    if big_endian:
-        model.load_weights(path)
-    else:
-        model.load_weights(path)
+    model.load_weights(path).expect_partial()
     for layer in model.layers:
         layer.trainable = False
     return model

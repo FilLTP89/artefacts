@@ -122,7 +122,7 @@ class Dataset:
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
-        return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
+        return (input, label), (X_valid, y_valid), (X_test, y_test)
 
     def preprocess(self, x, y):
         """
