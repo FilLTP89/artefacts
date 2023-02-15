@@ -47,8 +47,8 @@ class Model:
                     model = MEDGAN(learning_rate = self.learning_rate, feature_extractor= vgg19)
                 else :
                     model = MEDGAN(learning_rate = self.learning_rate)
-            model.compile()
-            model.compute_output_shape(input_shape=(None, 512, 512, 1))
+                model.compile()
+                model.compute_output_shape(input_shape=(None, 512, 512, 1))
             return model
         elif self.model_name == "VGG19":
             model = VGG19(classifier_training = True)
@@ -60,12 +60,9 @@ class Model:
             return model
 
 def load_MedGAN(path = None):
-    model = tf.keras.models.load_model(path, custom_objects=
-                {'style_loss':style_loss, 
-                'content_loss':content_loss, 
-                'perceptual_loss':perceptual_loss, 
-                'generator_gan_loss':generator_gan_loss, 
-                'discriminator_loss':discriminator_loss })
+    model = tf.keras.models.load_model(path, compile = False)
+    losses = [style_loss, content_loss, perceptual_loss, generator_gan_loss, discriminator_loss]
+    model.compile( loss = losses)
     return model
 
 def load_vgg19(path = None ):
