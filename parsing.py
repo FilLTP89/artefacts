@@ -20,7 +20,7 @@ default_config = SimpleNamespace(
     run_name="training_run",
     big_endian=False,
     one_batch_training=False,
-    pretrained_MedGAN=True,
+    pretrained_MedGAN=False,
 )
 
 

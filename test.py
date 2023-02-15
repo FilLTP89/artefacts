@@ -3,7 +3,7 @@ from data_file.processing import Dataset
 from data_file.utils import save_file
 from model.metrics import ssim
 from model.model import Model
-from model.metrics import ssim, psnr, mae, rmse, nmi
+from model.metrics import ssim, psnr, mae, rmse
 
 
 def load_model(model_path=None):
@@ -69,19 +69,16 @@ def test_metrics():
     psnr_v = 0
     mae_v = 0
     rmse_v = 0
-    nmi_v = 0
-    for x, y in train_ds.take(len(train_ds)):
+    for x, y in test_ds.take(len(test_ds)):
         preds = model(x)
         ssim_v += ssim(y, preds)
         psnr_v += psnr(y, preds)
         mae_v += mae(y, preds)
         rmse_v += rmse(y, preds)
-        nmi_v += nmi(y, preds)
-    print("SSIM: ", ssim_v / len(train_ds))
-    print("PSNR: ", psnr_v / len(train_ds))
-    print("MAE: ", mae_v / len(train_ds))
-    print("RMSE: ", rmse_v / len(train_ds))
-    print("NMI: ", nmi_v / len(train_ds))
+    print("SSIM: ", ssim_v / len(test_ds))
+    print("PSNR: ", psnr_v / len(test_ds))
+    print("MAE: ", mae_v / len(test_ds))
+    print("RMSE: ", rmse_v / len(test_ds))
 
 
 if __name__ == "__main__":
