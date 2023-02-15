@@ -65,7 +65,6 @@ class Model:
                 if self.pretrained_vgg:
                     print("Using pretrained VGG19")
                     vgg19 = load_vgg19(
-                        big_endian=self.big_endian,
                         path=self.pretrained_vgg_big_endian_path
                         if self.big_endian
                         else self.pretrained_vgg_low_endian_path,
