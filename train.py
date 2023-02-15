@@ -9,6 +9,13 @@ from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint, WandbEvalCallb
 import time
 
 
+def scheduler(epoch, lr):
+    if epoch < 5:
+        return lr
+    else:
+        return lr * tf.math.exp(-0.1)
+
+
 def final_metrics(learn):
     "Log latest metrics values"
     scores = learn.validate()
@@ -22,6 +29,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     endian_path = "big_endian/" if config.big_endian else "low_endian/"
     if config.wandb :
         callbacks = [
+            tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
             WandbMetricsLogger(),
             WandbModelCheckpoint(
                 filepath=config.saving_path + endian_path + config._settings.run_name +"/{epoch:02d}/model.ckpt",
