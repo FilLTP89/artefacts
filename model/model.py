@@ -96,9 +96,17 @@ def load_MedGAN(path=None):
         "generator_gan_loss": generator_gan_loss,
         "discriminator_loss": discriminator_loss,
     }
-    with tf.keras.utils.custom_object_scope(custom_objects):
-        model = tf.keras.models.load_model(path)
-        model.compile()
+
+    model = tf.keras.models.load_model(path, custom_objects=custom_objects)
+    model.compile(
+        loss=[
+            style_loss,
+            content_loss,
+            perceptual_loss,
+            generator_gan_loss,
+            discriminator_loss,
+        ]
+    )
     return model
 
 
