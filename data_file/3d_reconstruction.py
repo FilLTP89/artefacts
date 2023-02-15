@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath('..'))
 from data_file.CBCT_preprocess import read_raw
 
 # Read data
-def reconstruction_3d(input_dir, output_dir)
+def reconstruction_3d(input_dir, output_dir):
     test_folder = sorted(glob(join(input_dir, "*.raw")),key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)])
     
     # PARAMS
