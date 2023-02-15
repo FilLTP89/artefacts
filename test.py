@@ -15,7 +15,7 @@ def load_model(model_path=None):
     ).expect_partial()
     """
     model = tf.keras.models.load_model(
-        "model/saved_models/MedGAN/big_endian/blazing-rose-13/08/"
+        "model/saved_models/MedGAN/big_endian/genuine-caress-15/03"
     )
     model.compile()
     return model
