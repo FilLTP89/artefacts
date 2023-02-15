@@ -29,7 +29,12 @@ class U_block(tf.keras.Model):
         self.shape = shape
 
     def down_conv_block(self, input, filters, kernel_size=4, strides=2, padding="same"):
-        x = kl.Conv2D(filters, kernel_size, strides, padding,)(input)
+        x = kl.Conv2D(
+            filters,
+            kernel_size,
+            strides,
+            padding,
+        )(input)
         x = kl.BatchNormalization()(x)
         x = kl.LeakyReLU()(x)
         return x
@@ -92,7 +97,6 @@ class ConsNet(tf.keras.Model):
         return x
 
 
-
 class MEDGAN(tf.keras.Model):
     """
     Implementation of the MedGAN model presented in the paper
@@ -104,9 +108,9 @@ class MEDGAN(tf.keras.Model):
         generator=None,
         discriminator=None,
         feature_extractor=None,
-        learning_rate = 3e-5,
+        learning_rate=3e-5,
         N_g=3,
-        vgg_whole_arc = False
+        vgg_whole_arc=False,
     ):
         super().__init__()
 
@@ -119,12 +123,14 @@ class MEDGAN(tf.keras.Model):
         self.lambda_2 = 1e-4
         self.lambda_3 = 1e-4
 
-        self.g_optimizer = tf.keras.optimizers.Adam(learning_rate, ema_momentum = 0.5)
-        self.d_optimizer = tf.keras.optimizers.Adam(learning_rate, ema_momentum = 0.5)
+        self.g_optimizer = tf.keras.optimizers.Adam(learning_rate, ema_momentum=0.5)
+        self.d_optimizer = tf.keras.optimizers.Adam(learning_rate, ema_momentum=0.5)
 
         self.generator = generator or ConsNet(6, self.shape)
         self.discriminator = discriminator or PatchGAN(self.shape)
-        self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture = vgg_whole_arc)
+        self.feature_extractor = feature_extractor or VGG19(
+            self.shape, load_whole_architecture=vgg_whole_arc
+        )
 
         self.style_loss_tracker = tf.keras.metrics.Mean(name="style_loss")
         self.content_loss_tracker = tf.keras.metrics.Mean(name="content_loss")
@@ -137,6 +143,21 @@ class MEDGAN(tf.keras.Model):
             name="discriminator_loss"
         )
 
+    def compile(
+        self,
+        style_loss=style_loss,
+        content_loss=content_loss,
+        perceptual_loss=perceptual_loss,
+        generator_gan_loss=generator_gan_loss,
+        discriminator_loss=discriminator_loss,
+    ):
+        super().compile()
+        self.style_loss = style_loss
+        self.content_loss = content_loss
+        self.perceptual_loss = perceptual_loss
+        self.generator_gan_loss = generator_gan_loss
+        self.discriminator_loss = discriminator_loss
+
     @property
     def metrics(self):
         # We list our `Metric` objects here so that `reset_states()` can be
@@ -144,8 +165,14 @@ class MEDGAN(tf.keras.Model):
         # or at the start of `evaluate()`.
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
-        return [self.style_loss_tracker, self.content_loss_tracker,
-         self.perceptual_loss_tracker, self.generator_gan_loss_tracker, self.generator_loss_tracker, self.discriminator_loss_tracker]
+        return [
+            self.style_loss_tracker,
+            self.content_loss_tracker,
+            self.perceptual_loss_tracker,
+            self.generator_gan_loss_tracker,
+            self.generator_loss_tracker,
+            self.discriminator_loss_tracker,
+        ]
 
     def train_step(self, data):
         x, y = data
@@ -153,44 +180,62 @@ class MEDGAN(tf.keras.Model):
             with tf.GradientTape() as gen_tape:
                 y_pred = self.generator(x)
 
-                (y_pred_discriminator_features,y_pred_discriminator_last_layer) = self.discriminator(y_pred)
-                  # get the features of the discriminator and the output of the last layer for the output of the generator
+                (
+                    y_pred_discriminator_features,
+                    y_pred_discriminator_last_layer,
+                ) = self.discriminator(y_pred)
+                # get the features of the discriminator and the output of the last layer for the output of the generator
 
-                y_pred_feature = self.feature_extractor(y_pred)  
+                y_pred_feature = self.feature_extractor(y_pred)
                 # get the features of the feature extractor for the true samples
                 y_true_feature = self.feature_extractor(y)
-                (y_true_discriminator_features,_) = self.discriminator(y)  
+                (y_true_discriminator_features, _) = self.discriminator(y)
                 # get the features of the discriminator and the output of the last layer for the true samples
                 # gan loss
-                generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
+                generator_gan_l = self.generator_gan_loss(
+                    y_pred_discriminator_last_layer
+                )
                 # perceptual loss
-                perceptual_l = perceptual_loss(y_true_discriminator_features,y_pred_discriminator_features)
+                perceptual_l = self.perceptual_loss(
+                    y_true_discriminator_features, y_pred_discriminator_features
+                )
                 # style loss
-                style_l = style_loss(y_pred_feature, y_true_feature)
+                style_l = self.style_loss(y_pred_feature, y_true_feature)
                 # content loss
-                content_l = content_loss(y_pred_feature, y_true_feature)
+                content_l = self.content_loss(y_pred_feature, y_true_feature)
 
-                generator_loss = (generator_gan_l
+                generator_loss = (
+                    generator_gan_l
                     + self.lambda_1 * perceptual_l
                     + self.lambda_2 * style_l
                     + self.lambda_3 * content_l
                 )
             # Compute the gradiants of the loss with respect to the weights of the generator
-            gen_grads = gen_tape.gradient(generator_loss, self.generator.trainable_weights)
+            gen_grads = gen_tape.gradient(
+                generator_loss, self.generator.trainable_weights
+            )
             # Update the weights of the generator
-            self.g_optimizer.apply_gradients(zip(gen_grads, self.generator.trainable_weights))
+            self.g_optimizer.apply_gradients(
+                zip(gen_grads, self.generator.trainable_weights)
+            )
 
         with tf.GradientTape() as disc_tape:
             _, y_pred_discriminator = self.discriminator(y_pred)
             _, y_true_discriminator = self.discriminator(y)
             # Discriminator loss
-            discriminator_l = discriminator_loss(y_true_discriminator, y_pred_discriminator)
+            discriminator_l = self.discriminator_loss(
+                y_true_discriminator, y_pred_discriminator
+            )
 
             # Compute the gradiants of the loss with respect to the weights of the discriminator
-        disc_grads = disc_tape.gradient(discriminator_l, self.discriminator.trainable_weights)
+        disc_grads = disc_tape.gradient(
+            discriminator_l, self.discriminator.trainable_weights
+        )
 
         # Update the weights of the discriminator
-        self.d_optimizer.apply_gradients(zip(disc_grads, self.discriminator.trainable_weights))
+        self.d_optimizer.apply_gradients(
+            zip(disc_grads, self.discriminator.trainable_weights)
+        )
 
         # Update the loss trackers
         self.style_loss_tracker.update_state(style_l)
@@ -212,33 +257,43 @@ class MEDGAN(tf.keras.Model):
     def test_step(self, data):
         x, y = data
         y_pred = self.generator(x)
-        (y_pred_discriminator_features,y_pred_discriminator_last_layer) = self.discriminator(y_pred)  
+        (
+            y_pred_discriminator_features,
+            y_pred_discriminator_last_layer,
+        ) = self.discriminator(y_pred)
         # get the features of the discriminator and the output of the last layer for the output of the generator
-        y_pred_feature = self.feature_extractor(y_pred)  # get the features of the feature extractor for the true samples
+        y_pred_feature = self.feature_extractor(
+            y_pred
+        )  # get the features of the feature extractor for the true samples
         y_true_feature = self.feature_extractor(y)
-        (y_true_discriminator_features,y_true_discriminator_last_layer) = self.discriminator(y)  
+        (
+            y_true_discriminator_features,
+            y_true_discriminator_last_layer,
+        ) = self.discriminator(y)
         # get the features of the discriminator and the output of the last layer for the true samples
 
         # gan loss
-        generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
+        generator_gan_l = self.generator_gan_loss(y_pred_discriminator_last_layer)
         # perceptual loss
-        perceptual_l = perceptual_loss(y_true_discriminator_features,y_pred_discriminator_features)
+        perceptual_l = self.perceptual_loss(
+            y_true_discriminator_features, y_pred_discriminator_features
+        )
         # style loss
-        style_l = style_loss(y_true_feature,y_pred_feature)
+        style_l = self.style_loss(y_true_feature, y_pred_feature)
         # content loss
-        content_l = content_loss(y_true_feature,y_pred_feature)
+        content_l = self.content_loss(y_true_feature, y_pred_feature)
 
         generator_loss = (
             generator_gan_l
             + self.lambda_1 * perceptual_l
             + self.lambda_2 * style_l
             + self.lambda_3 * content_l
-            )
-            # Compute the gradiants of the loss with respect to the weights of the generator
-        discriminator_l = discriminator_loss( y_true_discriminator_last_layer,y_pred_discriminator_last_layer)
+        )
+        # Compute the gradiants of the loss with respect to the weights of the generator
+        discriminator_l = discriminator_loss(
+            y_true_discriminator_last_layer, y_pred_discriminator_last_layer
+        )
         # Compute the gradiants of the loss with respect to the weights of the discriminator
-
-
 
         # Try to do it the same way as the training step
         self.style_loss_tracker.update_state(style_l)
@@ -256,13 +311,14 @@ class MEDGAN(tf.keras.Model):
             "generator_loss": self.generator_loss_tracker.result(),
             "discriminator_loss": self.discriminator_loss_tracker.result(),
         }
+
     def call(self, x):
         y = self.generator(x)
         y_pred_discriminator = self.discriminator(y)
         y_pred_feature = self.feature_extractor(y)
         return y
 
-        
+
 if __name__ == "__main__":
     model = MEDGAN()
     model(tf.random.normal((1, 512, 512, 1)))
