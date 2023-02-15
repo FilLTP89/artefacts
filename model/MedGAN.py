@@ -181,17 +181,15 @@ class MEDGAN(tf.keras.Model):
                 (y_true_discriminator_features, _) = self.discriminator(y)
                 # get the features of the discriminator and the output of the last layer for the true samples
                 # gan loss
-                generator_gan_l = self.generator_gan_loss(
-                    y_pred_discriminator_last_layer
-                )
+                generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
                 # perceptual loss
-                perceptual_l = self.perceptual_loss(
+                perceptual_l = perceptual_loss(
                     y_true_discriminator_features, y_pred_discriminator_features
                 )
                 # style loss
-                style_l = self.style_loss(y_pred_feature, y_true_feature)
+                style_l = style_loss(y_pred_feature, y_true_feature)
                 # content loss
-                content_l = self.content_loss(y_pred_feature, y_true_feature)
+                content_l = content_loss(y_pred_feature, y_true_feature)
 
                 generator_loss = (
                     generator_gan_l
@@ -212,7 +210,7 @@ class MEDGAN(tf.keras.Model):
             _, y_pred_discriminator = self.discriminator(y_pred)
             _, y_true_discriminator = self.discriminator(y)
             # Discriminator loss
-            discriminator_l = self.discriminator_loss(
+            discriminator_l = discriminator_loss(
                 y_true_discriminator, y_pred_discriminator
             )
 
@@ -262,15 +260,15 @@ class MEDGAN(tf.keras.Model):
         # get the features of the discriminator and the output of the last layer for the true samples
 
         # gan loss
-        generator_gan_l = self.generator_gan_loss(y_pred_discriminator_last_layer)
+        generator_gan_l = generator_gan_loss(y_pred_discriminator_last_layer)
         # perceptual loss
-        perceptual_l = self.perceptual_loss(
+        perceptual_l = perceptual_loss(
             y_true_discriminator_features, y_pred_discriminator_features
         )
         # style loss
-        style_l = self.style_loss(y_true_feature, y_pred_feature)
+        style_l = style_loss(y_true_feature, y_pred_feature)
         # content loss
-        content_l = self.content_loss(y_true_feature, y_pred_feature)
+        content_l = content_loss(y_true_feature, y_pred_feature)
 
         generator_loss = (
             generator_gan_l
