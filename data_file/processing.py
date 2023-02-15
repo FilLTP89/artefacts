@@ -113,16 +113,16 @@ class Dataset:
         input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
             input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
-        )  # 8 acquisition for training 
+        )  # 8 acquisition for training
         X_test, X_valid, y_test, y_valid = train_test_split(
             X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
-        )  # 1 acquisition for validation & 1 acquisition for testing 
+        )  # 1 acquisition for validation & 1 acquisition for testing
 
-        #X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
+        # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
-        return (input, label), (X_valid, y_valid), (X_test, y_test)
+        return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
 
     def preprocess(self, x, y):
         """
@@ -155,7 +155,7 @@ class Dataset:
         input = tf.image.resize(input, [self.width, self.height])
         label = tf.image.resize(label, [self.width, self.height])
         return input, label
-        
+
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size
@@ -231,7 +231,7 @@ if __name__ == "__main__":
                 y[i],
                 big_endian=dataset.big_endian,
                 brightness_fact=4,
-            ) 
+            )
     """ print("Saving dataset.... ")
     dataset.save()
     print("Dataset saved!") """

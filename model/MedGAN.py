@@ -147,21 +147,6 @@ class MEDGAN(tf.keras.Model):
             name="discriminator_loss"
         )
 
-    def compile(
-        self,
-        style_loss=style_loss,
-        content_loss=content_loss,
-        perceptual_loss=perceptual_loss,
-        generator_gan_loss=generator_gan_loss,
-        discriminator_loss=discriminator_loss,
-    ):
-        super().compile()
-        self.style_loss = style_loss
-        self.content_loss = content_loss
-        self.perceptual_loss = perceptual_loss
-        self.generator_gan_loss = generator_gan_loss
-        self.discriminator_loss = discriminator_loss
-
     @property
     def metrics(self):
         # We list our `Metric` objects here so that `reset_states()` can be
