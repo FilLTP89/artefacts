@@ -65,20 +65,29 @@ def test_metrics():
     dataset = Dataset(height=512, width=512, batch_size=32, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    ssim_v = 0
-    psnr_v = 0
-    mae_v = 0
-    rmse_v = 0
+    model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
+    baseline_ssim, baseline_psnr, baseline_mae, baseline_rmse = 0, 0, 0, 0
     for x, y in test_ds.take(len(test_ds)):
         preds = model(x)
-        ssim_v += ssim(y, preds)
-        psnr_v += psnr(y, preds)
-        mae_v += mae(y, preds)
-        rmse_v += rmse(y, preds)
-    print("SSIM: ", ssim_v / len(test_ds))
-    print("PSNR: ", psnr_v / len(test_ds))
-    print("MAE: ", mae_v / len(test_ds))
-    print("RMSE: ", rmse_v / len(test_ds))
+        model_ssim += ssim(y, preds)
+        model_psnr += psnr(y, preds)
+        model_mae += mae(y, preds)
+        model_rmse += rmse(y, preds)
+
+        baseline_ssim += ssim(y, x)
+        baseline_psnr += psnr(y, x)
+        baseline_mae += mae(y, x)
+        baseline_rmse += rmse(y, x)
+
+    print("Model SSIM: ", model_ssim / len(test_ds))
+    print("Model PSNR: ", model_psnr / len(test_ds))
+    print("Model MAE: ", model_mae / len(test_ds))
+    print("Model RMSE: ", model_rmse / len(test_ds))
+
+    print("Baseline SSIM: ", baseline_ssim / len(test_ds))
+    print("Baseline PSNR: ", baseline_psnr / len(test_ds))
+    print("Baseline MAE: ", baseline_mae / len(test_ds))
+    print("Baseline RMSE: ", baseline_rmse / len(test_ds))
 
 
 if __name__ == "__main__":
