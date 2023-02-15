@@ -9,7 +9,7 @@ default_config = SimpleNamespace(
     model="ResUnet",  # resunet34d, unet
     augment=False,  # use data augmentation
     epochs=10,
-    learning_rate=0.000002,
+    learning_rate=2e-6,
     log_preds=False,
     seed=42,
     wandb=False,
@@ -117,6 +117,6 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.pretrained_MedGAN,
         help="Use pretrained MedGAN",
-    )   
+    )
     args = argparser.parse_args()
     vars(default_config).update(vars(args))
