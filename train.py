@@ -23,7 +23,10 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb :
         callbacks = [
             WandbMetricsLogger(),
-            WandbModelCheckpoint(filepath=config.saving_path + endian_path + config._settings.run_name +"/{epoch:02d}/")] 
+            WandbModelCheckpoint(
+                filepath=config.saving_path + endian_path + config._settings.run_name +"/{epoch:02d}/model.ckpt",
+                save_weights_only=True,
+                )] 
     model.fit(
                 train_ds,
                 validation_data=valid_ds,
@@ -78,9 +81,6 @@ def train(config):
         input_shape =config.img_size,
         learning_rate= config.learning_rate, 
         big_endian= config.big_endian).build_model()
-
-        if config.model == "MedGAN":
-            model.compute_output_shape(input_shape=(None, 512, 512, 1))
         print("Model Created!")
 
     print("Start Training")

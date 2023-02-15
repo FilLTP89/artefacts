@@ -8,6 +8,7 @@ if __name__ == "__main__":
     model = MEDGAN(vgg_whole_arc= True)
     model.build(input_shape = (None,512,512,1))
     model.load_weights("model/saved_models/MedGAN/low_endian/MedGAN01/model.ckpt").expect_partial() # not loading optimizer
+    model.compile()
     print("Model Loaded")
     dataset = Dataset(
         height=512,

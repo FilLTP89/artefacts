@@ -5,7 +5,7 @@ from model.metrics import ssim
 from model.model import Model
 
 
-def load_model(model_name="ResUnet", model_path=None):
+def load_model(model_path=None):
     model = Model("MedGAN", vgg_whole_arc = True).build_model()
     model.build(input_shape = (None,512,512,1))
     model.load_weights("model/saved_models/MedGAN/bi_endian/MedGAN09/model.ckpt").expect_partial()
@@ -16,7 +16,7 @@ def test(big_endian=False, model_name="ResUnet"):
     gpus = tf.config.list_logical_devices("GPU")
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
-        model = load_model(model_name)
+        model = load_model()
     dataset = Dataset(height=512, width=512, batch_size=32, big_endian=big_endian)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
@@ -30,9 +30,7 @@ def test(big_endian=False, model_name="ResUnet"):
 
 def generate_image():
     print("Generate model...")
-    model = Model("MedGAN", pretrained_vgg=False).build_model()
-    model.build(input_shape = (None,512,512,1))
-    model.load_weights("/Users/hugo/DeepLearning/projet_these/artefacts/model/saved_models/low_endian/model.ckpt")
+    model = load_model()
     model = model.generator
     print("Model generated!")
 

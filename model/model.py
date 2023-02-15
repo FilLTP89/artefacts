@@ -40,6 +40,7 @@ class Model:
             else :
                 model = MEDGAN(learning_rate = self.learning_rate)
                 model.compile()
+            model.compute_output_shape(input_shape=(None, 512, 512, 1))
             return model
         elif self.model_name == "VGG19":
             model = VGG19(classifier_training = True)
