@@ -7,15 +7,8 @@ from model.metrics import ssim, psnr, mae, rmse
 
 
 def load_model(model_path=None):
-    """
-    model = Model("MedGAN", vgg_whole_arc=True).build_model()
-    model.build(input_shape=(None, 512, 512, 1))
-    model.load_weights(
-        "model/saved_models/MedGAN/bi_endian/MedGAN09/model.ckpt"
-    ).expect_partial()
-    """
     model = tf.keras.models.load_model(
-        "model/saved_models/MedGAN/big_endian/genuine-caress-15/03"
+        "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
     )
     model.compile()
     return model
