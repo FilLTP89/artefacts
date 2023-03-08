@@ -21,7 +21,7 @@ def test(big_endian=False, model_name="ResUnet"):
         model = load_model()
     dataset = Dataset(height=512, width=512, batch_size=32, big_endian=big_endian)
     dataset.setup()
-    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
+    _, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     # print("Evaluating on training set")
     # print(model.evaluate(train_ds))
     print("Evaluating on validation set")

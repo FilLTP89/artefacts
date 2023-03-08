@@ -27,7 +27,7 @@ def final_metrics(learn):
         wandb.summary[k] = v
 
 
-def fit_model(model, config, train_ds, valid_ds, test_ds, dicom):
+def fit_model(model, config, train_ds, valid_ds, test_ds):
     callbacks = []
     if config.dicom:
         endian_path = ""
@@ -125,10 +125,9 @@ def train(config):
             train_ds.take(1),
             valid_ds.take(1),
             test_ds.take(1),
-            dicom=False,
         )
     else:
-        fit_model(model, config, train_ds, valid_ds, test_ds, dicom=False)
+        fit_model(model, config, train_ds, valid_ds, test_ds)
     print("Training Done!")
 
 
@@ -180,11 +179,10 @@ def train_dicom(config):
             config,
             train_ds.take(1),
             valid_ds.take(1),
-            test_ds.take(1),
-            dicom=True,
+            test_ds.take(1)
         )
     else:
-        fit_model(model, config, train_ds, valid_ds, test_ds, dicom=True)
+        fit_model(model, config, train_ds, valid_ds, test_ds)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ default_config = SimpleNamespace(
     big_endian=False,
     one_batch_training=False,
     pretrained_MedGAN=False,
+    dicom = True,
 )
 
 
