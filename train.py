@@ -1,5 +1,7 @@
 from data_file.processing import Dataset
 from data_file.processing_vgg import VGGDataset
+from data_file.processing_dicom import DicomDataset
+from data_file.processing_dicom_vgg import DicomVGGDataset
 from model.model import Model
 import tensorflow as tf
 from parsing import parse_args, default_config
@@ -25,15 +27,20 @@ def final_metrics(learn):
         wandb.summary[k] = v
 
 
-def fit_model(model, config, train_ds, valid_ds, test_ds):
+def fit_model(model, config, train_ds, valid_ds, test_ds, dicom):
     callbacks = []
-    endian_path = "big_endian/" if config.big_endian else "low_endian/"
+    if config.dicom:
+        endian_path = ""
+    else:
+        endian_path = "big_endian/" if config.big_endian else "low_endian/"
+    dicom_path = "dicom/" if config.dicom else ""
     if config.wandb:
         callbacks = [
             tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
             WandbMetricsLogger(),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
+                + dicom_path
                 + endian_path
                 + config._settings.run_name
                 + "/{epoch:02d}/",
@@ -112,12 +119,75 @@ def train(config):
 
     print("Start Training")
     if config.one_batch_training:
-        fit_model(model, config, train_ds.take(1), valid_ds.take(1), test_ds.take(1))
+        fit_model(
+            model,
+            config,
+            train_ds.take(1),
+            valid_ds.take(1),
+            test_ds.take(1),
+            dicom=False,
+        )
     else:
-        fit_model(model, config, train_ds, valid_ds, test_ds)
+        fit_model(model, config, train_ds, valid_ds, test_ds, dicom=False)
     print("Training Done!")
+
+
+def train_dicom(config):
+    tf.random.set_seed(config.seed)
+    t = time.localtime(time.time())
+    if config.wandb:
+        run = wandb.init(
+            project=initalize_project_name(config),
+            job_type="train",
+            config=config,
+        )
+
+    config = wandb.config if config.wandb else config
+    gpus = (
+        tf.config.list_logical_devices("GPU")
+        if len(tf.config.list_physical_devices("GPU")) > 0
+        else 1
+    )
+    print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
+    if config.model == "VGG19":
+        dataset = DicomVGGDataset(
+            height=config.img_size,
+            width=config.img_size,
+            batch_size=config.batch_size * len(gpus),
+            big_endian=config.big_endian,
+        )
+    else:
+        dataset = DicomDataset(batch_size=config.batch_size * len(gpus))
+    dataset.setup()
+    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
+    print("Sample Generated!")
+    print("Num GPUs Available:", len(gpus))
+    strategy = tf.distribute.MirroredStrategy(gpus)
+    with strategy.scope():
+        print("Creating the model ...")
+        model = Model(
+            model_name=config.model,
+            input_shape=config.img_size,
+            learning_rate=config.learning_rate,
+            big_endian=config.big_endian,
+            pretrained_MedGAN=config.pretrained_MedGAN,
+        ).build_model()
+        print("Model Created!")
+    print("Start Training")
+    if config.one_batch_training:
+        fit_model(
+            model,
+            config,
+            train_ds.take(1),
+            valid_ds.take(1),
+            test_ds.take(1),
+            dicom=True,
+        )
+    else:
+        fit_model(model, config, train_ds, valid_ds, test_ds, dicom=True)
 
 
 if __name__ == "__main__":
     parse_args()
-    train(default_config)
+    # train(default_config)
+    train_dicom(default_config)

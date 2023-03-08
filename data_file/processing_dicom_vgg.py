@@ -22,7 +22,7 @@ Train VGG as a classifier between the different types of images in order to use 
 # See how much volume they take, and how long we take to load them
 
 
-class VGGDataset:
+class DicomVGGDataset:
     def __init__(
         self,
         path: str = "./data/",
