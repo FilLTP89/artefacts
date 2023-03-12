@@ -218,7 +218,7 @@ class DicomVGGDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = DicomVGGDataset(path="../data/dicom", batch_size=8, big_endian=False)
+    dataset = DicomVGGDataset(path="../data/dicom", batch_size=8)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
