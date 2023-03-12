@@ -33,7 +33,6 @@ class DicomVGGDataset:
         train_saving_path: str = "train/",
         test_saving_path: str = "data/",
         seed: int = 42,
-        big_endian: bool = False,
     ) -> None:
 
         self.path = path
@@ -48,7 +47,6 @@ class DicomVGGDataset:
         self.original_height = 400
 
         self.seed = seed
-        self.big_endian = big_endian
 
     def collect_data(self):
         """
@@ -224,6 +222,6 @@ if __name__ == "__main__":
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
-    if dataset.big_endian:
-        for x, y in test_ds.take(1):
-            print(x.shape, y.shape)
+    print("Training dataset : ", len(train_ds))
+    print("Validation dataset : ", len(valid_ds))
+    print("Testing dataset : ", len(test_ds))
