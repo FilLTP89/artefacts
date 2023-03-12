@@ -25,7 +25,7 @@ Train VGG as a classifier between the different types of images in order to use 
 class DicomVGGDataset:
     def __init__(
         self,
-        path: str = "./data/",
+        path: str = "./data/dicom",
         width: int = 512,
         height: int = 512,
         batch_size: int = 32,
@@ -148,7 +148,7 @@ class DicomVGGDataset:
             x = radon(x, theta=theta, circle=True)
 
             x = np.array(x, dtype=np.float32)
-            return with_artefact, y
+            return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])
         input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
@@ -220,30 +220,10 @@ class DicomVGGDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = VGGDataset(path="../data/", batch_size=8, big_endian=False)
+    dataset = DicomVGGDataset(path="../data/dicom", batch_size=8, big_endian=False)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     if dataset.big_endian:
         for x, y in test_ds.take(1):
-            for i in range(8):
-                image = Image.fromarray(
-                    np.array(tf.squeeze(x[i], axis=-1) * 255, dtype=np.uint8)
-                )
-                enhancer = ImageEnhance.Brightness(image)
-                image = enhancer.enhance(3)
-                image = np.array(image)
-                plt.subplot(2, 4, i + 1)
-                plt.imshow(image, cmap="gray")
-                plt.title(f"Label : {y[i]}")
-                plt.axis("off")
-            plt.show()
-    else:
-        for x, y in test_ds.take(3):
-            print(y)
-            for i in range(8):
-                """plt.subplot(2, 4, i + 1)
-                plt.imshow(x[i, :, :, :], cmap="gray")
-                plt.title(f"Label : {y[i]}")
-                plt.axis("off")"""
-            # plt.show()
+            print(x.shape, y.shape)
