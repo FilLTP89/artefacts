@@ -153,7 +153,6 @@ def train_dicom(config):
             height=config.img_size,
             width=config.img_size,
             batch_size=config.batch_size * len(gpus),
-            big_endian=config.big_endian,
         )
     else:
         dataset = DicomDataset(batch_size=config.batch_size * len(gpus))
@@ -174,13 +173,7 @@ def train_dicom(config):
         print("Model Created!")
     print("Start Training")
     if config.one_batch_training:
-        fit_model(
-            model,
-            config,
-            train_ds.take(1),
-            valid_ds.take(1),
-            test_ds.take(1)
-        )
+        fit_model(model, config, train_ds.take(1), valid_ds.take(1), test_ds.take(1))
     else:
         fit_model(model, config, train_ds, valid_ds, test_ds)
 
