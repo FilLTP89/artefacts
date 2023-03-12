@@ -65,7 +65,7 @@ class DicomVGGDataset:
         """
         no_metal_folder = [
             sorted(
-                glob(os.path.join(self.path, "No_metal/acquisition_" + str(i) + "/*")),
+                glob(os.path.join(self.path, "no_metal/acquisition_" + str(i) + "/*")),
                 key=lambda x: [
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
                 ],
@@ -75,7 +75,7 @@ class DicomVGGDataset:
         high_metal_folder = [
             sorted(
                 glob(
-                    os.path.join(self.path, "High_metal/acquisition_" + str(i) + "/*")
+                    os.path.join(self.path, "high_metal/acquisition_" + str(i) + "/*")
                 ),
                 key=lambda x: [
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
@@ -85,7 +85,7 @@ class DicomVGGDataset:
         ]
         low_metal_folder = [
             sorted(
-                glob(os.path.join(self.path, "Low_metal/acquisition_" + str(i) + "/*")),
+                glob(os.path.join(self.path, "low_metal/acquisition_" + str(i) + "/*")),
                 key=lambda x: [
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
                 ],
