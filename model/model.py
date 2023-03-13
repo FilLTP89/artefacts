@@ -44,7 +44,7 @@ class Model:
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
         self.pretrained_vgg_dicom_path = (
-            "model/saved_models/VGG19/dicom/amber-flower-1/10"
+            "model/saved_models/VGG19/dicom/logical-haze-1/10/model.ckpt"
         )
 
     def build_model(self):
@@ -116,10 +116,10 @@ def load_MedGAN(path=None):
 
 
 def load_vgg19(path=None):
-    """model = VGG19(classifier_training=False)
+    model = VGG19(classifier_training=False)
     model.build(input_shape=(None, 512, 512, 1))
-    model.load_weights(path).expect_partial()"""
-    model = tf.keras.models.load_model(path)
+    model.load_weights(path).expect_partial
+    # model = tf.keras.models.load_model(path)
     print("VGG19 loaded")
     for layer in model.layers:
         layer.trainable = False
@@ -127,10 +127,5 @@ def load_vgg19(path=None):
 
 
 if __name__ == "__main__":
-    model = Model(
-        model_name="MedGAN",
-        pretrained_vgg=True,
-        pretrained_MedGAN=False,
-        dicom=True,
-    ).build_model()
+    model  = load_vgg19()
     model.summary()

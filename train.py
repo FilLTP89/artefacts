@@ -43,7 +43,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 + dicom_path
                 + endian_path
                 + config._settings.run_name
-                + "/{epoch:02d}/",
+                + "/{epoch:02d}/model.ckpt",
                 save_weights_only=True,  # save only the weights
             ),
         ]
