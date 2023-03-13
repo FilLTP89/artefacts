@@ -72,7 +72,7 @@ def initalize_project_name(config):
             if config.big_endian
             else f"{config.model}_low_endian"
         )
-        return project_name
+    return project_name
 
 
 def train(config):
