@@ -126,5 +126,5 @@ def load_vgg19(path=None):
 
 
 if __name__ == "__main__":
-    model = load_vgg19(path="model/saved_models/VGG19/dicom/amber-flower-1/10")
+    model = Model(model_name="MedGAN", pretrained_vgg=True, dicom=True)
     model.summary()
