@@ -21,6 +21,7 @@ class Model:
         learning_rate=3e-4,
         pretrained_vgg=True,
         big_endian=True,
+        dicom=True,
         pretrained_MedGAN=True,
     ) -> None:
         super().__init__()
@@ -40,6 +41,9 @@ class Model:
         )
         self.pretrained_vgg_low_endian_path = (
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
+        )
+        self.pretrained_vgg_dicom_path = (
+            "model/saved_models/VGG19/dicom/amber-flower-1/10"
         )
 
     def build_model(self):
@@ -64,11 +68,12 @@ class Model:
             else:
                 if self.pretrained_vgg:
                     print("Using pretrained VGG19")
-                    vgg19 = load_vgg19(
-                        path=self.pretrained_vgg_big_endian_path
-                        if self.big_endian
-                        else self.pretrained_vgg_low_endian_path,
-                    )
+                    if self.dicom:
+                        vgg19 = load_vgg19(path=self.pretrained_vgg_dicom_path)
+                    elif self.big_endian:
+                        vgg19 = load_vgg19(path=self.pretrained_vgg_big_endian_path)
+                    else:
+                        vgg19 = load_vgg19(path=self.pretrained_vgg_low_endian_path)
                     model = MEDGAN(
                         learning_rate=self.learning_rate, feature_extractor=vgg19
                     )
@@ -110,9 +115,16 @@ def load_MedGAN(path=None):
 
 
 def load_vgg19(path=None):
-    model = VGG19(classifier_training=False)
+    """model = VGG19(classifier_training=False)
     model.build(input_shape=(None, 512, 512, 1))
-    model.load_weights(path).expect_partial()
+    model.load_weights(path).expect_partial()"""
+    model = tf.keras.models.load_model(path)
+    print("VGG19 loaded")
     for layer in model.layers:
         layer.trainable = False
     return model
+
+
+if __name__ == "__main__":
+    model = load_vgg19(path="model/saved_models/VGG19/dicom/amber-flower-1/10")
+    model.summary()

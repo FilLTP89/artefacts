@@ -21,7 +21,7 @@ default_config = SimpleNamespace(
     big_endian=False,
     one_batch_training=False,
     pretrained_MedGAN=False,
-    dicom = True,
+    dicom=True,
 )
 
 
@@ -118,6 +118,12 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.pretrained_MedGAN,
         help="Use pretrained MedGAN",
+    )
+    argparser.add_argument(
+        "--dicom",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.dicom,
+        help="Use dicom",
     )
     args = argparser.parse_args()
     vars(default_config).update(vars(args))
