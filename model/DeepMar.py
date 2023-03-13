@@ -380,3 +380,4 @@ class DeepMAR(tf.keras.Model):
 
 if __name__ == "__main__":
     model = DeepMAR().BuildModels()
+    model.compile()

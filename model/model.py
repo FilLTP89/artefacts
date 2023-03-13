@@ -30,6 +30,7 @@ class Model:
         self.height = input_shape
         self.width = input_shape
         self.big_endian = big_endian
+        self.dicom = dicom
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
         self.pretrained_MedGAN = pretrained_MedGAN
