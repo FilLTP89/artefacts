@@ -127,5 +127,7 @@ def load_vgg19(path=None):
 
 
 if __name__ == "__main__":
-    model = load_vgg19()
+    model = load_vgg19(
+        path="model/saved_models/VGG19/dicom/logical-haze-1/09/model.ckpt"
+    )
     model.summary()
