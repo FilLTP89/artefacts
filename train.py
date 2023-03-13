@@ -52,21 +52,25 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         epochs=config.epochs,
         callbacks=callbacks,
     )
-    model.save_weights(
+    """ model.save_weights(
         config.saving_path
+        + dicom_path
         + endian_path
         + config._settings.run_name
         + "/last_save/model.ckpt"
-    )
+    ) """
     model.evaluate(test_ds)
 
 
 def initalize_project_name(config):
-    project_name = (
-        f"{config.model}_big_endian"
-        if config.big_endian
-        else f"{config.model}_low_endian"
-    )
+    if config.dicom:
+        project_name = f"{config.model}_dicom"
+    else:
+        project_name = (
+            f"{config.model}_big_endian"
+            if config.big_endian
+            else f"{config.model}_low_endian"
+        )
     return project_name
 
 
