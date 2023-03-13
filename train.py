@@ -44,6 +44,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 + endian_path
                 + config._settings.run_name
                 + "/{epoch:02d}/",
+                save_weights_only=True,  # save only the weights
             ),
         ]
     model.fit(

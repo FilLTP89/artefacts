@@ -8,7 +8,12 @@ Implement a vgg19 model from scratch in order to control it outputs and use it a
 
 # TODO: Train this model on a public dataset of medical image keyworkd : Dental CT scans
 class VGG19(tf.keras.Model):
-    def __init__(self, shape=(512, 512, 1), classifier_training = False, load_whole_architecture = False):
+    def __init__(
+        self,
+        shape=(512, 512, 1),
+        classifier_training=False,
+        load_whole_architecture=False,
+    ):
         super().__init__()
         self.shape = shape
         self.classifier_training = classifier_training
@@ -32,16 +37,14 @@ class VGG19(tf.keras.Model):
         self.conv7 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
         self.conv8 = kl.Conv2D(512, (3, 3), activation="relu", padding="same")
 
-
-        # Only need the last part in case we are training vgg as a classifier 
+        # Only need the last part in case we are training vgg as a classifier
         if self.classifier_training or self.load_whole_architecture:
             self.maxpool3 = kl.MaxPool2D((2, 2), strides=(2, 2))
             self.flat = kl.Flatten()
-            self.dense1 = kl.Dense(4096, activation = "relu")
-            self.dense2 = kl.Dense(4096, activation = "relu")
-            self.dense3 = kl.Dense(4096, activation = "relu")
-            self.classifier = kl.Dense(3, activation = "softmax")
-        
+            self.dense1 = kl.Dense(4096, activation="relu")
+            self.dense2 = kl.Dense(4096, activation="relu")
+            self.dense3 = kl.Dense(4096, activation="relu")
+            self.classifier = kl.Dense(3, activation="softmax")
 
     def call(self, input):
         x = self.conv1(input)
@@ -69,9 +72,8 @@ class VGG19(tf.keras.Model):
         return [x, x2, x3, x4, x5, x6, x7, x8]
         # return the list of outut of each convolutional layer
 
+
 if __name__ == "__main__":
-    vgg = VGG19(classifier_training= True)
-    y = vgg(tf.random.normal((1, 512, 512, 1)))
-    print(y)
-    
-    
+    vgg = VGG19(classifier_training=False)
+    vgg.build(input_shape=(None, 512, 512, 1))
+    vgg.summary()
