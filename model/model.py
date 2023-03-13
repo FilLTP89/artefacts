@@ -126,5 +126,10 @@ def load_vgg19(path=None):
 
 
 if __name__ == "__main__":
-    model = Model(model_name="MedGAN", pretrained_vgg=True, dicom=True).build_model()
+    model = Model(
+        model_name="MedGAN",
+        pretrained_vgg=True,
+        pretrained_MedGAN=False,
+        dicom=True,
+    ).build_model()
     model.summary()
