@@ -44,7 +44,7 @@ class Model:
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
         self.pretrained_vgg_dicom_path = (
-            "model/saved_models/VGG19/dicom/logical-haze-1/10/model.ckpt"
+            "model/saved_models/VGG19/dicom/logical-haze-1/09"
         )
 
     def build_model(self):
@@ -127,5 +127,5 @@ def load_vgg19(path=None):
 
 
 if __name__ == "__main__":
-    model  = load_vgg19()
+    model = load_vgg19()
     model.summary()
