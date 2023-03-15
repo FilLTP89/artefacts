@@ -185,5 +185,4 @@ def train_dicom(config):
 
 if __name__ == "__main__":
     parse_args()
-    # train(default_config)
-    train_dicom(default_config)
+    train_dicom(default_config) if default_config.dicom else train(default_config)
