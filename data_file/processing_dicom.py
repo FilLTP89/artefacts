@@ -184,10 +184,12 @@ class DicomDataset:
             (x, y)
         )  # Create a tf.data.Dataset from the couple
         ds = ds.map(
-            self.preprocess
+            batch_size=self.batch_size,
+            num_parallel_calls=tf.data.AUTOTUNE,
         )  # apply the processing function on the couple (from path of raw image to sinongram)
         ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
         # ds = ds.prefetch(buffer_size=1024)
+        ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
         return ds
 
     def load_dataset(self):

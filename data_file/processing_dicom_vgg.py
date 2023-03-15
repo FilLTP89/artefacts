@@ -122,10 +122,6 @@ class DicomVGGDataset:
             X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
         )  # 1 acquisition for validation & 1 acquisition for testing
 
-        """  
-        X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
-        X_test, y_test = shuffle(X_test, y_test, random_state=self.seed)
-        X_valid, y_valid = shuffle(X_valid, y_valid, random_state=self.seed) """
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
@@ -144,7 +140,6 @@ class DicomVGGDataset:
             theta = np.linspace(0.0, 180.0, max(y.shape), endpoint=False)
             x = x / max(x.flatten()) * 255
             x = radon(x, theta=theta, circle=True)
-
             x = np.array(x, dtype=np.float32)
             return x, y
 
@@ -165,9 +160,17 @@ class DicomVGGDataset:
             (x, y)
         )  # Create a tf.data.Dataset from the couple
         ds = ds.map(
-            self.preprocess
+            map_func=self.preprocess,
+            num_parallel_calls=tf.data.AUTOTUNE,
         )  # apply the processing function on the couple (from path of raw image to sinongram)
-        ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
+        ds = ds.batch(
+            batch_size=self.batch_size,
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )  # Batch the couple into batch of couple
+        # ds.cache() # The first time the dataset is iterated over, its elements will be cached either in the specified file or in memory. Subsequent iterations will use the cached data.
+        ds = ds.prefetch(
+            buffer_size=tf.data.AUTOTUNE
+        )  # Prefetch the next batch while the current one is being processed
         # ds = ds.prefetch(buffer_size=1024)
         return ds
 
