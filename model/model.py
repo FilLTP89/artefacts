@@ -49,18 +49,18 @@ class Model:
 
     def build_model(self):
         if self.model_name == "ResUnet":
-            return ResUNet(
+            model = ResUNet(
                 input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
                 nb_class=1,
             ).build_model()
         elif self.model_name == "Unet":
-            return Unet(
+            model = Unet(
                 input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
             )
         elif self.model_name == "Baseline":
-            return Baseline(
+            model = Baseline(
                 input_shape=(self.height, self.width, 1),
             ).build_model()
         elif self.model_name == "MedGAN":
@@ -82,7 +82,6 @@ class Model:
                     model = MEDGAN(learning_rate=self.learning_rate)
                 model.compile()
                 model.compute_output_shape(input_shape=(None, 512, 512, 1))
-            return model
         elif self.model_name == "VGG19":
             model = VGG19(classifier_training=True)
             model.compile(
@@ -90,7 +89,7 @@ class Model:
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
             )
-            return model
+        return model
 
 
 def load_MedGAN(path=None):
