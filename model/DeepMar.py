@@ -158,7 +158,7 @@ class DeepMar(tf.keras.Model):
             zip(gen_grads, self.generator.trainable_variables)
         )
 
-        with tf.GradientTape as disc_tape:
+        with tf.GradientTape() as disc_tape:
             disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
             disc_real_output = self.discriminator(tf.concat([x, y], axis=-1))
             output = tf.concat(
