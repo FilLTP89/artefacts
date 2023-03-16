@@ -208,17 +208,16 @@ class Discriminator(tf.keras.Model):
 
 
 class DeepMar(tf.keras.Model):
-    def __init__(self, learning_rate=3e-4):
+    def __init__(self, g_learning_rate=3e-4, d_learning_rate=3e-4, **kwargs):
         super().__init__()
 
-        self.learning_rate = learning_rate
         self.shape = (512, 512, 1)
 
         self.generator = Generator()
         self.discriminator = Discriminator()
 
-        self.g_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
-        self.d_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
+        self.g_optimizer = tf.keras.optimizers.Adam(g_learning_rate)
+        self.d_optimizer = tf.keras.optimizers.Adam(d_learning_rate)
 
         self.disc_loss_tracker = tf.keras.metrics.Mean(name="disc_loss")
         self.gen_loss_tracker = tf.keras.metrics.Mean(name="gen_loss")
