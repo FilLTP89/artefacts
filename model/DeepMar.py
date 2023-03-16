@@ -100,7 +100,7 @@ class Generator(tf.keras.Model):
             [
                 kl.Conv2DTranspose(1, (5, 5), padding="same", strides=2),
                 kl.Dropout(0.2),
-                kl.Activation("sigmoid"),
+                kl.Activation("sigmoid", dtype="float32"),
             ]
         )
 
@@ -236,20 +236,21 @@ class DeepMar(tf.keras.Model):
 
     def train_step(self, data):
         x, y = data
-        with tf.GradientTape() as grad_tape:
-            fake_y = self.generator(x)
-            disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
+        for _ in range(3):
+            with tf.GradientTape() as gen_tape:
+                fake_y = self.generator(x)
+                disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
 
-            gen_adv_loss = tf.keras.losses.binary_crossentropy(
-                tf.ones_like(disc_fake_output), disc_fake_output
+                gen_adv_loss = tf.keras.losses.binary_crossentropy(
+                    tf.ones_like(disc_fake_output), disc_fake_output
+                )
+                gen_l2_loss = tf.keras.losses.mean_squared_error(y, fake_y)
+                gen_loss = gen_adv_loss + gen_l2_loss
+
+            gen_grads = gen_tape.gradient(gen_loss, self.generator.trainable_variables)
+            self.g_optimizer.apply_gradients(
+                zip(gen_grads, self.generator.trainable_variables)
             )
-            gen_l2_loss = tf.keras.losses.mean_squared_error(y, fake_y)
-            gen_loss = gen_adv_loss + gen_l2_loss
-
-        gen_grads = grad_tape.gradient(gen_loss, self.generator.trainable_variables)
-        self.g_optimizer.apply_gradients(
-            zip(gen_grads, self.generator.trainable_variables)
-        )
 
         with tf.GradientTape() as disc_tape:
             disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
