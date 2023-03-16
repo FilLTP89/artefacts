@@ -20,4 +20,4 @@ source $WORKDIR/launch_script.sh
 #python3 train.py --model MedGAN --epochs 20 --batch_size 3 --wandb --saving_path "model/saved_models/MedGAN/" --dicom
 #python3 train.py --model ResUnet --epochs 20 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --big_endian
 #python3 train.py --model MedGAN --epochs 5 --batch_size 5 --dicom 
-python3 train.py --model DeepMAR --epochs 5 --batch_size 10 --dicom 
+python3 train.py --model DeepMAR --epochs 5 --batch_size 5 --dicom 
