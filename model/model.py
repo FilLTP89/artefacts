@@ -92,7 +92,9 @@ class Model:
             model = DeepMar(
                 input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
-            ).build_model()
+            )
+            model.compile()
+            model.compute_output_shape(input_shape=(None, 512, 512, 1))
         return model
 
 
