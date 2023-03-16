@@ -146,7 +146,7 @@ class DeepMar(tf.keras.Model):
         with tf.GradientTape() as tape:
             fake_y = self.generator(x)
             disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
-            disc_real_output = self.discriminator(tf.concat[x, y], axis=-1)
+            disc_real_output = self.discriminator(tf.concat([x, y], axis=-1))
 
             zeros_output = tf.zeros_like(disc_fake_output)
             ones_output = tf.ones_like(disc_real_output)
@@ -188,7 +188,7 @@ class DeepMar(tf.keras.Model):
         x, y = data
         fake_y = self.generator(x)
         disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
-        disc_real_output = self.discriminator(tf.concat[x, y], axis=-1)
+        disc_real_output = self.discriminator(tf.concat([x, y], axis=-1))
 
         zeros_output = tf.zeros_like(disc_fake_output)
         ones_output = tf.ones_like(disc_real_output)
