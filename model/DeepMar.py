@@ -126,6 +126,21 @@ class DeepMar(tf.keras.Model):
         self.g_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
         self.d_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
 
+        self.disc_loss_tracker = tf.keras.metrics.Mean(name="disc_loss")
+        self.gen_loss_tracker = tf.keras.metrics.Mean(name="gen_loss")
+
+        self.gen_adv_loss_tracker = tf.keras.metrics.Mean(name="gen_adv_loss")
+        self.gen_l2_loss_tracker = tf.keras.metrics.Mean(name="gen_l2_loss")
+
+    @property
+    def metrics(self):
+        return [
+            self.disc_loss_tracker,
+            self.gen_loss_tracker,
+            self.gen_adv_loss_tracker,
+            self.gen_l2_loss_tracker,
+        ]
+
     def training_step(self, data):
         x, y = data
         with tf.GradientTape() as tape:
@@ -157,11 +172,16 @@ class DeepMar(tf.keras.Model):
             zip(disc_grads, self.discriminator.trainable_variables)
         )
 
+        self.disc_loss_tracker.update_state(disc_loss)
+        self.gen_loss_tracker.update_state(gen_loss)
+        self.gen_adv_loss_tracker.update_state(gen_adv_loss)
+        self.gen_l2_loss_tracker.update_state(gen_l2_loss)
+
         return {
-            "gen_adv_loss": gen_adv_loss,
-            "gen_l2_loss": gen_l2_loss,
-            "disc_loss": disc_loss,
-            "gen_loss": gen_loss,
+            "gen_adv_loss": self.gen_adv_loss_tracker.result(),
+            "gen_l2_loss": self.gen_l2_loss_tracker.result(),
+            "disc_loss": self.disc_loss_tracker.result(),
+            "gen_loss": self.gen_loss_tracker.result(),
         }
 
     def test_step(self, data):
@@ -184,11 +204,17 @@ class DeepMar(tf.keras.Model):
         gen_l2_loss = tf.keras.losses.mean_squared_error(y, fake_y)
         gen_loss = gen_adv_loss + gen_l2_loss
 
+
+        self.disc_loss_tracker.update_state(disc_loss)
+        self.gen_loss_tracker.update_state(gen_loss)
+        self.gen_adv_loss_tracker.update_state(gen_adv_loss)
+        self.gen_l2_loss_tracker.update_state(gen_l2_loss)
+
         return {
-            "gen_adv_loss": gen_adv_loss,
-            "gen_l2_loss": gen_l2_loss,
-            "disc_loss": disc_loss,
-            "gen_loss": gen_loss,
+            "gen_adv_loss": self.gen_adv_loss_tracker.result(),
+            "gen_l2_loss": self.gen_l2_loss_tracker.result(),
+            "disc_loss": self.disc_loss_tracker.result(),
+            "gen_loss": self.gen_loss_tracker.result(),
         }
 
     def call(self, x):
