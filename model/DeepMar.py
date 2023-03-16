@@ -122,6 +122,9 @@ class DeepMar(tf.keras.Model):
         self.generator = Generator()
         self.discriminator = Discriminator()
 
+        self.g_optimizer = tf.keras.optimizers.Adam(self.lr)
+        self.d_optimizer = tf.keras.optimizers.Adam(self.lr)
+
     def training_step(self, data):
         x, y = data
         with tf.GradientTape() as tape:
@@ -146,10 +149,10 @@ class DeepMar(tf.keras.Model):
         gen_grads = tape.gradient(gen_loss, self.generator.trainable_variables)
         disc_grads = tape.gradient(disc_loss, self.discriminator.trainable_variables)
 
-        self.optimizer.apply_gradients(
+        self.g_optimizer.apply_gradients(
             zip(gen_grads, self.generator.trainable_variables)
         )
-        self.optimizer.apply_gradients(
+        self.d_optimizer.apply_gradients(
             zip(disc_grads, self.discriminator.trainable_variables)
         )
 
@@ -157,6 +160,7 @@ class DeepMar(tf.keras.Model):
             "gen_adv_loss": gen_adv_loss,
             "gen_l2_loss": gen_l2_loss,
             "disc_loss": disc_loss,
+            "gen_loss": gen_loss,
         }
 
     def test_step(self, data):
@@ -183,6 +187,7 @@ class DeepMar(tf.keras.Model):
             "gen_adv_loss": gen_adv_loss,
             "gen_l2_loss": gen_l2_loss,
             "disc_loss": disc_loss,
+            "gen_loss": gen_loss,
         }
 
     def call(self, x):

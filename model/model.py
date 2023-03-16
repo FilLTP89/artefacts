@@ -4,7 +4,7 @@ from Unet import Unet
 from baseline import Baseline
 from MedGAN import MEDGAN
 from vgg19 import VGG19
-from DeepMar import DeepMAR
+from DeepMar import DeepMar
 from loss import (
     style_loss,
     content_loss,
@@ -88,6 +88,11 @@ class Model:
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
             )
+        elif self.model_name == "DeepMAR":
+            model = DeepMar(
+                input_shape=(self.height, self.width, 1),
+                learning_rate=self.learning_rate,
+            ).build_model()
         return model
 
 
