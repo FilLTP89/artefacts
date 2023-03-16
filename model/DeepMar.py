@@ -1,115 +1,209 @@
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow.keras.layers as kl
+from tensorflow.keras import Sequential
 
 
 class Generator(tf.keras.Model):
-    def call(self, inputs, training=None, mask=None):
-        # a
-        p1 = kl.Conv2D(64, (5, 5), padding="same", strides=2)(inputs)
-        p1 = kl.LeakyReLU()(p1)
+    def __init__(self, shape=(512, 512, 1), **kwargs):
+        super().__init__()
+        self.shape = shape
 
-        # b
-        p2 = kl.Conv2D(128, (5, 5), padding="same", strides=2)(p1)
-        p2 = kl.BatchNormalization()(p2)
-        p2 = kl.LeakyReLU()(p2)
+        self.a1 = Sequential(
+            [
+                kl.Conv2D(64, (5, 5), padding="same", strides=2),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        p3 = kl.Conv2D(256, (5, 5), padding="same", strides=2)(p2)
-        p3 = kl.BatchNormalization()(p3)
-        p3 = kl.LeakyReLU()(p3)
+        self.b1 = Sequential(
+            [
+                kl.Conv2D(128, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        p4 = kl.Conv2D(512, (5, 5), padding="same", strides=2)(p3)
-        p4 = kl.BatchNormalization()(p4)
-        p4 = kl.LeakyReLU()(p4)
+        self.b2 = Sequential(
+            [
+                kl.Conv2D(256, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        p5 = kl.Conv2D(512, (5, 5), padding="same", strides=2)(p4)
-        p5 = kl.BatchNormalization()(p5)
-        p5 = kl.LeakyReLU()(p5)
+        self.b3 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        p6 = kl.Conv2D(512, (5, 5), padding="same", strides=2)(p5)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        self.b4 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # c
-        p6 = kl.Conv2DTranspose(512, (5, 5), padding="same", strides=2)(p6)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        self.b5 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.c1 = Sequential(
+            [
+                kl.Conv2DTranspose(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.c2 = Sequential(
+            [
+                kl.Conv2DTranspose(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.c3 = Sequential(
+            [
+                kl.Conv2DTranspose(256, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.c4 = Sequential(
+            [
+                kl.Conv2DTranspose(128, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.c5 = Sequential(
+            [
+                kl.Conv2DTranspose(64, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
+
+        self.d1 = Sequential(
+            [
+                kl.Conv2DTranspose(1, (5, 5), padding="same", strides=2),
+                kl.Dropout(0.2),
+                kl.Activation("sigmoid"),
+            ]
+        )
+
+    def call(self, inputs, training=False):
+
+        p1 = self.a1(inputs)
+        p2 = self.b1(p1)
+        p3 = self.b2(p2)
+        p4 = self.b3(p3)
+        p5 = self.b4(p4)
+        p6 = self.b5(p5)
+
+        p6 = self.c1(p6)
         p6 = kl.Concatenate()([p6, p5])
-
-        # c
-        p6 = kl.Conv2DTranspose(512, (5, 5), padding="same", strides=2)(p6)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        p6 = self.c2(p6)
         p6 = kl.Concatenate()([p6, p4])
-
-        # c
-        p6 = kl.Conv2DTranspose(256, (5, 5), padding="same", strides=2)(p6)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        p6 = self.c3(p6)
         p6 = kl.Concatenate()([p6, p3])
-
-        # c
-        p6 = kl.Conv2DTranspose(128, (5, 5), padding="same", strides=2)(p6)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        p6 = self.c4(p6)
         p6 = kl.Concatenate()([p6, p2])
-
-        # c
-        p6 = kl.Conv2DTranspose(64, (5, 5), padding="same", strides=2)(p6)
-        p6 = kl.BatchNormalization()(p6)
-        p6 = kl.LeakyReLU()(p6)
+        p6 = self.c5(p6)
         p6 = kl.Concatenate()([p6, p1])
 
-        # d
-        x = kl.Conv2DTranspose(1, (5, 5), padding="same", strides=2)(p6)
-        x = kl.Dropout(0.2)(x)
-        return x
+        p6 = self.d1(p6)
+        return p6
 
 
 class Discriminator(tf.keras.Model):
-    def call(self, inputs, training=None, mask=None):
+    def __init__(self, shape=(512, 512, 1), **kwargs):
+        super().__init__()
+        self.shape = shape
 
-        # a
-        input = kl.Conv2D(64, (5, 5), padding="same", strides=2)(inputs)
-        input = kl.LeakyReLU()(input)
+        self.a1 = Sequential(
+            [
+                kl.Conv2D(64, (5, 5), padding="same", strides=2),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(128, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b1 = Sequential(
+            [
+                kl.Conv2D(128, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(256, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b2 = Sequential(
+            [
+                kl.Conv2D(256, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(512, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b3 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(512, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b4 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(512, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b5 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        # b
-        input = kl.Conv2D(512, (5, 5), padding="same", strides=2)(input)
-        input = kl.BatchNormalization()(input)
-        input = kl.LeakyReLU()(input)
+        self.b6 = Sequential(
+            [
+                kl.Conv2D(512, (5, 5), padding="same", strides=2),
+                kl.BatchNormalization(),
+                kl.LeakyReLU(),
+            ]
+        )
 
-        input = kl.Flatten()(input)
-        output = kl.Dense(1, activation="sigmoid")(input)
+        self.c1 = Sequential([kl.Flatten(), kl.Dense(1, activation="sigmoid")])
 
+    def call(
+        self,
+        inputs,
+    ):
+
+        x = self.a1(inputs)
+        x = self.b1(x)
+        x = self.b2(x)
+        x = self.b3(x)
+        x = self.b4(x)
+        x = self.b5(x)
+        x = self.b6(x)
+
+        output = self.c1(x)
         return output
 
 
