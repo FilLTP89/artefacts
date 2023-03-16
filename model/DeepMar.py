@@ -141,7 +141,7 @@ class DeepMar(tf.keras.Model):
             self.gen_l2_loss_tracker,
         ]
 
-    def training_step(self, data):
+    def train_step(self, data):
         x, y = data
         with tf.GradientTape() as tape:
             fake_y = self.generator(x)
@@ -203,7 +203,6 @@ class DeepMar(tf.keras.Model):
         )
         gen_l2_loss = tf.keras.losses.mean_squared_error(y, fake_y)
         gen_loss = gen_adv_loss + gen_l2_loss
-
 
         self.disc_loss_tracker.update_state(disc_loss)
         self.gen_loss_tracker.update_state(gen_loss)
