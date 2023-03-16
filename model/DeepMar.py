@@ -159,6 +159,35 @@ class DeepMar(tf.keras.Model):
             "disc_loss": disc_loss,
         }
 
+    def test_step(self, data):
+        x, y = data
+        fake_y = self.generator(x)
+        disc_fake_output = self.discriminator(tf.concat([x, fake_y], axis=-1))
+        disc_real_output = self.discriminator(tf.concat[x, y], axis=-1)
+
+        zeros_output = tf.zeros_like(disc_fake_output)
+        ones_output = tf.ones_like(disc_real_output)
+
+        output = tf.concat([zeros_output, ones_output], axis=0)
+        disc_loss = tf.keras.losses.binary_crossentropy(
+            output, tf.concat([disc_fake_output, disc_real_output], axis=0)
+        )
+
+        gen_adv_loss = tf.keras.losses.binary_crossentropy(
+            tf.ones_like(disc_fake_output), disc_fake_output
+        )
+        gen_l2_loss = tf.keras.losses.mean_squared_error(y, fake_y)
+        gen_loss = gen_adv_loss + gen_l2_loss
+
+        return {
+            "gen_adv_loss": gen_adv_loss,
+            "gen_l2_loss": gen_l2_loss,
+            "disc_loss": disc_loss,
+        }
+
+    def call(self, x):
+        return self.generator(x)
+
 
 if __name__ == "__main__":
     deepmar = DeepMar()

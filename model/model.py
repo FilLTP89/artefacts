@@ -4,6 +4,7 @@ from Unet import Unet
 from baseline import Baseline
 from MedGAN import MEDGAN
 from vgg19 import VGG19
+from DeepMar import DeepMAR
 from loss import (
     style_loss,
     content_loss,
@@ -43,9 +44,7 @@ class Model:
         self.pretrained_vgg_low_endian_path = (
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
-        self.pretrained_vgg_dicom_path = (
-            "model/saved_models/VGG19/dicom/fiery-galaxy-3/10/model.ckpt"
-        )
+        self.pretrained_vgg_dicom_path = "model/saved_models/VGG19/dicom/devoted-microwave-4/20/model.ckpt"  # acc : 0.8815
 
     def build_model(self):
         if self.model_name == "ResUnet":
