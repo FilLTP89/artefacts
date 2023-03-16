@@ -90,7 +90,6 @@ class Model:
             )
         elif self.model_name == "DeepMAR":
             model = DeepMar(
-                input_shape=(self.height, self.width, 1),
                 learning_rate=self.learning_rate,
             )
             model.compile()

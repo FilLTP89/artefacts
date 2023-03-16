@@ -114,16 +114,17 @@ class Discriminator(tf.keras.Model):
 
 
 class DeepMar(tf.keras.Model):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, learning_rate=3e-4):
+        super().__init__()
 
-        self.lr = 3e-4
+        self.learning_rate = learning_rate
+        self.shape = (512, 512, 1)
 
         self.generator = Generator()
         self.discriminator = Discriminator()
 
-        self.g_optimizer = tf.keras.optimizers.Adam(self.lr)
-        self.d_optimizer = tf.keras.optimizers.Adam(self.lr)
+        self.g_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
+        self.d_optimizer = tf.keras.optimizers.Adam(self.learning_rate)
 
     def training_step(self, data):
         x, y = data
@@ -196,7 +197,8 @@ class DeepMar(tf.keras.Model):
 
 if __name__ == "__main__":
     deepmar = DeepMar()
-    x = tf.random.normal((1, 512, 284, 1))
-    x1 = tf.random.normal((1, 512, 284, 1))
-    y = deepmar.Discriminator(x, x1)
-    deepmar.trainable_variables()
+    x = tf.random.normal((1, 512, 512, 1))
+    x1 = tf.random.normal((1, 512, 251284, 1))
+    y = deepmar(x)
+    y2 = deepmar.discriminator(tf.concat([x, y], axis=-1))
+    print(y.shape, y2.shape)
