@@ -155,7 +155,6 @@ class DicomDataset:
 
             x = x / np.max(x)
             y = y / np.max(y)
-
             return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
@@ -172,7 +171,6 @@ class DicomDataset:
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size
-        TO DO : Add other parameters (maybe look on youtube)
         """
         ds = tf.data.Dataset.from_tensor_slices(
             (x, y)

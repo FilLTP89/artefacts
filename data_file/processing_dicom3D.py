@@ -4,17 +4,21 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
-from sklearn.utils import shuffle
-from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
+from sklearn.utils import shuffle
 import pydicom as dicom
-import matplotlib.pyplot as plt
-from PIL import Image, ImageEnhance
 from skimage.transform import radon
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 """
-Train VGG as a classifier between the different types of images in order to use it later as a feature extractor
+We know that corresponding image from the different folder 
+have the same name and that the input are in folder 2 & 4 while the the 
+label are in folder 1.
+So we will create couple 
+(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
+We will exploit that in order to create the training and test couples.
 """
 
 
@@ -22,17 +26,21 @@ Train VGG as a classifier between the different types of images in order to use 
 # See how much volume they take, and how long we take to load them
 
 
-class DicomVGGDataset:
+class DicomDataset3D:
     def __init__(
         self,
-        path: str = "./data/dicom",
+        path: str = "./data/dicom/",
         width: int = 512,
         height: int = 512,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
-        test_saving_path: str = "data/",
-        seed: int = 42,
+        test_saving_path: str = "test/",
+        valid_saving_path: str = "valid/",
+        seed: int = 1612,
+        shuffle=True,
+        umax=4095,
+        umin=0,
     ) -> None:
 
         self.path = path
@@ -42,11 +50,13 @@ class DicomVGGDataset:
         self.saving_format = saving_format
         self.train_saving_path = path + train_saving_path
         self.test_saving_path = path + test_saving_path
+        self.valid_saving_path = path + valid_saving_path
 
         self.original_width = 400
         self.original_height = 400
 
         self.seed = seed
+        self.shuffle = shuffle
 
     def collect_data(self):
         """
@@ -68,7 +78,7 @@ class DicomVGGDataset:
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
                 ],
             )
-            for i in range(11)
+            for i in range(1, 11)
         ]
         high_metal_folder = [
             sorted(
@@ -79,7 +89,7 @@ class DicomVGGDataset:
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
                 ],
             )
-            for i in range(11)
+            for i in range(1, 11)
         ]
         low_metal_folder = [
             sorted(
@@ -88,40 +98,39 @@ class DicomVGGDataset:
                     int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
                 ],
             )
-            for i in range(11)
+            for i in range(1, 11)
         ]
-        no_metal_list = [item for sublist in no_metal_folder for item in sublist]
-        high_metal_list = [item for sublist in high_metal_folder for item in sublist]
-        low_metal_list = [item for sublist in low_metal_folder for item in sublist]
 
-        return (no_metal_list, high_metal_list, low_metal_list)
+        return (
+            no_metal_folder,
+            low_metal_folder,
+            high_metal_folder,
+        )
 
     def load_data(self):
         """
         Generate the training and testing (X,y) couple using the previously generated list
         """
         no_metal_list, high_metal_list, low_metal_list = self.collect_data()
-        no_metal_label = np.zeros(
-            (len(no_metal_list), 1), dtype=np.int8
-        )  # label 0 for no_metal_image
-        low_metal_label = (
-            np.zeros((len(low_metal_list), 1), dtype=np.int8) + 1
-        )  # label 1 for low_metal images
-        high_metal_label = (
-            np.zeros((len(high_metal_list), 1), dtype=np.int8) + 2
-        )  # label 2 for high_metal images
 
-        label = np.concatenate(
-            [no_metal_label, high_metal_label, low_metal_label], axis=0
-        )
-        input = no_metal_list + high_metal_list + low_metal_list
+        label = 2 * no_metal_list
+        input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
+            input,
+            label,
+            test_size=(2 / 11),
+            random_state=self.seed,
+            shuffle=self.shuffle,
         )  # 8 acquisition for training
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
+            X_test_1,
+            y_test_1,
+            test_size=0.5,
+            random_state=self.seed,
+            shuffle=self.shuffle,
         )  # 1 acquisition for validation & 1 acquisition for testing
 
+        # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
         # Train : acquisition 0 to 8
         # Test : acquisition 9
         # Valid : acquisition 10
@@ -135,24 +144,40 @@ class DicomVGGDataset:
         """
 
         def f(x, y):
-            x = x.decode("utf-8")
-            x = dicom.dcmread(x).pixel_array
-            x = np.array(x, dtype=np.float32)
-            x = x / np.max(x)
-            return x, y
+            empty_x = np.zeros((588, 588, len(x)))
+            empty_y = np.zeros((588, 588, len(y)))
+            for index, (acquisition_x, acquisition_y) in enumerate(
+                tqdm(zip(x, y), total=len(x))
+            ):
+                decoded_x = acquisition_x.decode("utf-8")
+                decoded_y = acquisition_y.decode("utf-8")
 
-        input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])
-        input = tf.expand_dims(input, axis=-1)  # (400,400) -> (400,400,1)
-        input.set_shape([self.width, self.height, 1])
-        label.set_shape([1])
+                image_x = dicom.dcmread(decoded_x).pixel_array
+                image_y = dicom.dcmread(decoded_y).pixel_array
+
+                image_x = np.array(image_x, dtype=np.float32)
+                image_y = np.array(image_y, dtype=np.float32)
+
+                image_x = image_x / 6500
+                image_y = image_y / 6500  # 6500 = random  number
+
+                empty_x[:, :, index] = image_x
+                empty_y[:, :, index] = image_y
+            return empty_x, empty_y
+
+        input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
+        input.set_shape([self.width, self.height, 588])  # channel at the end
+        label.set_shape([self.width, self.height, 588])
+
         input = tf.image.resize(input, [self.width, self.height])
+        label = tf.image.resize(label, [self.width, self.height])
+
         return input, label
 
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size
         """
-        y = tf.constant(y)
         ds = tf.data.Dataset.from_tensor_slices(
             (x, y)
         )  # Create a tf.data.Dataset from the couple
@@ -161,14 +186,11 @@ class DicomVGGDataset:
             num_parallel_calls=tf.data.AUTOTUNE,
         )  # apply the processing function on the couple (from path of raw image to sinongram)
         ds = ds.batch(
-            batch_size=self.batch_size,
+            self.batch_size,
             num_parallel_calls=tf.data.AUTOTUNE,
         )  # Batch the couple into batch of couple
-        # ds.cache() # The first time the dataset is iterated over, its elements will be cached either in the specified file or in memory. Subsequent iterations will use the cached data.
-        # Our data are too large to be cached in memory
-        ds = ds.prefetch(
-            buffer_size=tf.data.AUTOTUNE
-        )  # Prefetch the next batch while the current one is being processed
+        # ds = ds.prefetch(buffer_size=1024)
+        ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
         return ds
 
     def load_dataset(self):
@@ -197,22 +219,23 @@ class DicomVGGDataset:
         """
         self.train_ds.save(self.train_saving_path)
         self.test_ds.save(self.test_saving_path)
+        self.valid_ds.save(self.valid_saving_path)
 
-    def load(self, path):
+    def load(self):
         """
         TO DO : Loading h5 file.
         """
         self.train_ds = tf.data.Dataset.load(self.train_saving_path)
         self.test_ds = tf.data.Dataset.load(self.test_saving_path)
-        return dataset
+        self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
 
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = DicomVGGDataset(path="../data/dicom", batch_size=8)
+    dataset = DicomDataset3D(path="../data/dicom/", batch_size=3)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    print("Sample Generated!")
-    print("Training dataset : ", len(train_ds))
-    print("Validation dataset : ", len(valid_ds))
-    print("Testing dataset : ", len(test_ds))
+    for x, y in train_ds.take(1):
+        print(x.shape)
+        print(y.shape)
+        break
