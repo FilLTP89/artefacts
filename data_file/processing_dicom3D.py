@@ -1,241 +1,158 @@
-import tensorflow as tf
+import torch
 import numpy as np
+import os
+import pydicom as dicom
 from glob import glob
 import re
-import os
+
 from sklearn.model_selection import train_test_split
-from visualize import visualize_from_dataset
-import h5py
-from sklearn.utils import shuffle
-import pydicom as dicom
-from skimage.transform import radon
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-
-"""
-We know that corresponding image from the different folder 
-have the same name and that the input are in folder 2 & 4 while the the 
-label are in folder 1.
-So we will create couple 
-(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
-We will exploit that in order to create the training and test couples.
-"""
+import time
 
 
-# Try to save to use the save function to save the dataset in folder -> Actually took too much times
-# See how much volume they take, and how long we take to load them
+def collect_data(path):
+    """
+    Create list of path of the raw image from each folder
+
+    Args
+    ----
+
+    Returns
+    -----
+    sorted_folder_1_name(list) : list of the path of all image in folder 1 path
+    sorted_folder_2_name(list) : list of the path of all image in folder 2 path
+    sorted_folder_4_name(list) : list of the path of all image in folder 4 path
+    """
+    no_metal_folder = [
+        sorted(
+            glob(os.path.join(path, "No_metal/acquisition_" + str(i) + "/*")),
+            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
+        )
+        for i in range(1, 11)
+    ]
+    high_metal_folder = [
+        sorted(
+            glob(os.path.join(path, "High_metal/acquisition_" + str(i) + "/*")),
+            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
+        )
+        for i in range(1, 11)
+    ]
+    low_metal_folder = [
+        sorted(
+            glob(os.path.join(path, "Low_metal/acquisition_" + str(i) + "/*")),
+            key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)],
+        )
+        for i in range(1, 11)
+    ]
+
+    label = 2 * no_metal_folder
+    input = low_metal_folder + high_metal_folder
+
+    return input, label
 
 
-class DicomDataset3D:
-    def __init__(
-        self,
-        path: str = "./data/dicom/",
-        width: int = 512,
-        height: int = 512,
-        batch_size: int = 32,
-        saving_format: str = None,
-        train_saving_path: str = "train/",
-        test_saving_path: str = "test/",
-        valid_saving_path: str = "valid/",
-        seed: int = 1612,
-        shuffle=True,
-        umax=4095,
-        umin=0,
-    ) -> None:
+class Dicom3DDataset(torch.utils.data.Dataset):
+    def __init__(self, inputs_path, labels_path, shape=512) -> None:
+        super().__init__()
 
-        self.path = path
-        self.width = width
-        self.height = height
+        self.original_shape = 588
+        self.shape = shape
+        self.inputs_path = inputs_path
+        self.labels_path = labels_path
+
+    def __len__(self):
+        return len(self.inputs_path)
+
+    def __getitem__(self, index):
+
+        empty_x = np.zeros((self.original_shape, self.original_shape, 588))
+        empty_y = np.zeros((self.original_shape, self.original_shape, 588))
+
+        for j in range(588):
+
+            x = self.inputs_path[index][j]
+            y = self.labels_path[index][j]
+
+            x = dicom.dcmread(x).pixel_array
+            y = dicom.dcmread(y).pixel_array
+
+            x = np.array(x, dtype=np.float32)
+            y = np.array(y, dtype=np.float32)
+
+            x = x / np.max(x)
+            y = y / np.max(y)
+
+            empty_x[index, :, :] = x  # channel first for torch
+            empty_y[index, :, :] = y
+
+        return empty_x, empty_y
+
+
+class Dicom3DModule:
+    def __init__(self, PATH, batch_size=1) -> None:
+        self.PATH = PATH
         self.batch_size = batch_size
-        self.saving_format = saving_format
-        self.train_saving_path = path + train_saving_path
-        self.test_saving_path = path + test_saving_path
-        self.valid_saving_path = path + valid_saving_path
+        self.inputs_path, self.labels_path = collect_data(self.PATH)
 
-        self.original_width = 400
-        self.original_height = 400
-
-        self.seed = seed
-        self.shuffle = shuffle
-
-    def collect_data(self):
-        """
-        Create list of path of the raw image from each folder
-
-        Args
-        ----
-
-        Returns
-        -----
-        sorted_folder_1_name(list) : list of the path of all image in folder 1 path
-        sorted_folder_2_name(list) : list of the path of all image in folder 2 path
-        sorted_folder_4_name(list) : list of the path of all image in folder 4 path
-        """
-        no_metal_folder = [
-            sorted(
-                glob(os.path.join(self.path, "no_metal/acquisition_" + str(i) + "/*")),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
-            )
-            for i in range(1, 11)
-        ]
-        high_metal_folder = [
-            sorted(
-                glob(
-                    os.path.join(self.path, "high_metal/acquisition_" + str(i) + "/*")
-                ),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
-            )
-            for i in range(1, 11)
-        ]
-        low_metal_folder = [
-            sorted(
-                glob(os.path.join(self.path, "low_metal/acquisition_" + str(i) + "/*")),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
-            )
-            for i in range(1, 11)
-        ]
-
-        return (
-            no_metal_folder,
-            low_metal_folder,
-            high_metal_folder,
+    def train_test_split(self):
+        (
+            self.train_inputs,
+            self.test_inputs,
+            self.train_labels,
+            self.test_labels,
+        ) = train_test_split(
+            self.inputs_path, self.labels_path, test_size=0.1, random_state=42
         )
 
-    def load_data(self):
-        """
-        Generate the training and testing (X,y) couple using the previously generated list
-        """
-        no_metal_list, high_metal_list, low_metal_list = self.collect_data()
+    def train_val_split(self):
+        (
+            self.train_inputs,
+            self.val_inputs,
+            self.train_labels,
+            self.val_labels,
+        ) = train_test_split(
+            self.train_inputs, self.train_labels, test_size=0.1, random_state=42
+        )
 
-        label = 2 * no_metal_list
-        input = high_metal_list + low_metal_list
-        X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input,
-            label,
-            test_size=(2 / 11),
-            random_state=self.seed,
-            shuffle=self.shuffle,
-        )  # 8 acquisition for training
-        X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1,
-            y_test_1,
-            test_size=0.5,
-            random_state=self.seed,
-            shuffle=self.shuffle,
-        )  # 1 acquisition for validation & 1 acquisition for testing
+    def train_loader(self):
+        self.train_dataset = Dicom3DDataset(
+            inputs_path=self.train_inputs, labels_path=self.train_labels
+        )
+        self.train_loader = torch.utils.data.DataLoader(
+            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0
+        )
 
-        # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
-        # Train : acquisition 0 to 8
-        # Test : acquisition 9
-        # Valid : acquisition 10
-        return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
+    def val_loader(self):
+        self.val_dataset = Dicom3DDataset(
+            inputs_path=self.val_inputs,
+            labels_path=self.val_labels,
+        )
+        self.val_loader = torch.utils.data.DataLoader(
+            self.val_dataset, batch_size=self.batch_size, shuffle=True, num_workers=10
+        )
 
-    def preprocess(self, x, y):
-        """
-        TO DO : store the theta parameter somewhere
-        TO DO : documentation for this function
-
-        """
-
-        def f(x, y):
-            empty_x = np.zeros((588, 588, len(x)))
-            empty_y = np.zeros((588, 588, len(y)))
-            for index, (acquisition_x, acquisition_y) in enumerate(
-                tqdm(zip(x, y), total=len(x))
-            ):
-                decoded_x = acquisition_x.decode("utf-8")
-                decoded_y = acquisition_y.decode("utf-8")
-
-                image_x = dicom.dcmread(decoded_x).pixel_array
-                image_y = dicom.dcmread(decoded_y).pixel_array
-
-                image_x = np.array(image_x, dtype=np.float32)
-                image_y = np.array(image_y, dtype=np.float32)
-
-                image_x = image_x / 6500
-                image_y = image_y / 6500  # 6500 = random  number
-
-                empty_x[:, :, index] = image_x
-                empty_y[:, :, index] = image_y
-            return empty_x, empty_y
-
-        input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
-        input.set_shape([self.width, self.height, 588])  # channel at the end
-        label.set_shape([self.width, self.height, 588])
-
-        input = tf.image.resize(input, [self.width, self.height])
-        label = tf.image.resize(label, [self.width, self.height])
-
-        return input, label
-
-    def tf_dataset(self, x, y):
-        """
-        TO DO : Understand the buffer size
-        """
-        ds = tf.data.Dataset.from_tensor_slices(
-            (x, y)
-        )  # Create a tf.data.Dataset from the couple
-        ds = ds.map(
-            map_func=self.preprocess,
-            num_parallel_calls=tf.data.AUTOTUNE,
-        )  # apply the processing function on the couple (from path of raw image to sinongram)
-        ds = ds.batch(
-            self.batch_size,
-            num_parallel_calls=tf.data.AUTOTUNE,
-        )  # Batch the couple into batch of couple
-        # ds = ds.prefetch(buffer_size=1024)
-        ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
-        return ds
-
-    def load_dataset(self):
-        train_ds = self.tf_dataset(self.X_train, self.y_train)
-        valid_ds = self.tf_dataset(self.X_valid, self.y_valid)
-        test_ds = self.tf_dataset(self.X_test, self.y_test)
-        return train_ds, valid_ds, test_ds
+    def test_loader(self):
+        self.test_dataset = Dicom3DDataset(
+            inputs_path=self.test_inputs, labels_path=self.test_labels
+        )
+        self.test_loader = torch.utils.data.DataLoader(
+            self.test_dataset, batch_size=self.batch_size, shuffle=True, num_workers=10
+        )
 
     def setup(self):
-        """
-        Generate the different train and test sample either as array or tf.data.Dataset
-        """
-        (
-            (self.X_train, self.y_train),
-            (self.X_valid, self.y_valid),
-            (self.X_test, self.y_test),
-        ) = self.load_data()
-        self.train_ds, self.valid_ds, self.test_ds = self.load_dataset()
-
-    def save(self):
-        """
-        TO DO : test this method for both h5 and normal format
-        """
-        """
-        Save the train and test dataset in their corresponding path
-        """
-        self.train_ds.save(self.train_saving_path)
-        self.test_ds.save(self.test_saving_path)
-        self.valid_ds.save(self.valid_saving_path)
-
-    def load(self):
-        """
-        TO DO : Loading h5 file.
-        """
-        self.train_ds = tf.data.Dataset.load(self.train_saving_path)
-        self.test_ds = tf.data.Dataset.load(self.test_saving_path)
-        self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
+        self.train_test_split()
+        self.train_val_split()
+        self.train_loader()
+        self.val_loader()
+        self.test_loader()
 
 
 if __name__ == "__main__":
-    print("Generating sample ....")
-    dataset = DicomDataset3D(path="../data/dicom/", batch_size=3)
-    dataset.setup()
-    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    for x, y in train_ds.take(1):
-        print(x.shape)
-        print(y.shape)
-        break
+    module = Dicom3DModule(PATH="../data/dicom/", batch_size=1)
+    module.setup()
+    train_loader = module.train_loader
+
+    time_start = time.time()
+    for index, data in enumerate(train_loader):
+        print(f"batch : {index}, x : {data[0].shape}, y : {data[1].shape}")
+    time_end = time.time()
+    print(f"Time taken : {time_end - time_start}")
