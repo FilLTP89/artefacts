@@ -164,7 +164,9 @@ class DicomDataset:
 
             sinogram_without_metal = np.array(sinogram_without_metal, dtype=np.float32)
             sinogram_y = np.array(sinogram_y, dtype=np.float32)
-            return sinogram_without_metal, sinogram_y
+            return sinogram_without_metal / max(
+                sinogram_without_metal.flatten()
+            ), sinogram_y / max(sinogram_y.flatten())
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
         input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
