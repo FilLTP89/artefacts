@@ -238,7 +238,7 @@ class DicomDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = DicomDataset(path="../data/dicom/", batch_size=8)
+    dataset = DicomDataset(path="../data/dicom/", batch_size=3)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     dataset.save()
