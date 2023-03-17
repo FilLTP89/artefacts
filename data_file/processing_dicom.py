@@ -36,7 +36,7 @@ class DicomDataset:
         train_saving_path: str = "train/",
         test_saving_path: str = "test/",
         valid_saving_path: str = "valid/",
-        seed: int = 1612,
+        seed: int = 42,  # 1612
         shuffle=True,
         umax=4095,
         umin=0,
@@ -99,6 +99,12 @@ class DicomDataset:
             )
             for i in range(11)
         ]
+
+        for index in range(len(no_metal_folder)):
+            no_metal_folder[index] = no_metal_folder[index][:581]
+            high_metal_folder[index] = high_metal_folder[index][7:]
+            low_metal_folder[index] = low_metal_folder[index][7:]
+
         no_metal_list = [item for sublist in no_metal_folder for item in sublist]
         high_metal_list = [item for sublist in high_metal_folder for item in sublist]
         low_metal_list = [item for sublist in low_metal_folder for item in sublist]
@@ -226,10 +232,11 @@ class DicomDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = DicomDataset(path="../data/dicom/", batch_size=3)
+    dataset = DicomDataset(path="../data/dicom/", batch_size=1)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    for x, y in train_ds.take(1):
-        print(x.shape)
-        print(y.shape)
-        break
+    for x, y in train_ds.take(15):
+        fig, axs = plt.subplots(1, 2, figsize=(10, 10))
+        axs[0].imshow(x[0, :, :, 0], cmap="bone")
+        axs[1].imshow(y[0, :, :, 0], cmap="bone")
+        plt.show()
