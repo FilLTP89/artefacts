@@ -5,8 +5,8 @@ from types import SimpleNamespace
 # defaults
 default_config = SimpleNamespace(
     img_size=512,  # image size has to be a power of two for resunet
-    batch_size=8,  # Small batch size since we don't have much data
-    model="ResUnet",  # resunet34d, unet
+    batch_size=3,  # Small batch size since we don't have much data
+    model="MedGAN",  # resunet34d, unet
     augment=False,  # use data augmentation
     epochs=10,
     learning_rate=2e-6,
@@ -19,7 +19,7 @@ default_config = SimpleNamespace(
     mixed_precision=False,  # use automatic mixed precision -> fasten training
     run_name="training_run",
     big_endian=False,
-    one_batch_training=False,
+    one_batch_training=True,
     pretrained_MedGAN=False,
     dicom=True,
 )
