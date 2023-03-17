@@ -120,9 +120,9 @@ class MEDGAN(tf.keras.Model):
         self.N_g = N_g  # number of training iterations for generator
         # TO DO : Do training as 1-1 and change the learning rate of the generator to be higher ?
 
-        self.lambda_1 = 1e-6
-        self.lambda_2 = 1e-6
-        self.lambda_3 = 1e-6
+        self.lambda_1 = 20
+        self.lambda_2 = 1e-4
+        self.lambda_3 = 1e-4
 
         self.g_optimizer = tf.keras.optimizers.Adam(
             learning_rate,
