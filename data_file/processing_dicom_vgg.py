@@ -137,10 +137,8 @@ class DicomVGGDataset:
         def f(x, y):
             x = x.decode("utf-8")
             x = dicom.dcmread(x).pixel_array
-            theta = np.linspace(0.0, 180.0, max(y.shape), endpoint=False)
-            x = x / max(x.flatten()) * 255
-            x = radon(x, theta=theta, circle=True)
             x = np.array(x, dtype=np.float32)
+            x = x / np.max(x)
             return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])

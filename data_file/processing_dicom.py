@@ -149,24 +149,14 @@ class DicomDataset:
             x = x.decode("utf-8")
             y = y.decode("utf-8")
             y = dicom.dcmread(y).pixel_array
-            theta = np.linspace(0.0, 180.0, max(y.shape), endpoint=False)
-            y = y / max(y.flatten())
-            sinogram_y = radon(y, theta=theta, circle=True)
+            x = dicom.dcmread(x).pixel_array
+            x = np.array(x, dtype=np.float32)
+            y = np.array(y, dtype=np.float32)
 
-            with_metal = dicom.dcmread(x).pixel_array
-            with_metal = with_metal / max(with_metal.flatten())
-            metal_alone = with_metal >= 1
+            x = x / np.max(x)
+            y = y / np.max(y)
 
-            sinogram_input = radon(with_metal, theta=theta, circle=True)
-            sinogram_metal = radon(metal_alone, theta=theta, circle=True)
-
-            sinogram_without_metal = (1 - sinogram_metal >= 1) * sinogram_input
-
-            sinogram_without_metal = np.array(sinogram_without_metal, dtype=np.float32)
-            sinogram_y = np.array(sinogram_y, dtype=np.float32)
-            return sinogram_without_metal / max(
-                sinogram_without_metal.flatten()
-            ), sinogram_y / max(sinogram_y.flatten())
+            return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
         input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
@@ -241,11 +231,7 @@ if __name__ == "__main__":
     dataset = DicomDataset(path="../data/dicom/", batch_size=3)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    dataset.save()
-    """ print("Sample Generated!")
-    fig, ax = plt.subplots(8, 2, figsize=(10, 10))
     for x, y in train_ds.take(1):
-        for i in range(8):
-            ax[i, 0].imshow(x[i], cmap=plt.cm.bone, interpolation="nearest")
-            ax[i, 1].imshow(y[i], cmap=plt.cm.bone, interpolation="nearest")
-        plt.show() """
+        print(x.shape)
+        print(y.shape)
+        break
