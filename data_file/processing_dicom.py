@@ -223,19 +223,9 @@ class DicomDataset:
         """
         Save the train and test dataset in their corresponding path
         """
-        if self.saving_format == ("hdf5" or "h5"):
-            with h5py.File(f"{self.path}/save/train_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.train_ds),), dtype="i")
-                for i, data in enumerate(self.train_ds):
-                    dset[i] = data
-            with h5py.File(f"{self.path}/save/test_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.test_ds),), dtype="i")
-                for i, data in enumerate(self.test_ds):
-                    dset[i] = data
-        else:
-            self.train_ds.save(self.train_saving_path)
-            self.test_ds.save(self.test_saving_path)
-            self.valid_ds.save(self.valid_saving_path)
+        self.train_ds.save(self.train_saving_path)
+        self.test_ds.save(self.test_saving_path)
+        self.valid_ds.save(self.valid_saving_path)
 
     def load(self):
         """
@@ -251,10 +241,11 @@ if __name__ == "__main__":
     dataset = DicomDataset(path="../data/dicom/", batch_size=8)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    print("Sample Generated!")
+    dataset.save()
+    """ print("Sample Generated!")
     fig, ax = plt.subplots(8, 2, figsize=(10, 10))
     for x, y in train_ds.take(1):
         for i in range(8):
             ax[i, 0].imshow(x[i], cmap=plt.cm.bone, interpolation="nearest")
             ax[i, 1].imshow(y[i], cmap=plt.cm.bone, interpolation="nearest")
-        plt.show()
+        plt.show() """

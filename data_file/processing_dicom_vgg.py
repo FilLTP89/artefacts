@@ -198,24 +198,15 @@ class DicomVGGDataset:
         """
         Save the train and test dataset in their corresponding path
         """
-        if self.saving_format == ("hdf5" or "h5"):
-            with h5py.File(f"{self.path}/save/train_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.train_ds),), dtype="i")
-                for i, data in enumerate(self.train_ds):
-                    dset[i] = data
-            with h5py.File(f"{self.path}/save/test_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.test_ds),), dtype="i")
-                for i, data in enumerate(self.test_ds):
-                    dset[i] = data
-        else:
-            self.train_ds.save(self.train_saving_path)
-            self.test_ds.save(self.test_saving_path)
+        self.train_ds.save(self.train_saving_path)
+        self.test_ds.save(self.test_saving_path)
 
     def load(self, path):
         """
         TO DO : Loading h5 file.
         """
-        dataset = tf.data.Dataset.load(path)
+        self.train_ds = tf.data.Dataset.load(self.train_saving_path)
+        self.test_ds = tf.data.Dataset.load(self.test_saving_path)
         return dataset
 
 
