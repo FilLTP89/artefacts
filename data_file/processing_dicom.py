@@ -38,6 +38,8 @@ class DicomDataset:
         valid_saving_path: str = "valid/",
         seed: int = 1612,
         shuffle=True,
+        umax=4095,
+        umin=0,
     ) -> None:
 
         self.path = path
@@ -148,12 +150,12 @@ class DicomDataset:
             y = y.decode("utf-8")
             y = dicom.dcmread(y).pixel_array
             theta = np.linspace(0.0, 180.0, max(y.shape), endpoint=False)
-            y = y / max(y.flatten()) * 255
+            y = y / max(y.flatten())
             sinogram_y = radon(y, theta=theta, circle=True)
 
             with_metal = dicom.dcmread(x).pixel_array
-            with_metal = with_metal / max(with_metal.flatten()) * 255
-            metal_alone = with_metal >= 255
+            with_metal = with_metal / max(with_metal.flatten())
+            metal_alone = with_metal >= 1
 
             sinogram_input = radon(with_metal, theta=theta, circle=True)
             sinogram_metal = radon(metal_alone, theta=theta, circle=True)
