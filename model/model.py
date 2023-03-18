@@ -44,7 +44,9 @@ class Model:
         self.pretrained_vgg_low_endian_path = (
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
-        self.pretrained_vgg_dicom_path = "model/saved_models/VGG19/dicom/devoted-microwave-4/20/model.ckpt"  # acc : 0.8815
+        self.pretrained_vgg_dicom_path = (
+            "model/saved_models/VGG19/dicom/olive-salad-6/20/model.ckpt"  # acc : 0.8815
+        )
 
     def build_model(self):
         if self.model_name == "ResUnet":
