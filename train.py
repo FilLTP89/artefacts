@@ -171,7 +171,7 @@ def train_dicom(config):
     print("Num GPUs Available:", len(gpus))
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
-        print("Creating the model ...")
+        print("Creating the model with lr =", config.learning_rate)
         model = Model(
             model_name=config.model,
             input_shape=config.img_size,
