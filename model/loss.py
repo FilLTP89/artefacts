@@ -70,7 +70,7 @@ def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_li
         y_true_extractor_features, y_pred_extractor_features
     ):
         loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
-        print("Content loss value : ", tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2)))
+    print("Content loss for batch value : ", loss)
     return loss
 
 
