@@ -22,6 +22,7 @@ default_config = SimpleNamespace(
     one_batch_training=True,
     pretrained_MedGAN=False,
     dicom=True,
+    save_weights=False,
 )
 
 
@@ -124,6 +125,12 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.dicom,
         help="Use dicom",
+    )
+    argparse.add_argument(
+        "--save_weights",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.save_weights,
+        help="Save weights",
     )
     args = argparser.parse_args()
     vars(default_config).update(vars(args))

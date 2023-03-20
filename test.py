@@ -1,8 +1,9 @@
 import tensorflow as tf
 from data_file.processing import Dataset
+from data_file.processing_dicom import DicomDataset
 from data_file.utils import save_file
 from model.metrics import ssim
-from model.model import Model
+from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 
 
@@ -10,6 +11,16 @@ def load_model(model_path=None):
     model = tf.keras.models.load_model(
         "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
     )
+    model.compile()
+    return model
+
+
+def load_model_with_weights(
+    model_path="model/saved_models/MedGAN/dicom/peachy-breeze-4/20/model.ckpt",
+):
+    model = MEDGAN()
+    model.build(input_shape=(None, 512, 512, 1))
+    model.save_weights(model_path)
     model.compile()
     return model
 
@@ -32,11 +43,11 @@ def test(big_endian=False, model_name="ResUnet"):
 
 def generate_image():
     print("Generate model...")
-    model = load_model()
+    model = load_model_with_weights()
     model = model.generator
     print("Model generated!")
 
-    dataset = Dataset(height=512, width=512, batch_size=32, big_endian=False)
+    dataset = DicomDataset(height=512, width=512, batch_size=32)
     dataset.setup()
     batch = 0
     print("Generating train images...")
@@ -48,7 +59,6 @@ def generate_image():
                 preds[i],
                 y[i],
                 name=f"train_batch{batch}_sample_{i}",
-                big_endian=False,
             )
 
 
@@ -84,5 +94,6 @@ def test_metrics():
 
 
 if __name__ == "__main__":
-    test_metrics()
+    # test_metrics()
     # test(model_name="Baseline")
+    generate_image()
