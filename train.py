@@ -37,7 +37,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     else:
         endian_path = "big_endian/" if config.big_endian else "low_endian/"
     dicom_path = "dicom/" if config.dicom else ""
-    print("Saving weights only :", config.save_weight)
+    print("Saving weights only :", config.save_weights)
     if config.wandb:
         callbacks = [
             tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
@@ -48,7 +48,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 + endian_path
                 + config._settings.run_name
                 + "/{epoch:02d}/model.ckpt",
-                save_weights_only=config.save_weight,  # save only the weights
+                save_weights_only=config.save_weights,  # save only the weights
             ),
         ]
     model.fit(
