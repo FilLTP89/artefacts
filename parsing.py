@@ -126,7 +126,7 @@ def parse_args():
         default=default_config.dicom,
         help="Use dicom",
     )
-    argparse.add_argument(
+    argparser.add_argument(
         "--save_weights",
         action=argparse.BooleanOptionalAction,
         default=default_config.save_weights,
