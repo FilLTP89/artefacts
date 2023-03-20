@@ -70,6 +70,7 @@ def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_li
         y_true_extractor_features, y_pred_extractor_features
     ):
         loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
+        print("Content loss value : ", tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2)))
     return loss
 
 
@@ -91,13 +92,16 @@ def generator_gan_loss(y_pred):
     """
     return -tf.reduce_mean(tf.math.log(y_pred), axis=0)[0]
 
-# Discriminator loss 
-def discriminator_loss(y_true_disc,y_pred_disc):
+
+# Discriminator loss
+def discriminator_loss(y_true_disc, y_pred_disc):
     """
     y_true are the true label : 1 for real image and 0 for fake image
     y_pred is the output of the discriminator # (bs, 1)
     """
-    return -tf.reduce_mean( tf.math.log(1- y_pred_disc) +  tf.math.log(y_true_disc), axis=0)[0]
+    return -tf.reduce_mean(
+        tf.math.log(1 - y_pred_disc) + tf.math.log(y_true_disc), axis=0
+    )[0]
 
 
 class FocalFrequencyLoss(tf.keras.layers.Layer):
