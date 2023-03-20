@@ -168,8 +168,9 @@ class MEDGAN(tf.keras.Model):
 
     def train_step(self, data):
         x, y = data
-        if (tf.math.reduce_any(tf.math.is_nan(x)) == False) and (
-            tf.math.reduce_any(tf.math.is_nan(y)) == False
+        if tf.logical_and(
+            (tf.math.reduce_any(tf.math.is_nan(x)) == False),
+            (tf.math.reduce_any(tf.math.is_nan(y)) == False),
         ):
             for _ in range(self.N_g):  # N_g = 3
                 with tf.GradientTape() as gen_tape:
