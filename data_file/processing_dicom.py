@@ -161,6 +161,11 @@ class DicomDataset:
 
             x = x / np.max(x)
             y = y / np.max(y)
+
+            if np.any(np.isnan(x)):
+                print("Found NaN in x")
+            if np.any(np.isnan(y)):
+                print("Found NaN in y")
             return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
@@ -232,11 +237,8 @@ class DicomDataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = DicomDataset(path="../data/dicom/", batch_size=1)
+    dataset = DicomDataset(path="../data/dicom/", batch_size=32)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    for x, y in train_ds.take(15):
-        fig, axs = plt.subplots(1, 2, figsize=(10, 10))
-        axs[0].imshow(x[0, :, :, 0], cmap="bone")
-        axs[1].imshow(y[0, :, :, 0], cmap="bone")
-        plt.show()
+    for x, y in train_ds:
+        print()
