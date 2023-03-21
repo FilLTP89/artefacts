@@ -69,7 +69,10 @@ def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_li
     for feature_ytrue, feature_ypred in zip(
         y_true_extractor_features, y_pred_extractor_features
     ):
-        loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2))
+        _, width, height, channels = K.int_shape(feature_ytrue)
+        loss += tf.reduce_mean(tf.norm(feature_ytrue - feature_ypred, ord=2)) / (
+            width * height * channels
+        )
     return loss
 
 
