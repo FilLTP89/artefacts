@@ -159,8 +159,8 @@ class DicomDataset:
             x = np.array(x, dtype=np.float32)
             y = np.array(y, dtype=np.float32)
 
-            x = x / np.max(x)
-            y = y / np.max(y)
+            #x = x / np.max(x)
+            #y = y / np.max(y)
 
             if np.any(np.isnan(x)):
                 print("Found NaN in x")
