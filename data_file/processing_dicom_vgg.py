@@ -138,7 +138,7 @@ class DicomVGGDataset:
             x = x.decode("utf-8")
             x = dicom.dcmread(x).pixel_array
             x = np.array(x, dtype=np.float32)
-            # x = x / np.max(x)
+            x = (x - np.min(x)) / (np.max(x) - np.min(x))
             return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.int8])
