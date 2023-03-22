@@ -51,7 +51,7 @@ def generate_image():
     dataset.setup()
     batch = 0
     print("Generating train images...")
-    for batch, (x, y) in enumerate(dataset.train_ds.take(1)):
+    for batch, (x, y) in enumerate(dataset.train_ds.take(6)):
         preds = model(x)
         for i in range(8):
             save_file(
