@@ -125,15 +125,18 @@ class MEDGAN(tf.keras.Model):
         self.lambda_2 = 1e-4
         self.lambda_3 = 1
 
+        # self.learning_rate = learning_rate
+        self.learning_rate = 2e-6
+
         self.g_optimizer = tf.keras.optimizers.Adam(
-            learning_rate,
+            self.learning_rate,
             ema_momentum=0.5,
-            clipnorm=1,
+            # clipnorm=1,
         )
         self.d_optimizer = tf.keras.optimizers.Adam(
-            learning_rate,
+            self.learning_rate,
             ema_momentum=0.5,
-            clipnorm=1
+            # clipnorm=1,
         )
 
         self.generator = generator or ConsNet(6, self.shape)

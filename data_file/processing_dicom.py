@@ -38,8 +38,6 @@ class DicomDataset:
         valid_saving_path: str = "valid/",
         seed: int = 2,  # 1612
         shuffle=True,
-        umax=4095,
-        umin=0,
     ) -> None:
 
         self.path = path
