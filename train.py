@@ -11,7 +11,7 @@ from wandb.keras import WandbMetricsLogger
 import time
 from tensorflow.keras import mixed_precision
 
-mixed_precision.set_global_policy("mixed_float16")
+#mixed_precision.set_global_policy("mixed_float16")
 
 
 def scheduler(epoch, lr):
