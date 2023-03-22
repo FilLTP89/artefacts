@@ -126,7 +126,7 @@ class MEDGAN(tf.keras.Model):
         self.lambda_3 = 1
 
         # self.learning_rate = learning_rate
-        self.learning_rate = 2e-6
+        self.learning_rate = learning_rate
 
         self.g_optimizer = tf.keras.optimizers.Adam(
             self.learning_rate,
