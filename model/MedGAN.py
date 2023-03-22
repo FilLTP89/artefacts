@@ -73,6 +73,7 @@ class U_block(tf.keras.Model):
         for i, filter in enumerate(filters[2:]):
             y = self.up_conv_block(y, encoder_list[i + 2], filter)
         y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
+        y = kl.Activation("tanh", dtype="float32")(y)
         return y
 
     def build_model(self):
