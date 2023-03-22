@@ -11,7 +11,7 @@ from wandb.keras import WandbMetricsLogger
 import time
 from tensorflow.keras import mixed_precision
 
-#mixed_precision.set_global_policy("mixed_float16")
+# mixed_precision.set_global_policy("mixed_float16")
 
 
 def scheduler(epoch, lr):
@@ -57,14 +57,8 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         epochs=config.epochs,
         callbacks=callbacks,
     )
-    """ model.save_weights(
-        config.saving_path
-        + dicom_path
-        + endian_path
-        + config._settings.run_name
-        + "/last_save/model.ckpt"
-    ) """
     model.evaluate(test_ds)
+    print("Finished training!")
 
 
 def initalize_project_name(config):

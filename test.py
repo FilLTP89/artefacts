@@ -16,7 +16,7 @@ def load_model(model_path=None):
 
 
 def load_model_with_weights(
-    model_path="/model/saved_models/MedGAN/dicom/grateful-sunset-15/03/model.ckpt",
+    model_path="/model/saved_models/MedGAN/dicom/grateful-sunset-15/06/model.ckpt",
 ):
     model = MEDGAN()
     model.build(input_shape=(None, 512, 512, 1))
@@ -55,10 +55,7 @@ def generate_image():
         preds = model(x)
         for i in range(8):
             save_file(
-                x[i],
-                preds[i],
-                y[i],
-                name=f"train_batch{batch}_sample_{i}",
+                x[i], preds[i], y[i], name=f"train_batch{batch}_sample_{i}", dicom=True
             )
 
 
