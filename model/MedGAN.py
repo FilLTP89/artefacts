@@ -73,7 +73,6 @@ class U_block(tf.keras.Model):
         for i, filter in enumerate(filters[2:]):
             y = self.up_conv_block(y, encoder_list[i + 2], filter)
         y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
-        y = kl.Activation("tanh", dtype="float32")(y)
         return y
 
     def build_model(self):
@@ -95,7 +94,7 @@ class ConsNet(tf.keras.Model):
         x = inputs
         for i in range(self.n_block):
             x = self.Ublock[i](x)
-        # x = kl.Activation("sigmoid", dtype="float32")(x)
+        y = kl.Activation("tanh", dtype="float32")(x)
         return x
 
 
