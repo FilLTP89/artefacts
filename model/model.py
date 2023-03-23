@@ -44,7 +44,7 @@ class Model:
         self.pretrained_vgg_low_endian_path = (
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
-        self.pretrained_vgg_dicom_path = "model/saved_models/VGG19/dicom/wobbly-waterfall-7/19/model.ckpt"  # acc : 0.8815
+        self.pretrained_vgg_dicom_path = "model/saved_models/VGG19/dicom/grateful-capybara-8/20/model.ckpt"  # acc : dicom normalize between -1 and 1
 
     def build_model(self):
         if self.model_name == "ResUnet":

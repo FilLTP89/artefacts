@@ -53,11 +53,11 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
         ]
     model.fit(
         train_ds,
-        validation_data=valid_ds,
+        validation_data=test_ds,
         epochs=config.epochs,
         callbacks=callbacks,
     )
-    model.evaluate(test_ds)
+    model.evaluate(valid_ds)
     print("Finished training!")
 
 
