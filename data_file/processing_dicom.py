@@ -36,7 +36,7 @@ class DicomDataset:
         train_saving_path: str = "train/",
         test_saving_path: str = "test/",
         valid_saving_path: str = "valid/",
-        seed: int = 2,  # 1612
+        seed: int = 42,  # 1612
         shuffle=True,
     ) -> None:
 
