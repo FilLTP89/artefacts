@@ -34,14 +34,6 @@ def save_file(
 
         cmap = plt.cm.bone if dicom else plt.cm.gray
 
-        x = Image.fromarray(
-            np.array(
-                tf.squeeze(x, axis=-1),
-            )
-        )
-        preds = Image.fromarray(np.array(tf.squeeze(preds, axis=-1)))
-        y = Image.fromarray(np.array(tf.squeeze(y, axis=-1)))
-
     plt.imsave(
         path + name + "_original_image" + extension,
         x,
