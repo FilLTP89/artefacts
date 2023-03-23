@@ -31,8 +31,10 @@ def save_file(
         y = enhancer_y.enhance(brightness_fact)
 
     else:
-
         cmap = plt.cm.bone if dicom else plt.cm.gray
+        x = np.array(tf.squeeze(x, axis=-1))
+        preds = np.array(tf.squeeze(preds, axis=-1))
+        y = np.array(tf.squeeze(y, axis=-1))
 
     plt.imsave(
         path + name + "_original_image" + extension,
