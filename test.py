@@ -16,7 +16,7 @@ def load_model(model_path=None):
 
 
 def load_model_with_weights(
-    model_path="model/saved_models/MedGAN/dicom/grateful-sunset-15/17/model.ckpt",
+    model_path="artefacts/model/saved_models/MedGAN/dicom/floral-flower-18/20/model.ckpt",
 ):
     model = MEDGAN()
     model.build(input_shape=(None, 512, 512, 1))
