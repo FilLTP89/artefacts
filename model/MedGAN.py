@@ -95,7 +95,7 @@ class ConsNet(tf.keras.Model):
         for i in range(self.n_block):
             x = self.Ublock[i](x)
         y = kl.Activation("tanh", dtype="float32")(x)
-        return x
+        return y
 
 
 class MEDGAN(tf.keras.Model):
