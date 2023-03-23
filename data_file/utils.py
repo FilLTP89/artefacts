@@ -39,7 +39,7 @@ def save_file(
                 tf.squeeze(x, axis=-1),
             )
         )
-        preds = Image.fromarray(np.array(tf.squeeze(preds)))
+        preds = Image.fromarray(np.array(tf.squeeze(preds, axis=-1)))
         y = Image.fromarray(np.array(tf.squeeze(y, axis=-1)))
 
     plt.imsave(
