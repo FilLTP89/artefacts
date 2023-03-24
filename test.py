@@ -20,7 +20,7 @@ def load_model_with_weights(
 ):
     model = MEDGAN()
     model.build(input_shape=(None, 512, 512, 1))
-    model.load_weights(model_path)
+    model.load_weights(model_path).expect_partial()
     model.compile()
     return model
 
