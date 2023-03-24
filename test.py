@@ -7,16 +7,16 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 
 
-def load_model(model_path=None):
-    model = tf.keras.models.load_model(
-        "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
-    )
+def load_model(
+    model_path="model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20",
+):
+    model = tf.keras.models.load_model(model_path)
     model.compile()
     return model
 
 
 def load_model_with_weights(
-    model_path="/model/saved_models/MedGAN/dicom/ethereal-mountain-23/05/model.ckpt",
+    model_path="model/saved_models/MedGAN/dicom/ethereal-mountain-23/05/model.ckpt",
 ):
     model = MEDGAN()
     model.build(input_shape=(None, 512, 512, 1))
