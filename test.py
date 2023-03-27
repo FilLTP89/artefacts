@@ -7,6 +7,16 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 
 
+def best_model_path(model_name):
+    if model_name == 'MedGAN':
+        return "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
+    elif model_name == 'ResUnet':
+        return "model/saved_models/ResUnet/big_endian/heartfelt-etchings-23/20"
+    elif model_name == "DeepMar":
+        return "model/saved_models/DeepMar/big_endian/heartfelt-etchings-23/20"
+    else:
+        return ValueError("Model name not recognized")
+
 def load_model(
     model_path="model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20",
 ):
@@ -29,8 +39,8 @@ def test(big_endian=False, model_name="ResUnet"):
     gpus = tf.config.list_logical_devices("GPU")
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
-        model = load_model()
-    dataset = Dataset(height=512, width=512, batch_size=32, big_endian=big_endian)
+        model = load_model_with_weights()
+    dataset = DicomDataset(height=512, width=512, batch_size=32, big_endian=big_endian)
     dataset.setup()
     _, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     # print("Evaluating on training set")
@@ -41,25 +51,31 @@ def test(big_endian=False, model_name="ResUnet"):
     print(model.evaluate(test_ds))
 
 
-def generate_image():
+def generate_image(dicom = True):
     print("Generate model...")
     model = load_model_with_weights()
     model = model.generator
     print("Model generated!")
 
-    dataset = DicomDataset(height=512, width=512, batch_size=32)
+    dataset = DicomDataset(height=512, width=512, batch_size=32) if dicom else Dataset(height=512, width=512, batch_size=32)
     dataset.setup()
-    batch = 0
     print("Generating train images...")
     for batch, (x, y) in enumerate(dataset.train_ds.take(6)):
         preds = model(x)
         for i in range(8):
             save_file(
-                x[i], preds[i], y[i], name=f"train_batch{batch}_sample_{i}", dicom=True
+                x[i], preds[i], y[i], name=f"train/train_batch{batch}_sample_{i}", dicom=True
             )
+    print("Generating valid images...")
+    for batch, (x, y) in enumerate(dataset.valid_ds.take(6)):
+        preds = model(x)
+        for i in range(8):
+            save_file(
+                x[i], preds[i], y[i], name=f"valid/valid_batch{batch}_sample_{i}", dicom=True
+            )
+    print("Finish generating images!")
 
-
-def test_metrics():
+def test_metricsvsBaseline():
     model = load_model()
     model = model.generator
     dataset = Dataset(height=512, width=512, batch_size=32, big_endian=True)
