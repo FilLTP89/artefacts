@@ -216,6 +216,12 @@ class Dataset:
         self.train_ds = tf.data.Dataset.load(self.train_saving_path)
         self.test_ds = tf.data.Dataset.load(self.test_saving_path)
         self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
+    
+    def load_single_acquisition(self, acquistion_number = 1, low = False):
+        no_metal_folder = self.no_metal_folder[acquistion_number]
+        metal_folder = self.low_metal_fodler[acquistion_number] if low else self.high_metal_folder[acquistion_number]
+        ds = self.tf_dataset(metal_folder, no_metal_folder)
+        return ds
 
 
 if __name__ == "__main__":

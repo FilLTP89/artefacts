@@ -75,9 +75,18 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
-def test_whole_acquisition(dicom = True):
+def test_signle_acquistion(dicom = True, acquisition_number = 1,batch_size = 32):
     model = load_model_with_weights()
-    dataset = DicomDataset(height=512, width=512, batch_size=32, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+    dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+    acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
+    file = 0
+    for _, (x, y) in enumerate(acquisition):
+        preds = model(x)
+        for i in range(batch_size):
+            save_file(
+                x[i], preds[i], y[i], name=f"acquisition_{acquisition_number}/{file}", dicom=True
+            )
+            file +=1
     
 
 def test_metricsvsBaseline():
