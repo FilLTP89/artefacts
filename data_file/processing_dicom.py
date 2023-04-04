@@ -103,10 +103,16 @@ class DicomDataset:
             high_metal_folder[index] = high_metal_folder[index][7:]
             low_metal_folder[index] = low_metal_folder[index][7:]
 
+
+        self.no_metal_folder = no_metal_folder
+        self.low_metal_fodler = low_metal_folder
+        self.high_metal_folder = high_metal_folder
+
+        
         no_metal_list = [item for sublist in no_metal_folder for item in sublist]
         high_metal_list = [item for sublist in high_metal_folder for item in sublist]
         low_metal_list = [item for sublist in low_metal_folder for item in sublist]
-
+        
         return (
             no_metal_list,
             high_metal_list,
@@ -232,11 +238,22 @@ class DicomDataset:
         self.test_ds = tf.data.Dataset.load(self.test_saving_path)
         self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
 
+    def load_single_acquisition(self, acquistion_number = 1, low = False):
+        no_metal_folder = self.no_metal_folder[acquistion_number]
+        metal_folder = self.low_metal_fodler[acquistion_number] if low else self.high_metal_folder[acquistion_number]
+        ds = self.tf_dataset(metal_folder, no_metal_folder)
+        return ds
+        
+
 
 if __name__ == "__main__":
     print("Generating sample ....")
     dataset = DicomDataset(path="../data/dicom/", batch_size=32)
     dataset.setup()
-    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
+    """train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     for x, y in train_ds:
-        print()
+        print()"""
+    acq_1 = dataset.load_single_acquisition(acquistion_number=1)
+    for x, y in acq_1:
+        print(x.shape, y.shape)
+        break

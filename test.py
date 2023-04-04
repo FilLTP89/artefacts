@@ -75,6 +75,11 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
+def test_whole_acquisition(dicom = True):
+    model = load_model_with_weights()
+    dataset = DicomDataset(height=512, width=512, batch_size=32, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+    
+
 def test_metricsvsBaseline():
     model = load_model()
     model = model.generator
