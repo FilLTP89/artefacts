@@ -59,6 +59,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     )
     model.evaluate(valid_ds)
     print("Finished training!")
+    model.save(config.saving_path + dicom_path + endian_path)
 
 
 def initalize_project_name(config):

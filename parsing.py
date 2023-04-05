@@ -20,7 +20,7 @@ default_config = SimpleNamespace(
     run_name="training_run",
     big_endian=False,
     one_batch_training=False,
-    pretrained_MedGAN=False,
+    load_from_checkpoint=False,
     dicom=True,
     save_weights=False,
 )
@@ -115,9 +115,9 @@ def parse_args():
         help="Train on one batch",
     )
     argparser.add_argument(
-        "--pretrained_MedGAN",
+        "--load_from_checkpoint",
         action=argparse.BooleanOptionalAction,
-        default=default_config.pretrained_MedGAN,
+        default=default_config.load_from_checkpoint,
         help="Use pretrained MedGAN",
     )
     argparser.add_argument(
