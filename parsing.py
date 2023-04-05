@@ -23,6 +23,7 @@ default_config = SimpleNamespace(
     load_from_checkpoint=False,
     dicom=True,
     save_weights=False,
+    pretrained_MedGAN = False
 )
 
 

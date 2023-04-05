@@ -19,5 +19,5 @@ source $WORKDIR/launch_script.sh
 #python3 train.py --model VGG19 --epochs 20 --batch_size 32 --wandb --saving_path "model/saved_models/VGG19/" --dicom --learning_rate 1.5e-4 --save_weights
 #python3 train.py --model MedGAN --epochs 50 --batch_size 3 --wandb --saving_path "model/saved_models/MedGAN/" --dicom --learning_rate 4e-6 --save_weights 
 #python3 train.py --model ResUnet --epochs 20 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --big_endian
-python3 train.py --model MedGAN --epochs 5 --batch_size 1 --dicom  --one_batch_training --learning_rate 2e-6 --wandb --saving_path "model/saved_models/MedGAN/" --save_weights
+python3 train.py --model MedGAN --epochs 5 --batch_size 1 --dicom  --one_batch_training --learning_rate 2e-6 --saving_path "model/saved_models/MedGAN/" --save_weights
 #python3 train.py --model DeepMAR --epochs 5 --batch_size 1 --dicom 
