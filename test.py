@@ -83,7 +83,7 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
-def test_signle_acquistion(dicom = True, acquisition_number = 1,batch_size = 32):
+def test_single_acquistion(dicom = True, acquisition_number = 1,batch_size = 32):
     model = load_model_with_weights()
     dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
     acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
@@ -131,4 +131,6 @@ def test_metricsvsBaseline():
 if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
-    generate_image()
+    #generate_image()
+    test_single_acquistion()
+
