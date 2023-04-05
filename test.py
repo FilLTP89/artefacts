@@ -86,6 +86,7 @@ def generate_image(dicom = True):
 def test_single_acquistion(dicom = True, acquisition_number = 1,batch_size = 32):
     model = load_model_with_weights()
     dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+    dataset.setup()
     acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
     file = 0
     for _, (x, y) in enumerate(acquisition):
