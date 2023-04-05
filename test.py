@@ -28,10 +28,18 @@ def load_model(
 def load_model_with_weights(
     model_path="model/saved_models/MedGAN/dicom/serene-field-24/20/model.ckpt",
 ):
-    model = MEDGAN()
-    model.build(input_shape=(None, 512, 512, 1))
-    model.load_weights(model_path).expect_partial()
-    model.compile()
+    
+    gpus = (
+        tf.config.list_logical_devices("GPU")
+        if len(tf.config.list_physical_devices("GPU")) > 0
+        else 1
+    ) 
+    strategy = tf.distribute.MirroredStrategy(gpus)
+    with strategy.scope():  
+        model = MEDGAN()
+        model.build(input_shape=(None, 512, 512, 1))
+        model.load_weights(model_path).expect_partial()
+        model.compile()
     return model
 
 
