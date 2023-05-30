@@ -56,7 +56,7 @@ def test(big_endian=False, model_name="ResUnet"):
     print("Evaluating on validation set")
     print(model.evaluate(valid_ds))
     print("Evaluating on test set")
-    print(model.evaluate(test_ds))
+    #print(model.evaluate(test_ds))
 
 
 def generate_image(dicom = True):
@@ -99,9 +99,13 @@ def test_single_acquistion(dicom = True, acquisition_number = 1,batch_size = 32)
     
 
 def test_metricsvsBaseline():
-    model = load_model()
+    """model = load_model()
     model = model.generator
-    dataset = Dataset(height=512, width=512, batch_size=32, big_endian=True)
+    """
+    model = load_model_with_weights()
+    model = model.generator
+
+    dataset = DicomDataset(height=512, width=512, batch_size=32, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
