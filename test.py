@@ -105,7 +105,7 @@ def test_metricsvsBaseline():
     model = load_model_with_weights()
     model = model.generator
 
-    dataset = DicomDataset(height=512, width=512, batch_size=32, big_endian=True)
+    dataset = DicomDataset(height=512, width=512, batch_size=32)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
