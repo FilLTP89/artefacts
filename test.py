@@ -137,5 +137,6 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    test_single_acquistion()
+    #test_single_acquistion()
+    test_metricsvsBaseline()
 
