@@ -21,7 +21,7 @@ default_config = SimpleNamespace(
     big_endian=False,
     one_batch_training=False,
     load_from_checkpoint=False,
-    dicom=True,
+    dicom=False,
     save_weights=False,
     pretrained_MedGAN = False
 )

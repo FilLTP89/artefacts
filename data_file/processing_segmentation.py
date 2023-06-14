@@ -4,18 +4,17 @@ from glob import glob
 import re
 import os
 from sklearn.model_selection import train_test_split
-from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
 from sklearn.utils import shuffle
+import matplotlib.pyplot as plt
+import cv2
+import segmentation_models as sm
+
+
 
 """
-We know that corresponding image from the different folder 
-have the same name and that the input are in folder 2 & 4 while the the 
-label are in folder 1.
-So we will create couple 
-(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
-We will exploit that in order to create the training and test couples.
+Classic segmentation Dataset 
 """
 
 
@@ -23,18 +22,20 @@ We will exploit that in order to create the training and test couples.
 # See how much volume they take, and how long we take to load them
 
 
-class Dataset:
+class SegmentationDataset:
     def __init__(
         self,
-        path: str = "./data/",
+        path: str = "./data/segmentation/",
         width: int = 512,
         height: int = 512,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
         test_saving_path: str = "test/",
-        seed: int = 42,
-        big_endian: bool = True,
+        valid_saving_path: str = "valid/",
+        seed: int = 2,  # 1612
+        shuffle=True,
+        backbone : str = "resnet"
     ) -> None:
 
         self.path = path
@@ -44,78 +45,60 @@ class Dataset:
         self.saving_format = saving_format
         self.train_saving_path = path + train_saving_path
         self.test_saving_path = path + test_saving_path
+        self.valid_saving_path = path + valid_saving_path
 
         self.original_width = 400
         self.original_height = 400
 
         self.seed = seed
-        self.big_endian = big_endian
+        self.shuffle = shuffle
 
+        self.preprocess_input = sm.get_preprocessing(backbone)
+        
     def collect_data(self):
-        """
-        Create list of path of the raw image from each folder
 
-        Args
-        ----
 
-        Returns
-        -----
-        sorted_folder_1_name(list) : list of the path of all image in folder 1 path
-        sorted_folder_2_name(list) : list of the path of all image in folder 2 path
-        sorted_folder_4_name(list) : list of the path of all image in folder 4 path
-        """
-        no_metal_folder = [
+        images_path = f"{self.path}/images/"
+        masks_path = f"{self.path}/masks/"
+        
+        images_folder = [
             sorted(
-                glob(os.path.join(self.path, "No_metal/acquisition_" + str(i) + "/*")),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
+                glob(os.path.join(images_path, str(i) + "/*.tif")),
             )
-            for i in range(11)
+            for i in range(1,6)
         ]
-        high_metal_folder = [
+        mask_folder = [
             sorted(
-                glob(
-                    os.path.join(self.path, "High_metal/acquisition_" + str(i) + "/*")
-                ),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
+                glob(os.path.join(masks_path, str(i) + "/*.tif")),
             )
-            for i in range(11)
+            for i in range(1,6)
         ]
-        low_metal_folder = [
-            sorted(
-                glob(os.path.join(self.path, "Low_metal/acquisition_" + str(i) + "/*")),
-                key=lambda x: [
-                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
-                ],
-            )
-            for i in range(11)
-        ]
-        no_metal_list = [item for sublist in no_metal_folder for item in sublist]
-        high_metal_list = [item for sublist in high_metal_folder for item in sublist]
-        low_metal_list = [item for sublist in low_metal_folder for item in sublist]
 
-        return (
-            no_metal_list,
-            high_metal_list,
-            low_metal_list,
-        )
+        images_list = [item for sublist in images_folder for item in sublist]
+        masks_list = [item for sublist in mask_folder for item in sublist]
+
+        return (images_list, masks_list)
+        
 
     def load_data(self):
         """
         Generate the training and testing (X,y) couple using the previously generated list
         """
-        no_metal_list, high_metal_list, low_metal_list = self.collect_data()
+        images_list,masks_list = self.collect_data()
 
-        label = 2 * no_metal_list
-        input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
+            images_list,
+            masks_list,
+            test_size=(2 / 11),
+            random_state=self.seed,
+            shuffle=self.shuffle,
         )  # 8 acquisition for training
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
+            X_test_1,
+            y_test_1,
+            test_size=0.5,
+            random_state=self.seed,
+            shuffle=self.shuffle,
         )  # 1 acquisition for validation & 1 acquisition for testing
 
         # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
@@ -134,17 +117,25 @@ class Dataset:
         def f(x, y):
             x = x.decode("utf-8")
             y = y.decode("utf-8")
-            with_artefact = read_raw(
-                x,
-                image_size=(self.original_height, self.original_width),
-                big_endian=self.big_endian,
-            )
-            without_artefact = read_raw(
-                y,
-                image_size=(self.original_height, self.original_width),
-                big_endian=self.big_endian,
-            )
-            return with_artefact, without_artefact
+            #print(x.split["."][-2] == y.split["."][-2])
+            x = cv2.imread(x)
+            y = cv2.imread(y)
+            x = cv2.cvtColor(x, cv2.COLOR_BGR2GRAY)
+            y = cv2.cvtColor(y, cv2.COLOR_BGR2GRAY) 
+            x = np.array(x, dtype=np.float32)
+            y = np.array(y, dtype=np.float32)
+
+            x = self.preprocess_input(x)
+            y = self.preprocess_input(y)
+
+            #x = 2 * (x - np.min(x)) / (np.max(x) - np.min(x)) - 1
+            #y = 2 * (y - np.min(y)) / (np.max(y) - np.min(y)) - 1
+
+            if np.any(np.isnan(x)):
+                print("Found NaN in x")
+            if np.any(np.isnan(y)):
+                print("Found NaN in y")
+            return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
         input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
@@ -154,21 +145,26 @@ class Dataset:
 
         input = tf.image.resize(input, [self.width, self.height])
         label = tf.image.resize(label, [self.width, self.height])
+
         return input, label
 
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size
-        TO DO : Add other parameters (maybe look on youtube)
         """
         ds = tf.data.Dataset.from_tensor_slices(
             (x, y)
         )  # Create a tf.data.Dataset from the couple
         ds = ds.map(
-            self.preprocess
+            map_func=self.preprocess,
+            num_parallel_calls=tf.data.AUTOTUNE,
         )  # apply the processing function on the couple (from path of raw image to sinongram)
-        ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
+        ds = ds.batch(
+            self.batch_size,
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )  # Batch the couple into batch of couple
         # ds = ds.prefetch(buffer_size=1024)
+        ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
         return ds
 
     def load_dataset(self):
@@ -195,19 +191,9 @@ class Dataset:
         """
         Save the train and test dataset in their corresponding path
         """
-        if self.saving_format == ("hdf5" or "h5"):
-            with h5py.File(f"{self.path}/save/train_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.train_ds),), dtype="i")
-                for i, data in enumerate(self.train_ds):
-                    dset[i] = data
-            with h5py.File(f"{self.path}/save/test_dataset.h5", "w") as f:
-                dset = f.create_dataset("data", (len(self.test_ds),), dtype="i")
-                for i, data in enumerate(self.test_ds):
-                    dset[i] = data
-        else:
-            self.train_ds.save(self.train_saving_path)
-            self.test_ds.save(self.test_saving_path)
-            self.valid_ds.save(self.valid_saving_path)
+        self.train_ds.save(self.train_saving_path)
+        self.test_ds.save(self.test_saving_path)
+        self.valid_ds.save(self.valid_saving_path)
 
     def load(self):
         """
@@ -216,28 +202,23 @@ class Dataset:
         self.train_ds = tf.data.Dataset.load(self.train_saving_path)
         self.test_ds = tf.data.Dataset.load(self.test_saving_path)
         self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
-    
+
     def load_single_acquisition(self, acquistion_number = 1, low = False):
         no_metal_folder = self.no_metal_folder[acquistion_number]
         metal_folder = self.low_metal_fodler[acquistion_number] if low else self.high_metal_folder[acquistion_number]
         ds = self.tf_dataset(metal_folder, no_metal_folder)
         return ds
+        
 
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=8, big_endian=True)
+    dataset = SegmentationDataset(path="../data/segmentation", batch_size=32)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    print("Sample Generated!")
-    for x, y in train_ds.take(1):
-        for i in range(8):
-            visualize_from_dataset(
-                x[i],
-                y[i],
-                big_endian=dataset.big_endian,
-                brightness_fact=4,
-            )
-    """ print("Saving dataset.... ")
-    dataset.save()
-    print("Dataset saved!") """
+    for x, y in test_ds:
+        fig,(ax1,ax2) = plt.subplots(1,2, figsize = (20,20))
+        ax1.imshow(x[20], cmap = "gray")
+        ax2.imshow(y[20], cmap = "gray")
+        plt.show()
+        break
