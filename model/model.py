@@ -120,10 +120,10 @@ def load_MedGAN(path=None):
 
 
 def load_vgg19(path=None):
-    model = VGG19(classifier_training=False)
+    model = VGG19( load_whole_architecture= False, classifier_training= False)
     model.build(input_shape=(None, 512, 512, 1))
-    #model.load_weights(path).expect_partial()
-    model = tf.keras.models.load_model(path)
+    model.load_weights(path).expect_partial()
+    #model = tf.keras.models.load_model(path)
     print("VGG19 loaded")
     for layer in model.layers:
         layer.trainable = False
