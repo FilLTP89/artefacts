@@ -30,6 +30,7 @@ def save_file(
         preds = enhancer_preds.enhance(brightness_fact)
         y = enhancer_y.enhance(brightness_fact)
 
+        cmap = plt.get_cmap('gray')
     else:
         cmap = plt.cm.bone if dicom else plt.cm.gray
         x = np.array(tf.squeeze(x, axis=-1))
