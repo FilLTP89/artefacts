@@ -99,7 +99,7 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
         preds = model(x)
         for i in range(batch_size):
             save_file(
-                x[i], preds[i], y[i], name=f"acquisition_{acquisition_number}/{file}", dicom=False
+                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}", dicom=dicom, big_endian= big_endian
             )
             file +=1
     
