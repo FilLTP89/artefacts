@@ -93,6 +93,12 @@ class Dataset:
             )
             for i in range(11)
         ]
+
+
+        self.no_metal_folder = no_metal_folder
+        self.low_metal_folder = low_metal_folder
+        self.high_metal_folder = high_metal_folder
+
         no_metal_list = [item for sublist in no_metal_folder for item in sublist]
         high_metal_list = [item for sublist in high_metal_folder for item in sublist]
         low_metal_list = [item for sublist in low_metal_folder for item in sublist]
