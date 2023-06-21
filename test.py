@@ -83,11 +83,17 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
-def test_single_acquistion(dicom = True, acquisition_number = 1,batch_size = 32):
-    model = load_model_with_weights()
-    dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
-    dataset.setup()
-    acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
+def test_single_acquistion(dicom = False, big_endian = True,acquisition_number = 1,batch_size = 32):
+    if dicom : 
+        model = load_model_with_weights()
+        dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+        dataset.setup()
+        acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
+    elif big_endian :
+        model = load_model()
+        dataset = Dataset(big_endian= True)
+        dataset.setup()
+        acquisition = dataset.load_single_acquisition(acquisition_number)
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
@@ -137,6 +143,6 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    #test_single_acquistion()
-    test_metricsvsBaseline()
+    test_single_acquistion()
+
 
