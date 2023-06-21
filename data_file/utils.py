@@ -10,7 +10,7 @@ def save_file(
     y,
     name,
     path="images/generated_images/",
-    extension=".tif",
+    extension=".png",
     brightness_fact=3,
     big_endian=False,
     dicom=False,
