@@ -94,7 +94,7 @@ class ConsNet(tf.keras.Model):
         x = inputs
         for i in range(self.n_block):
             x = self.Ublock[i](x)
-        y = kl.Activation("tanh", dtype="float32")(x)
+        y = kl.Activation("sigmoid", dtype="float32")(x)
         return y
 
 

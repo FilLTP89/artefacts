@@ -13,3 +13,5 @@ model/saved_models/
 sftp.json
 
 
+results/
+reconstruction/
