@@ -6,7 +6,7 @@ The model is composed of 3 models :
     - A discriminator 
     - A feature extractor
 
-The generator is composed of 6 sequential UNET, each take as input a
+The generator is composed of a sequence of 6  UNET, each take as input a
 [512,512,1] tensor and output a [512,512,1] tensor. 
 The input tensor is the orginal image with artefact in it and the final output of
 the generator is supposed to be the image without artefact.
@@ -15,17 +15,20 @@ Each UNET has the same architecture :
         - Conv2D 
         - BatchNormalization
         - LeakyReLU
+    The filters of the convolutional layer are 64,128,256,512,512,512 and 512
     8 Upblock of :
         - Conv2DTranspose 
         - Batch Norm 
         - Relu 
-Add the end of the sequence of UNET we add last Conv2DTranspose with kernel of size 1 and sigmoid activation
+    The filters of the convolutional layer are 512,1024,1024,1024,1024,512,256,128
+At the end of the sequence of UNET we add a last Conv2DTranspose layer with kernel of size (1,1) and sigmoid activation
 
 The discriminator follow a modified PatchGAN architecture that is to say 4 block of :  
     - Conv2D
     - BatchNormalization
     - LeakyReLU
+The filters are in order 64,128,256 and 512, we add a dense layer with sigmoid activation. 
 
 The feature extractor was trained as a classifier for the amount of metal in the image (no metal, low amout of metal and high amount of metal) 
-during the training of the global model we freeze it's weight, and use only the feature extracted from it's layer to calculate the style loss and the content loss
-It's follow the VGG19 architecture
+during the training of the global model we freeze it's weight, and use only the feature extracted from it's layer to calculate 
+the style loss and the content loss. It's follow the VGG19 architecture.

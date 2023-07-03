@@ -10,7 +10,7 @@ def save_file(
     y,
     name,
     path="images/generated_images/",
-    extension=".png",
+    extension=".raw",
     brightness_fact=3,
     big_endian=False,
     dicom=False,
@@ -41,14 +41,17 @@ def save_file(
         path + name + "_original_image" + extension,
         x,
         cmap=cmap,
+        dpi = 1
     )
     plt.imsave(
         path + name + "_predicted_image" + extension,
         preds,
         cmap=cmap,
+        dpi = 1
     )
     plt.imsave(
         path + name + "_ground_truth_image" + extension,
         y,
         cmap=cmap,
+        dpi = 1
     )
