@@ -157,51 +157,6 @@ def read_raw(
     image = (image - umin) / (umax - umin)  # normalize the array
     return image.astype(np.float32)
 
-def write_raw(array,
-             file_name, 
-             image_size=(400, 400), 
-             sitk_pixel_type=sitk.sitkUInt16, 
-             image_spacing=None, 
-             image_origin=None, 
-             big_endian=True, 
-             umin=137, 
-             umax=52578):
-
-
-    # Scale array back to the original range
-    array = (array * (umax - umin)) + umin
-    array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
-    
-    # Write raw file
-    with open(file_name + '.raw', 'wb') as f:
-        f.write(array.tobytes())
-    
-    # Convert numpy array to sitk image
-    img = sitk.GetImageFromArray(array)
-    img.SetSpacing(image_spacing if image_spacing else [1]*len(image_size))
-    img.SetOrigin(image_origin if image_origin else [0]*len(image_size))
-
-    # Prepare metadata dictionary
-    meta_dict = {
-        'NDims': str(len(image_size)),
-        'DimSize': ' '.join(map(str, image_size)),
-        'ElementType': 'MET_USHORT',
-        'BinaryDataByteOrderMSB': 'False' if big_endian else 'True',
-        'ElementSpacing': ' '.join(map(str, img.GetSpacing())),
-        'Offset': ' '.join(map(str, img.GetOrigin())),
-        'ElementDataFile': os.path.basename(file_name) + '.raw',
-    }
-
-    # Add metadata to the image
-    for k, v in meta_dict.items():
-        img.SetMetaData(k, v)
-
-    # Use ImageFileWriter to write the image
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(file_name + '.mhd')
-    writer.SetUseCompression(False)
-    writer.Execute(img)
-
 
 
 if __name__ == "__main__":

@@ -2,6 +2,57 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from PIL import Image, ImageEnhance
 import numpy as np
+import SimpleITK as sitk
+import os
+
+
+def write_raw(array,
+             file_name, 
+             image_size=(400, 400), 
+             sitk_pixel_type=sitk.sitkUInt16, 
+             image_spacing=None, 
+             image_origin=None, 
+             big_endian=True, 
+             umin=137, 
+             umax=52578):
+
+
+    # Scale array back to the original range
+    array = (array * (umax - umin)) + umin
+    array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
+
+    # Write raw file
+    with open(file_name + '.raw', 'wb') as f:
+        if big_endian:
+            f.write(array.astype('>u2').tobytes())
+        else:
+            f.write(array.astype('<u2').tobytes())
+    
+    # Convert numpy array to sitk image
+    img = sitk.GetImageFromArray(array)
+    img.SetSpacing(image_spacing if image_spacing else [1]*len(image_size))
+    img.SetOrigin(image_origin if image_origin else [0]*len(image_size))
+
+    # Prepare metadata dictionary
+    meta_dict = {
+        'NDims': str(len(image_size)),
+        'DimSize': ' '.join(map(str, image_size)),
+        'ElementType': 'MET_USHORT',
+        'BinaryDataByteOrderMSB': 'True' if big_endian else 'False',
+        'ElementSpacing': ' '.join(map(str, img.GetSpacing())),
+        'Offset': ' '.join(map(str, img.GetOrigin())),
+        'ElementDataFile': os.path.basename(file_name) + '.raw',
+    }
+
+    # Add metadata to the image
+    for k, v in meta_dict.items():
+        img.SetMetaData(k, v)
+
+    # Use ImageFileWriter to write the image
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(file_name + '.mhd')
+    writer.SetUseCompression(False)
+    writer.Execute(img)
 
 
 def save_file(
@@ -64,18 +115,22 @@ def save_to_raw(
     name,
     path="generated_images/",
 ):
-    x_bytes = x.tobytes()
-    y_bytes = y.tobytes()
-    preds_bytes = preds.tobytes()
-
-    # Write the raw bytes to a .raw file
-    with open(path + name + "_original_image.raw", 'wb') as f:
-        f.write(x_bytes)
+    if not os.path.exists(path + name):
+        os.makedirs(path + name)
+ 
+    write_raw(
+       array= x,
+       file_name = path + name + "_original",
+       image_size=(512,512)
+   )
     
-    with open(path + name + "_ground_truth.raw", 'wb') as f:
-        f.write(y_bytes)
-
-    
-    with open(path + name + "_predicrted_image.raw", 'wb') as f:
-        f.write(preds_bytes)
-
+    write_raw(
+       array= preds,
+       file_name = path + name + "_predicted",
+       image_size=(512,512)
+   )
+    write_raw(
+       array= y,
+       file_name = path + name + "_ground_truth",
+       image_size=(512,512)
+   )

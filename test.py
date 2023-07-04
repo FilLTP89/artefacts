@@ -1,7 +1,7 @@
 import tensorflow as tf
 from data_file.processing import Dataset
 from data_file.processing_dicom import DicomDataset
-from data_file.utils import save_file
+from data_file.utils import save_file, save_to_raw
 from model.metrics import ssim
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
@@ -99,9 +99,14 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
         for i in range(batch_size):
+            """
             save_file(
-                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}", dicom=dicom, big_endian= big_endian
-            )
+                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}",
+                )
+            """
+            save_to_raw(
+                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}",
+                )
             file +=1
     
 
