@@ -140,19 +140,19 @@ def save_to_raw(
     write_raw(
        array= x,
        file_name = path + name + "_original",
-       image_size=(512,512),
+       image_size=shape,
        big_endian= True
    )
     
     write_raw(
        array= preds,
        file_name = path + name + "_predicted",
-       image_size=(512,512),
+       image_size=shape,
        big_endian= True
    )
     write_raw(
        array= y,
        file_name = path + name + "_ground_truth",
-       image_size=(512,512), 
+       image_size=shape, 
        big_endian= True
    )
