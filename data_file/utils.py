@@ -118,21 +118,27 @@ def save_to_raw(
     if not os.path.exists(path + name):
         os.makedirs(path + name)
  
+    x = x.numpy()
+    y = y.numpy()
+    preds = preds.numpy()
+
+    print(x.shape)
+    
     write_raw(
-       array= x.numpy(),
+       array= x,
        file_name = path + name + "_original",
        image_size=(512,512),
        big_endian= True
    )
     
     write_raw(
-       array= preds.numpy(),
+       array= preds,
        file_name = path + name + "_predicted",
        image_size=(512,512),
        big_endian= True
    )
     write_raw(
-       array= y.numpy(),
+       array= y,
        file_name = path + name + "_ground_truth",
        image_size=(512,512), 
        big_endian= True
