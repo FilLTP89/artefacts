@@ -4,7 +4,7 @@ from PIL import Image, ImageEnhance
 import numpy as np
 import SimpleITK as sitk
 import os
-
+import cv2
 
 def write_raw(array,
              file_name, 
@@ -34,15 +34,24 @@ def write_raw(array,
     img.SetOrigin(image_origin if image_origin else [0]*len(image_size))
 
     # Prepare metadata dictionary
+
+    direction_cosine = [
+    "1 0 0 1",  # 2D identity matrix
+    "1 0 0 0 1 0 0 0 1",  # 3D identity matrix
+    "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"  # 4D identity matrix
+    ]
     meta_dict = {
-        'NDims': str(len(image_size)),
-        'DimSize': ' '.join(map(str, image_size)),
-        'ElementType': 'MET_USHORT',
-        'BinaryDataByteOrderMSB': 'True' if big_endian else 'False',
-        'ElementSpacing': ' '.join(map(str, img.GetSpacing())),
-        'Offset': ' '.join(map(str, img.GetOrigin())),
-        'ElementDataFile': os.path.basename(file_name) + '.raw',
-    }
+    'ObjectType': 'Image',
+    'NDims': str(len(image_size)),
+    'DimSize': ' '.join(map(str, image_size)),
+    'ElementSpacing': ' '.join(map(str, image_spacing)) if image_spacing else ' '.join(['1'] * len(image_size)),
+    'Offset': ' '.join(map(str, image_origin)) if image_origin else ' '.join(['0'] * len(image_size)),
+    'TransformMatrix': direction_cosine[len(image_size) - 2],
+    'ElementType': 'MET_USHORT',  # hardcoded as we're converting array to uint16
+    'BinaryData': 'True',
+    'BinaryDataByteOrderMSB': str(big_endian),
+    'ElementDataFile': os.path.abspath(file_name) + '.raw',
+}
 
     # Add metadata to the image
     for k, v in meta_dict.items():
@@ -114,6 +123,7 @@ def save_to_raw(
     y,
     name,
     path="generated_images/",
+    shape = (400,400)
 ):
     if not os.path.exists(path + name):
         os.makedirs(path + name)
@@ -122,7 +132,10 @@ def save_to_raw(
     y = y.numpy().squeeze(axis = -1)
     preds = preds.numpy().squeeze(axis = -1)
 
-    print(x.shape)
+
+    x = cv2.resize(x, shape)
+    preds = cv2.resize(preds, shape)
+    y = cv2.resize(y, shape)
 
     write_raw(
        array= x,
