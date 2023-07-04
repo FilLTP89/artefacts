@@ -96,14 +96,6 @@ def Raw_to_Sinogram(
     return rawRGBarray, sinogram, theta
 
 
-if __name__ == "__main__":
-    Raw_to_Sinogram(
-        rawFilename="../data/1/IE1705794_P406.i180395.raw",
-        imageHeight=400,
-        imageWidth=400,
-        mode=1,
-        plot=True,
-    )
 
 
 def read_raw(
@@ -116,38 +108,8 @@ def read_raw(
     umin=137,
     umax=52578,
 ):
-    """
-    Read a raw binary scalar image.
-
-    Parameters
-    ----------
-    binary_file_name (str): Raw, binary image file content.
-    image_size (tuple like): Size of image (e.g. [2048,2048])
-    sitk_pixel_type (SimpleITK pixel type: Pixel type of data (e.g.
-        sitk.sitkUInt16).
-    image_spacing (tuple like): Optional image spacing, if none given assumed
-        to be [1]*dim.
-    image_origin (tuple like): Optional image origin, if none given assumed to
-        be [0]*dim.
-    big_endian (bool): Optional byte order indicator, if True big endian, else
-        little endian.
-
-    Returns
-    -------
-    SimpleITK image or None if fails.
-    """
-
     pixel_dict = {
-        sitk.sitkUInt8: "MET_UCHAR",
-        sitk.sitkInt8: "MET_CHAR",
         sitk.sitkUInt16: "MET_USHORT",
-        sitk.sitkInt16: "MET_SHORT",
-        sitk.sitkUInt32: "MET_UINT",
-        sitk.sitkInt32: "MET_INT",
-        sitk.sitkUInt64: "MET_ULONG_LONG",
-        sitk.sitkInt64: "MET_LONG_LONG",
-        sitk.sitkFloat32: "MET_FLOAT",
-        sitk.sitkFloat64: "MET_DOUBLE",
     }
     direction_cosine = [
         "1 0 0 1",
@@ -194,3 +156,60 @@ def read_raw(
     image = np.array(sitk.GetArrayFromImage(img))  # convert to numpy array
     image = (image - umin) / (umax - umin)  # normalize the array
     return image.astype(np.float32)
+
+def write_raw(array,
+             file_name, 
+             image_size=(400, 400), 
+             sitk_pixel_type=sitk.sitkUInt16, 
+             image_spacing=None, 
+             image_origin=None, 
+             big_endian=True, 
+             umin=137, 
+             umax=52578):
+
+
+    # Scale array back to the original range
+    array = (array * (umax - umin)) + umin
+    array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
+    
+    # Write raw file
+    with open(file_name + '.raw', 'wb') as f:
+        f.write(array.tobytes())
+    
+    # Convert numpy array to sitk image
+    img = sitk.GetImageFromArray(array)
+    img.SetSpacing(image_spacing if image_spacing else [1]*len(image_size))
+    img.SetOrigin(image_origin if image_origin else [0]*len(image_size))
+
+    # Prepare metadata dictionary
+    meta_dict = {
+        'NDims': str(len(image_size)),
+        'DimSize': ' '.join(map(str, image_size)),
+        'ElementType': 'MET_USHORT',
+        'BinaryDataByteOrderMSB': 'False' if big_endian else 'True',
+        'ElementSpacing': ' '.join(map(str, img.GetSpacing())),
+        'Offset': ' '.join(map(str, img.GetOrigin())),
+        'ElementDataFile': os.path.basename(file_name) + '.raw',
+    }
+
+    # Add metadata to the image
+    for k, v in meta_dict.items():
+        img.SetMetaData(k, v)
+
+    # Use ImageFileWriter to write the image
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(file_name + '.mhd')
+    writer.SetUseCompression(False)
+    writer.Execute(img)
+
+
+
+if __name__ == "__main__":
+
+    Raw_to_Sinogram(
+        rawFilename="../data/1/IE1705794_P406.i180395.raw",
+        imageHeight=400,
+        imageWidth=400,
+        mode=1,
+        plot=True,
+    )

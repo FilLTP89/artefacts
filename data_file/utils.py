@@ -55,3 +55,27 @@ def save_file(
         cmap=cmap,
         dpi = 1
     )
+
+
+def save_to_raw(
+    x,
+    preds,
+    y,
+    name,
+    path="generated_images/",
+):
+    x_bytes = x.tobytes()
+    y_bytes = y.tobytes()
+    preds_bytes = preds.tobytes()
+
+    # Write the raw bytes to a .raw file
+    with open(path + name + "_original_image.raw", 'wb') as f:
+        f.write(x_bytes)
+    
+    with open(path + name + "_ground_truth.raw", 'wb') as f:
+        f.write(y_bytes)
+
+    
+    with open(path + name + "_predicrted_image.raw", 'wb') as f:
+        f.write(preds_bytes)
+

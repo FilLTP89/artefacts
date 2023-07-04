@@ -5,6 +5,7 @@ from data_file.utils import save_file
 from model.metrics import ssim
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
+from data_file.utils import save_to_raw
 
 
 def best_model_path(model_name):
