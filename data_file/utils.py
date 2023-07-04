@@ -118,12 +118,12 @@ def save_to_raw(
     if not os.path.exists(path + name):
         os.makedirs(path + name)
  
-    x = x.numpy()
-    y = y.numpy()
-    preds = preds.numpy()
+    x = x.numpy().squeeze(axis = -1)
+    y = y.numpy().squeeze(axis = -1)
+    preds = preds.numpy().squeeze(axis = -1)
 
     print(x.shape)
-    
+
     write_raw(
        array= x,
        file_name = path + name + "_original",
