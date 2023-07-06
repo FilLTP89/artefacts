@@ -19,7 +19,7 @@ def best_model_path(model_name):
         return ValueError("Model name not recognized")
 
 def load_model(
-    model_path="model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20",
+    model_path="model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40",
 ):
     model = tf.keras.models.load_model(model_path)
     model.compile()
