@@ -21,8 +21,13 @@ def best_model_path(model_name):
 def load_model(
     model_path="model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40",
 ):
-    model = tf.keras.models.load_model(model_path)
-    model.compile()
+    try:
+        model = tf.keras.models.load_model(model_path)
+        model.compile()
+    except:
+        model = MEDGAN()
+        model.build(input_shape=(None, 512, 512, 1))
+        model.load_weights(model_path).expect_partial()
     return model
 
 
