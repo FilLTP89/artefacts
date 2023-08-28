@@ -109,6 +109,32 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
                 )
             file +=1
     
+def test_metrics(dicom = False, big_endian = True, batch_size = 32):
+    if dicom : 
+        model = load_model_with_weights()
+        dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+        dataset.setup()
+    elif big_endian :
+        model = load_model()
+        dataset = Dataset(big_endian= True)
+        dataset.setup()
+    for acquisition_number in range(8):
+        model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
+        acquisition = dataset.load_single_acquisition(acquisition_number)
+        for _, (x, y) in enumerate(acquisition):
+            preds = model(x)
+            model_ssim += ssim(y, preds)
+            model_psnr += psnr(y, preds)
+            model_mae += mae(y, preds)
+            model_rmse += rmse(y, preds)
+        print("Acquisition number : ", acquisition_number)
+        print("Model SSIM: ", model_ssim / len(acquisition))
+        print("Model PSNR: ", model_psnr / len(acquisition))
+        print("Model MAE: ", model_mae / len(acquisition))
+        print("Model RMSE: ", model_rmse / len(acquisition))
+        print()
+
+
 
 def test_metricsvsBaseline():
     """model = load_model()
@@ -149,6 +175,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    test_single_acquistion()
+    #test_single_acquistion()
+    test_metrics(dicom = False, big_endian = True, batch_size = 32)
 
 
