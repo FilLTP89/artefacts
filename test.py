@@ -6,7 +6,7 @@ from model.metrics import ssim
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 from data_file.utils import save_to_raw
-
+import numpy as np
 
 def best_model_path(model_name):
     if model_name == 'MedGAN':
@@ -116,6 +116,10 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
             file +=1
     
 def test_metrics(dicom = False, big_endian = True, batch_size = 32):
+    psnr_train, psnr_test = [], []
+    ssim_train, ssim_test = [], []
+    mae_train, mae_test = [], []
+    rmse_train, rmse_test = [], []
     if dicom : 
         model = load_model_with_weights()
         dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
@@ -141,6 +145,29 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32):
         print("Model MAE: ", model_mae / len(acquisition))
         print("Model RMSE: ", model_rmse / len(acquisition))
         print()
+        if acquisition_number < 2:
+            ssim_test.append(model_ssim / len(acquisition))
+            psnr_test.append(model_psnr / len(acquisition))
+            mae_test.append(model_mae / len(acquisition))
+            rmse_test.append(model_rmse / len(acquisition))
+        else : 
+            ssim_train.append(model_ssim / len(acquisition))
+            psnr_train.append(model_psnr / len(acquisition))
+            mae_train.append(model_mae / len(acquisition))
+            rmse_train.append(model_rmse / len(acquisition))
+        
+    
+    print(f"Mean MAE on train : {np.mean(mae_train)} STD MAE on train : {np.std(mae_train)}")
+    print(f"Mean PSNR on train : {np.mean(psnr_train)} STD PSNR on train : {np.std(psnr_train)}")
+    print(f"Mean SSIM on train : {np.mean(ssim_train)} STD SSIM on train : {np.std(ssim_train)}")
+    print(f"Mean RMSE on train : {np.mean(rmse_train)} STD RMSE on train : {np.std(rmse_train)}")
+
+    print(f"Mean MAE on test : {np.mean(mae_test)} STD MAE on test : {np.std(mae_test)}")
+    print(f"Mean PSNR on test : {np.mean(psnr_test)} STD PSNR on test : {np.std(psnr_test)}")
+    print(f"Mean SSIM on test : {np.mean(ssim_test)} STD SSIM on test : {np.std(ssim_test)}")
+    print(f"Mean RMSE on test : {np.mean(rmse_test)} STD RMSE on test : {np.std(rmse_test)}")
+    
+    
 
 
 
