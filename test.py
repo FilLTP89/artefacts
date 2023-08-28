@@ -25,6 +25,7 @@ def load_model(
         model = tf.keras.models.load_model(model_path)
         model.compile()
     except:
+        model_path += "/model.ckpt"
         model = MEDGAN()
         model.build(input_shape=(None, 512, 512, 1))
         model.load_weights(model_path).expect_partial()
