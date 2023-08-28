@@ -122,8 +122,10 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32):
         dataset.setup()
     elif big_endian :
         model = load_model()
+        print("Model loaded ! ")
         dataset = Dataset(big_endian= True)
         dataset.setup()
+        print("Dataset Loaded !")
     for acquisition_number in range(8):
         model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
         acquisition = dataset.load_single_acquisition(acquisition_number)
