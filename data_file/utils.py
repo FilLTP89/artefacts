@@ -78,7 +78,7 @@ def write_raw(array,
     # Write raw file
     with open(file_name + '.raw', 'wb') as f:
         if big_endian:
-            f.write(array.astype('>u2').tobytes().byteswap())
+            f.write(array.astype('>u2').tobytes())
         else:
             f.write(array.astype('<u2').tobytes())
     
