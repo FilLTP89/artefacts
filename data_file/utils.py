@@ -83,7 +83,7 @@ def write_raw(array,
     big_endian_array = big_endian_array.astype(big_endian_dtype)
     
     # Write to file
-    big_endian_array.tofile(file_name + ".raw"")
+    big_endian_array.tofile(file_name + ".raw")
     """
     # Write raw file
     with open(file_name + '.raw', 'wb') as f:
