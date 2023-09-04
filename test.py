@@ -112,6 +112,7 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
         for i in range(batch_size):
             save_to_raw(
                 x[i], preds[i], y[i], name=f"big_endian/experiment_{d}/acquisition_{acquisition_number}/{file}",
+                big_endian=big_endian
                 )
             file +=1
             print(f"File : {file} created")

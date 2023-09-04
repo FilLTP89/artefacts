@@ -73,6 +73,18 @@ def write_raw(array,
     array = (array * (umax - umin)) + umin
     array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
 
+    if array.dtype.byteorder == '<' or array.dtype.byteorder == '=':
+        big_endian_array = array.byteswap()
+    else:
+        big_endian_array = array.copy()
+    
+    # Set the dtype to big endian
+    big_endian_dtype = '>' + array.dtype.str[1:]
+    big_endian_array = big_endian_array.astype(big_endian_dtype)
+    
+    # Write to file
+    big_endian_array.tofile(file_name)
+    """
     # Write raw file
     with open(file_name + '.raw', 'wb') as f:
         if big_endian:
@@ -80,13 +92,14 @@ def write_raw(array,
         else:
             f.write(array.astype('<u2').tobytes())
     
+    
     # Convert numpy array to sitk image
     img = sitk.GetImageFromArray(array)
     img.SetSpacing(image_spacing if image_spacing else [1]*len(image_size))
     img.SetOrigin(image_origin if image_origin else [0]*len(image_size))
 
     # Prepare metadata dictionary
-    """
+    
     direction_cosine = [
     "1 0 0 1",  # 2D identity matrix
     "1 0 0 0 1 0 0 0 1",  # 3D identity matrix
@@ -109,13 +122,13 @@ def write_raw(array,
     # Add metadata to the image
     for k, v in meta_dict.items():
         img.SetMetaData(k, v)
-    """
+    
     # Use ImageFileWriter to write the image
     writer = sitk.ImageFileWriter()
     writer.SetFileName(file_name + '.mhd')
     writer.SetUseCompression(False)
     writer.Execute(img)
-
+    """
 
 def save_to_raw(
     x,
