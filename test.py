@@ -98,7 +98,7 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
         acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
     elif big_endian :
         model = load_model()
-        dataset = Dataset(big_endian = True)
+        dataset = Dataset(big_endian = True, batch_size=batch_size)
         dataset.setup()
         acquisition = dataset.load_single_acquisition(acquisition_number)
     d = 0
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1)
+    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=32)
     #test_metrics(dicom = False, big_endian = True, batch_size = 32)
 
 

@@ -235,6 +235,7 @@ if __name__ == "__main__":
     dataset = Dataset(path="../data/", batch_size=8, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
+    """
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
@@ -244,6 +245,7 @@ if __name__ == "__main__":
                 big_endian=dataset.big_endian,
                 brightness_fact=4,
             )
-    """ print("Saving dataset.... ")
-    dataset.save()
-    print("Dataset saved!") """
+    """
+    acquisition = dataset.load_single_acquisition(1)
+    for idx,(x,y) in enumerate(acquisition):
+        print(idx, x.shape, y.shape)
