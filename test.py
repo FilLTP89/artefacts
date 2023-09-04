@@ -104,7 +104,7 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
     d = 0
     while os.path.exists(f"generated_images/big_endian/experiment_{d}"):
         d += 1
-    os.mkdir(f"generated_images/big_endian/experiment_{d}/acquisition_{acquisition_number}")
+    os.makedirs(f"generated_images/big_endian/experiment_{d}/acquisition_{acquisition_number}")
 
     file = 0
     for _, (x, y) in enumerate(acquisition):
