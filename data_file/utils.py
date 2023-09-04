@@ -68,27 +68,17 @@ def write_raw(array,
              umin=137, 
              umax=52578):
 
-
+    print(big_endian)
     # Scale array back to the original range
     array = (array * (umax - umin)) + umin
     array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
 
-    if array.dtype.byteorder == '<' or array.dtype.byteorder == '=':
-        big_endian_array = array.byteswap()
-    else:
-        big_endian_array = array.copy()
-    
-    # Set the dtype to big endian
-    big_endian_dtype = '>' + array.dtype.str[1:]
-    big_endian_array = big_endian_array.astype(big_endian_dtype)
     
     # Write to file
-    big_endian_array.tofile(file_name + ".raw")
-    """
     # Write raw file
     with open(file_name + '.raw', 'wb') as f:
         if big_endian:
-            f.write(array.astype('>u2').tobytes())
+            f.write(array.astype('>u2').tobytes().byteswap())
         else:
             f.write(array.astype('<u2').tobytes())
     
@@ -128,7 +118,6 @@ def write_raw(array,
     writer.SetFileName(file_name + '.mhd')
     writer.SetUseCompression(False)
     writer.Execute(img)
-    """
 
 def save_to_raw(
     x,
