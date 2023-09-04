@@ -109,12 +109,12 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
-        print(x.shape, y.shape, preds.shape)
         for i in range(batch_size):
             save_to_raw(
                 x[i], preds[i], y[i], name=f"big_endian/experiment_{d}/acquisition_{acquisition_number}/{file}",
                 )
             file +=1
+            print(f"File : {file} created")
     
 def test_metrics(dicom = False, big_endian = True, batch_size = 32):
     psnr_train, psnr_test = [], []

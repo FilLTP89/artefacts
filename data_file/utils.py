@@ -125,8 +125,6 @@ def save_to_raw(
     path="generated_images/",
     shape = (400,400)
 ):
-    if not os.path.exists(path + name):
-        os.makedirs(path + name)
  
     x = x.numpy().squeeze(axis = -1)
     y = y.numpy().squeeze(axis = -1)
