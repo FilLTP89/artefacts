@@ -124,7 +124,7 @@ def save_to_raw(
     name,
     path="generated_images/",
     shape = (400,400),
-    big_endian=False,
+    big_endian=True,
 ):
  
     x = x.numpy().squeeze(axis = -1)
