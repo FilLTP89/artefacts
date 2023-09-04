@@ -7,7 +7,7 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 from data_file.utils import save_to_raw
 import numpy as np
-
+import os 
 def best_model_path(model_name):
     if model_name == 'MedGAN':
         return "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
@@ -98,20 +98,20 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
         acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
     elif big_endian :
         model = load_model()
-        dataset = Dataset(big_endian= True)
+        dataset = Dataset(big_endian = True)
         dataset.setup()
         acquisition = dataset.load_single_acquisition(acquisition_number)
+    d = 0
+    while os.path.exists(f"generated_images/big_endian/experiment_{d}"):
+        d += 1
+    os.mkdir(f"generated_images/big_endian/experiment_{d}")
+
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
         for i in range(batch_size):
-            """
-            save_file(
-                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}",
-                )
-            """
             save_to_raw(
-                x[i], preds[i], y[i], name=f"big_endian/acquisition_{acquisition_number}/{file}",
+                x[i], preds[i], y[i], name=f"big_endian/experiment_{d}/acquisition_{acquisition_number}/{file}",
                 )
             file +=1
     
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    #test_single_acquistion()
-    test_metrics(dicom = False, big_endian = True, batch_size = 32)
+    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=32)
+    #test_metrics(dicom = False, big_endian = True, batch_size = 32)
 
 
