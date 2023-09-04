@@ -123,7 +123,8 @@ def save_to_raw(
     y,
     name,
     path="generated_images/",
-    shape = (400,400)
+    shape = (400,400),
+    big_endian=False,
 ):
  
     x = x.numpy().squeeze(axis = -1)
@@ -139,20 +140,20 @@ def save_to_raw(
        array= x,
        file_name = path + name + "_original",
        image_size=shape,
-       big_endian= True
+       big_endian= big_endian
    )
     
     write_raw(
        array= preds,
        file_name = path + name + "_predicted",
        image_size=shape,
-       big_endian= True
+       big_endian= big_endian
    )
     write_raw(
        array= y,
        file_name = path + name + "_ground_truth",
        image_size=shape, 
-       big_endian= True
+       big_endian= big_endian
    )
     
 
