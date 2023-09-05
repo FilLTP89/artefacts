@@ -68,7 +68,6 @@ def write_raw(array,
              umin=137, 
              umax=52578):
 
-    print(big_endian)
     # Scale array back to the original range
     array = (array * (umax - umin)) + umin
     array = array.astype(np.uint16)  # convert back to uint16 (based on sitk_pixel_type)
@@ -159,14 +158,33 @@ def save_to_raw(
    )
     
 
+
+def transform_to_big_endian(filename):
+    if "ground_truth" in filename :
+        category = "ground_truth/"
+    elif "original" in filename:
+        category = "original/"
+    else : 
+        category = "predicted/"
+    dir = "".join([z + "/" for z in (filename.split("/")[:-1])])
+    name = filename.split("/")[-1]
+    big_endian_dir = dir + "big_endian/" + category
+    data_little_endian = np.fromfile(filename, dtype='<u2')
+    data_big_endian = data_little_endian.byteswap()
+    output_file_path = big_endian_dir + name    
+    print(output_file_path)
+    data_big_endian.tofile(output_file_path)
+
+
+
+
 if __name__ == "__main__":
-    array = np.random.rand(400,400)
-    write_raw(
-        array= array,
-        file_name= "test",
-        image_size=(400,400)
-    )
-    data = sitk.ReadImage("test.mhd")
-    array = np.array(sitk.GetArrayFromImage(data))
-    plt.imshow(array, cmap ="gray")
-    plt.show()
+    path = "../generated_test/experiment_2/acquisition_1/"
+    big_endian_dir = path + "big_endian/"
+    if not os.path.exists(big_endian_dir):
+        os.makedirs(big_endian_dir + "predicted/")
+        os.makedirs(big_endian_dir + "original/")
+        os.makedirs(big_endian_dir + "ground_truth/")
+    for file in os.listdir(path):
+        if ".raw" in file:
+            transform_to_big_endian(filename = path + file)

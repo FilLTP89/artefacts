@@ -117,11 +117,17 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
             file +=1
             print(f"File : {file} created")
     
-def test_metrics(dicom = False, big_endian = True, batch_size = 32):
+def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False):
     psnr_train, psnr_test = [], []
     ssim_train, ssim_test = [], []
     mae_train, mae_test = [], []
     rmse_train, rmse_test = [], []
+
+    original_psnr_train, original_psnr_test = [], []
+    original_ssim_train, original_ssim_test = [], []
+    original_mae_train, original_mae_test = [], []
+    original_rmse_train, original_rmse_test = [], []
+
     if dicom : 
         model = load_model_with_weights()
         dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
@@ -134,29 +140,55 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32):
         print("Dataset Loaded !")
     for acquisition_number in range(11):
         model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
-        acquisition = dataset.load_single_acquisition(acquisition_number)
+        original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
+        acquisition = dataset.load_single_acquisition(acquisition_number, low = low)
         for _, (x, y) in enumerate(acquisition):
             preds = model(x)
             model_ssim += ssim(y, preds)
             model_psnr += psnr(y, preds)
             model_mae += mae(y, preds)
             model_rmse += rmse(y, preds)
+
+            original_ssim += ssim(y, x)
+            original_psnr += psnr(y, x)
+            original_mae += mae(y, x)
+            original_rmse += rmse(y, x)
+
         print("Acquisition number : ", acquisition_number)
         print("Model SSIM: ", model_ssim / len(acquisition))
         print("Model PSNR: ", model_psnr / len(acquisition))
         print("Model MAE: ", model_mae / len(acquisition))
         print("Model RMSE: ", model_rmse / len(acquisition))
         print()
+
+        print("Original SSIM: ", original_ssim / len(acquisition))
+        print("Original PSNR: ", original_psnr / len(acquisition))
+        print("Original MAE: ", original_mae / len(acquisition))
+        print("Original RMSE: ", original_rmse / len(acquisition))
+        print()
         if acquisition_number < 2:
             ssim_test.append(model_ssim / len(acquisition))
             psnr_test.append(model_psnr / len(acquisition))
             mae_test.append(model_mae / len(acquisition))
             rmse_test.append(model_rmse / len(acquisition))
+
+            original_ssim_test.append(original_ssim / len(acquisition))
+            original_psnr_test.append(original_psnr / len(acquisition))
+            original_mae_test.append(original_mae / len(acquisition))
+            original_rmse_test.append(original_rmse / len(acquisition))
+
+
         else : 
             ssim_train.append(model_ssim / len(acquisition))
             psnr_train.append(model_psnr / len(acquisition))
             mae_train.append(model_mae / len(acquisition))
             rmse_train.append(model_rmse / len(acquisition))
+
+            original_ssim_train.append(original_ssim / len(acquisition))
+            original_psnr_train.append(original_psnr / len(acquisition))
+            original_mae_train.append(original_mae / len(acquisition))
+            original_rmse_train.append(original_rmse / len(acquisition))
+
         
     
     print(f"Mean MAE on train : {np.mean(mae_train)} STD MAE on train : {np.std(mae_train)}")
@@ -170,7 +202,16 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32):
     print(f"Mean RMSE on test : {np.mean(rmse_test)} STD RMSE on test : {np.std(rmse_test)}")
     
     
+    print(f"Mean Original MAE on train : {np.mean(original_mae_train)} STD Original MAE on train : {np.std(original_mae_train)}")
+    print(f"Mean Original PSNR on train : {np.mean(original_psnr_train)} STD Original PSNR on train : {np.std(original_psnr_train)}")
+    print(f"Mean Original SSIM on train : {np.mean(original_ssim_train)} STD Original SSIM on train : {np.std(original_ssim_train)}")
+    print(f"Mean Original RMSE on train : {np.mean(original_rmse_train)} STD Original RMSE on train : {np.std(original_rmse_train)}")
 
+    print(f"Mean Original MAE on test : {np.mean(original_mae_test)} STD Original MAE on test : {np.std(original_mae_test)}")
+    print(f"Mean Original PSNR on test : {np.mean(original_psnr_test)} STD Original PSNR on test : {np.std(original_psnr_test)}")
+    print(f"Mean Original SSIM on test : {np.mean(original_ssim_test)} STD Original SSIM on test : {np.std(original_ssim_test)}")
+    print(f"Mean Original RMSE on test : {np.mean(original_rmse_test)} STD Original RMSE on test : {np.std(original_rmse_test)}")
+    
 
 
 def test_metricsvsBaseline():
