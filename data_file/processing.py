@@ -35,6 +35,7 @@ class Dataset:
         test_saving_path: str = "test/",
         seed: int = 42,
         big_endian: bool = True,
+        shuffle = False
     ) -> None:
 
         self.path = path
@@ -50,6 +51,7 @@ class Dataset:
 
         self.seed = seed
         self.big_endian = big_endian
+        self.shuffle = shuffle
 
     def collect_data(self):
         """
@@ -118,10 +120,10 @@ class Dataset:
         label = 2 * no_metal_list
         input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=True
+            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=self.shuffle
         )  # 8 acquisition for training
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=True
+            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=self.shuffle
         )  # 1 acquisition for validation & 1 acquisition for testing
 
         # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
@@ -225,7 +227,7 @@ class Dataset:
     
     def load_single_acquisition(self, acquistion_number = 1, low = False):
         no_metal_folder = self.no_metal_folder[acquistion_number]
-        metal_folder = self.low_metal_fodler[acquistion_number] if low else self.high_metal_folder[acquistion_number]
+        metal_folder = self.low_metal_folder[acquistion_number] if low else self.high_metal_folder[acquistion_number]
         ds = self.tf_dataset(metal_folder, no_metal_folder)
         return ds
 
@@ -247,5 +249,4 @@ if __name__ == "__main__":
             )
     """
     acquisition = dataset.load_single_acquisition(1)
-    for idx,(x,y) in enumerate(acquisition):
-        print(idx, x.shape, y.shape)
+    print(len(acquisition))
