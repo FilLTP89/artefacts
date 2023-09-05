@@ -118,6 +118,8 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
             print(f"File : {file} created")
     
 def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False):
+    
+    print(f" Testing metrics with low metal : {low}")
     psnr_train, psnr_test = [], []
     ssim_train, ssim_test = [], []
     mae_train, mae_test = [], []
@@ -211,7 +213,7 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
     print(f"Mean Original PSNR on test : {np.mean(original_psnr_test)} STD Original PSNR on test : {np.std(original_psnr_test)}")
     print(f"Mean Original SSIM on test : {np.mean(original_ssim_test)} STD Original SSIM on test : {np.std(original_ssim_test)}")
     print(f"Mean Original RMSE on test : {np.mean(original_rmse_test)} STD Original RMSE on test : {np.std(original_rmse_test)}")
-    
+
 
 
 def test_metricsvsBaseline():
