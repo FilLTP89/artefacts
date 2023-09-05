@@ -256,6 +256,6 @@ if __name__ == "__main__":
     # test(model_name="Baseline")
     #generate_image()
     #test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=32)
-    test_metrics(dicom = False, big_endian = True, batch_size = 32, low=True)
+    test_metrics(dicom = False, big_endian = True, batch_size = 32, low=False)
 
 
