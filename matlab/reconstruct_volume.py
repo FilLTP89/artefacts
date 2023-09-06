@@ -103,7 +103,7 @@ for v in values:
 
     Vol = astra.data3d.get(id_vol)
 
-    id_proj, proj_data = astra.create_sino3d_cuda(Vol, proj_geom, vol_geom)
+    id_proj, proj_data = astra.create_sino3d_gpu(Vol, proj_geom, vol_geom)
     res = proj_data - sino
 
     astra.data3d.delete(id_proj)
