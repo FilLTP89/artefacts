@@ -21,7 +21,7 @@ CenterImage = (SizeImage / 2 + [5,0])* pixelpitch;
 
 axis_angles = [0,0,0];
 
-n_images = 870;
+n_images = 851;
 
 angles = -linspace(0,(200 +v)/180*pi,n_images);
 
