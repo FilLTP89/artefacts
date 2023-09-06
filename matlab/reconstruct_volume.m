@@ -83,6 +83,8 @@ proj_geom = astra_create_proj_geom('cone_vec', proj_size(2), proj_size(1), vecto
 
 %astra_geom_visualize(proj_geom,vol_geom)
 
+dims = size(sino);
+disp(dims);
 id_sino = astra_mex_data3d('create', '-proj3d', proj_geom, sino);
 id_vol  = astra_mex_data3d('create', '-vol', vol_geom);
 
