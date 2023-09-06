@@ -14,6 +14,7 @@
 
 # Module load
 module purge
+module load anaconda3/2022.10/gcc-11.2.0 
 module load cuda/11.7.0/gcc-11.2.0
 module load gcc/8.4.0/gcc-4.8.5
 source activate artefact
