@@ -1,7 +1,7 @@
 import numpy as np
 import astra
 import scipy.io
-from tifffile import imsave
+from tifffile import imwrite
 
 # Astra setup: In the Python version of ASTRA, you don't need to add paths.
 
