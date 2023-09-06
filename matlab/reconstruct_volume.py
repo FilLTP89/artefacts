@@ -6,6 +6,7 @@ from tifffile import imsave
 # Astra setup: In the Python version of ASTRA, you don't need to add paths.
 
 values = np.linspace(-5, 5, 10)
+best_res = 1e10
 
 for v in values:
     
@@ -106,14 +107,24 @@ for v in values:
 
     for idx, slice_ in enumerate(Vol):
         filename = f'reconstruct/reconstruction_{v:.2f}_slice_{idx:03d}.tif'
-        imsave(filename, slice_.astype(np.float32))
+        imwrite(filename, slice_.astype(np.float32))
 
     id_proj, proj_data = astra.create_sino3d_gpu(Vol, proj_geom, vol_geom)
     res = proj_data - sino
+
+
+    comform_res = np.sqrt(np.mean(np.square(res[np.logical_not(np.isnan(res))])))
+    print(comform_res)
+
+    if comform_res < best_res:
+        for idx, slice_ in enumerate(Vol):
+            filename = f'reconstruct/reconstruction_slice_{idx:03d}.tif'
+            imwrite(filename, slice_.astype(np.float32))
 
     #astra.data3d.delete(id_proj)
     #astra.data3d.delete(id_vol)
     #astra.data3d.delete(id_sino)
 
-    print(np.sqrt(np.mean(np.square(res[np.logical_not(np.isnan(res))]))))
+
+
 
