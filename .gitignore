@@ -12,7 +12,7 @@ model/saved_models/
 *.gz
 sftp.json
 notebooks/
-
+*.zip
 results/
 reconstruction/
 generated_test/
