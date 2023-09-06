@@ -123,9 +123,9 @@ for v in values:
     if comform_res < best_res:
         for idx, slice_ in enumerate(Vol):
             filename = f'reconstruct/reconstruction_slice_{idx:03d}.tif'
-            #imwrite(filename, slice_.astype(np.int16))
+            imwrite(filename, slice_.astype(np.int16))
             #imwrite(filename, slice_.astype(np.float32))
-            imwrite(filename, rescale_to_int16(slice_))
+            #imwrite(filename, rescale_to_int16(slice_))
 
     #astra.data3d.delete(id_proj)
     #astra.data3d.delete(id_vol)
