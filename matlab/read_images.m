@@ -1,3 +1,8 @@
+currentPath = pwd;
+
+disp(['The current path is: ', currentPath]);
+
+
 
 images = 0:871;
 datatype = 'uint16';
