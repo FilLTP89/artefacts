@@ -6,7 +6,7 @@ current_path = os.getcwd()
 print(f"The current path is: {current_path}")
 
 # Define parameters
-images = range(19, 890)  # This creates a range equivalent to 19:889 in MATLAB
+images = range(19, 889)  # This creates a range equivalent to 19:889 in MATLAB
 datatype = np.uint16  # The numpy equivalent for MATLAB's 'uint16'
 im_size = (400, 400)  # In python, tuples are often used to represent sizes or shapes
 endianness = '<'  # Little-endian. Equivalent to 'b' in MATLAB.
