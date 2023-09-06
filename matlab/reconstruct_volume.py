@@ -42,8 +42,42 @@ for v in values:
     vol_size = [700, 700, 588]
 
     # Compute rotation matrix of the rotation axis transformation
+    # Compute rotation matrix of the rotation axis transformation
+    Rx = np.array([[1, 0, 0],
+                   [0, np.cos(axis_angles[0]), -np.sin(axis_angles[0])],
+                   [0, np.sin(axis_angles[0]), np.cos(axis_angles[0])]])
 
-    # ... Note: The rotation matrices and computations in the loop will need to be converted to Python ...
+    Ry = np.array([[np.cos(axis_angles[1]), 0, np.sin(axis_angles[1])],
+                   [0, 1, 0],
+                   [-np.sin(axis_angles[1]), 0, np.cos(axis_angles[1])]])
+
+    Rz = np.array([[np.cos(axis_angles[2]), -np.sin(axis_angles[2]), 0],
+                   [np.sin(axis_angles[2]), np.cos(axis_angles[2]), 0],
+                   [0, 0, 1]])
+
+    n_angles = len(angles)
+    vectors = np.zeros((n_angles, 12))
+
+    for i in range(n_angles):
+
+        R = np.array([[np.cos(angles[i]), -np.sin(angles[i]), 0],
+                      [np.sin(angles[i]), np.cos(angles[i]), 0],
+                      [0, 0, 1]])
+        R = np.dot(R, np.dot(Rz, np.dot(Ry, Rx)))
+
+        # source position
+        vectors[i, 0:3] = np.dot(R, (source_pos - axis_pos)) + axis_pos - vol_pos
+
+        # detector position
+        vectors[i, 3:6] = np.dot(R, (detect_pos - axis_pos)) + axis_pos - vol_pos
+
+        # vector from detector pixel (0,0) to (0,1)
+        vectors[i, 6:9] = pixel_size * np.dot(R, [1, 0, 0])
+
+        # vector from detector pixel (0,0) to (1,0)
+        vectors[i, 9:12] = pixel_size * np.dot(R, [0, 0, 1])
+
+
 
     sino = np.transpose(sino, (1, 2, 0))
     proj_size = SizeImage
