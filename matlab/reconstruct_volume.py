@@ -103,6 +103,10 @@ for v in values:
 
     Vol = astra.data3d.get(id_vol)
 
+    for idx, slice_ in enumerate(Vol):
+        filename = f'reconstruct/reconstruction_{v:.2f}_slice_{idx:03d}.tif'
+        imsave(filename, slice_.astype(np.float32))
+
     id_proj, proj_data = astra.create_sino3d_gpu(Vol, proj_geom, vol_geom)
     res = proj_data - sino
 
@@ -111,3 +115,4 @@ for v in values:
     #astra.data3d.delete(id_sino)
 
     print(np.sqrt(np.mean(np.square(res[np.logical_not(np.isnan(res))]))))
+
