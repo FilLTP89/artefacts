@@ -3,7 +3,14 @@ import astra
 import scipy.io
 from tifffile import imwrite
 
-# Astra setup: In the Python version of ASTRA, you don't need to add paths.
+def rescale_to_int16(data):
+    # Normalize to [0, 1]
+    normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
+    
+    # Scale to 16-bit integer range and shift
+    int16_data = (normalized_data * 65535 - 32768).astype(np.int16)
+    return int16_data
+
 
 values = np.linspace(-5, 5, 10)
 best_res = 1e10
@@ -116,7 +123,9 @@ for v in values:
     if comform_res < best_res:
         for idx, slice_ in enumerate(Vol):
             filename = f'reconstruct/reconstruction_slice_{idx:03d}.tif'
-            imwrite(filename, slice_.astype(np.float32))
+            #imwrite(filename, slice_.astype(np.int16))
+            #imwrite(filename, slice_.astype(np.float32))
+            imwrite(filename, rescale_to_int16(slice_))
 
     #astra.data3d.delete(id_proj)
     #astra.data3d.delete(id_vol)
