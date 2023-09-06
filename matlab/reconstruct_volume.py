@@ -105,9 +105,6 @@ for v in values:
 
     Vol = astra.data3d.get(id_vol)
 
-    for idx, slice_ in enumerate(Vol):
-        filename = f'reconstruct/reconstruction_{v:.2f}_slice_{idx:03d}.tif'
-        imwrite(filename, slice_.astype(np.float32))
 
     id_proj, proj_data = astra.create_sino3d_gpu(Vol, proj_geom, vol_geom)
     res = proj_data - sino
