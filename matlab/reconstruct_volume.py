@@ -106,8 +106,8 @@ for v in values:
     id_proj, proj_data = astra.create_sino3d_gpu(Vol, proj_geom, vol_geom)
     res = proj_data - sino
 
-    astra.data3d.delete(id_proj)
-    astra.data3d.delete(id_vol)
-    astra.data3d.delete(id_sino)
+    #astra.data3d.delete(id_proj)
+    #astra.data3d.delete(id_vol)
+    #astra.data3d.delete(id_sino)
 
     print(np.sqrt(np.mean(np.square(res[np.logical_not(np.isnan(res))]))))
