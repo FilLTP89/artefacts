@@ -18,4 +18,4 @@ module load cuda/11.7.0/gcc-11.2.0
 module load gcc/8.4.0/gcc-4.8.5
 
 python3 read_images.py
-#python3 reconstruct_volume.py
+python3 reconstruct_volume.py
