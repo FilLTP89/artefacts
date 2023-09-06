@@ -4,7 +4,7 @@ disp(['The current path is: ', currentPath]);
 
 
 
-images = 0:871;
+images = 19:889;
 datatype = 'uint16';
 im_size = [400,400];
 endianness = 'b';
