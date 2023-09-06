@@ -14,5 +14,8 @@
 
 # Module load
 module purge
+module load cuda/11.7.0/gcc-11.2.0
+module load gcc/8.4.0/gcc-4.8.5
 module load matlab/R2020a/intel-19.0.3.199
 matlab -nodisplay -r read_images
+matlab -nodisplay -r reconstruct_volume

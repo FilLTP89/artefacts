@@ -2,8 +2,8 @@
 %clear all
 
 % Astra:
-addpath('/usrtmp/vkosin/astra/matlab/mex/')
-addpath('/usrtmp/vkosin/astra/matlab/tools/')
+addpath('/gpfs/workdir/candemilam/astra/share/astra/matlab/mex/')
+addpath('/gpfs/workdir/candemilam/astra/share/astra/matlab/tools/')
 
 
 values = 0;linspace(-5,5,10);
