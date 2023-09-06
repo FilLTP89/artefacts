@@ -18,7 +18,7 @@ for v in values:
     SizeImage = [400, 400]
     CenterImage = (np.array(SizeImage) / 2 + [5, 0]) * pixelpitch
     axis_angles = [0, 0, 0]
-    n_images = 870
+    n_images = 851
 
     angles = -np.linspace(0, (200 + v) / 180 * np.pi, n_images)
     sino = sino[:, :, 20:]
