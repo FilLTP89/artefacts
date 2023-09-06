@@ -7,9 +7,9 @@
 #SBATCH --nodes=1 
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --partition=gpua10
-#SBATCH --output=output.txt
-#SBATCH --error=error.txt
+#SBATCH --partition=gpua100
+#SBATCH --output=log/output.txt
+#SBATCH --error=log/error.txt
 
 
 # Module load
