@@ -16,6 +16,8 @@
 module purge
 module load cuda/11.7.0/gcc-11.2.0
 module load gcc/8.4.0/gcc-4.8.5
-
+source activate artefact
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
+export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/candemilam/.conda/envs/artefact/lib/"
 python3 read_images.py
 python3 reconstruct_volume.py
