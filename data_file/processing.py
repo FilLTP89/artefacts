@@ -234,7 +234,7 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=32, big_endian=True)
+    dataset = Dataset(path="../data/", batch_size=1, big_endian=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     """

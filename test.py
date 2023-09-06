@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    #test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=32)
-    test_metrics(dicom = False, big_endian = True, batch_size = 32, low=False)
+    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1) # batch_size = 1 to avoid memory error on GPU
+    #test_metrics(dicom = False, big_endian = True, batch_size = 32, low=False)
 
 
