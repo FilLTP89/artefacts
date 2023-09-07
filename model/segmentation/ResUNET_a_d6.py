@@ -204,7 +204,7 @@ class ResUNet(tf.keras.Model):
         model.compile(
             optimizer=self.optimizer,
             loss="binary_crossentropy",
-            metrics=[tf.keras.metrics.AUC(), tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.MeanIoU()]
+            metrics=[tf.keras.metrics.MeanIoU(num_classes=2)]
         )  # compile the model
 
         return model
