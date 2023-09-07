@@ -90,7 +90,7 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
-def test_single_acquistion(dicom = False, big_endian = True,acquisition_number = 1,batch_size = 32):
+def test_single_acquistion(dicom = False, big_endian = True,acquisition_number = 1,batch_size = 32, low = False):
     if dicom : 
         model = load_model_with_weights()
         dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
@@ -100,18 +100,18 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
         model = load_model()
         dataset = Dataset(big_endian = True, batch_size=batch_size)
         dataset.setup()
-        acquisition = dataset.load_single_acquisition(acquisition_number)
+        acquisition = dataset.load_single_acquisition(acquisition_number, low = low)
     d = 0
     while os.path.exists(f"generated_images/big_endian/experiment_{d}"):
         d += 1
     os.makedirs(f"generated_images/big_endian/experiment_{d}/acquisition_{acquisition_number}")
-
+    low_name = "low" if low else "high"
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
         for i in range(batch_size):
             save_to_raw(
-                x[i], preds[i], y[i], name=f"big_endian/experiment_{d}/acquisition_{acquisition_number}/{file}",
+                x[i], preds[i], y[i], name=f"big_endian/experiment_{d}/{low_name}/{file}",
                 big_endian=big_endian
                 )
             file +=1
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1) # batch_size = 1 to avoid memory error on GPU
+    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1, low = True) # batch_size = 1 to avoid memory error on GPU
     #test_metrics(dicom = False, big_endian = True, batch_size = 32, low=False)
 
 

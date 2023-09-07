@@ -157,8 +157,12 @@ def save_to_raw(
        big_endian= big_endian
    )
     
+"""
 
+IMPORTANT !!!!
+Maybe this is useless as the bytes order doesnt seems to matter right now
 
+"""
 def transform_to_big_endian(filename):
     if "ground_truth" in filename :
         category = "ground_truth/"
@@ -179,7 +183,7 @@ def transform_to_big_endian(filename):
 
 
 if __name__ == "__main__":
-    path = "../generated_test/experiment_2/acquisition_1/"
+    path = "../generated_test/experiment_4/acquisition_1/"
     big_endian_dir = path + "big_endian/"
     if not os.path.exists(big_endian_dir):
         os.makedirs(big_endian_dir + "predicted/")
