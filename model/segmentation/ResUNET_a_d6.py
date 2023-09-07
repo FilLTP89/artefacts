@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow.keras.layers as kl
-from metrics import ssim
 from loss import FocalFrequencyLoss as FFL
 from loss import MSE_loss, SSIMLoss
 
@@ -21,7 +20,7 @@ class ResUNet(tf.keras.Model):
         self.shape = input_shape  # Input shape has to be power of 2, 256x256 or 512x512
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
-        self.metrics_list = [tf.keras.metrics.RootMeanSquaredError(), ssim]
+        self.metrics_list = [tf.keras.metrics.RootMeanSquaredError() ]
         self.loss = self.loss_function
 
 
