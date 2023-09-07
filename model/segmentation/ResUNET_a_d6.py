@@ -29,8 +29,8 @@ class ResUNet(tf.keras.Model):
         y_true,
         y_pred,
     ):
-        bce = tf.keras.losses.BinaryCrossentropy()
-        return bce(y_true, y_pred)
+        loss = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.SUM)
+        return loss
 
     def ResBlock_a(
         self,
