@@ -22,4 +22,4 @@ source $WORKDIR/launch_script.sh
 #python3 train.py --model MedGAN --epochs 5 --batch_size 1 --dicom  --one_batch_training --learning_rate 2e-6 --saving_path "model/saved_models/MedGAN/" --save_weights
 #python3 train.py --model DeepMAR --epochs 5 --batch_size 1 --dicom 
 
-python3 train.py --model smResunet --epochs 200 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --segmentation
+python3 train.py --model smResunet --epochs 200 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --segmentation --learning_rate 3e-4

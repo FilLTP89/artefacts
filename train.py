@@ -92,6 +92,7 @@ def train(config):
     )
     print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
     if config.model == "VGG19":
+        print("VGG19 Dataset")
         dataset = VGGDataset(
             height=config.img_size,
             width=config.img_size,
@@ -99,6 +100,7 @@ def train(config):
             big_endian=config.big_endian,
         )
     elif config.segmentation:
+        print("Semantic Dataset")
         dataset = SegmentationDataset(
             height=config.img_size,
             width=config.img_size,
