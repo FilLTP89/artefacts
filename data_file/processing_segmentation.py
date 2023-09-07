@@ -126,14 +126,14 @@ class SegmentationDataset:
 
             x = x / 255
             y = y / 255
-
+            y_binary = np.where(y > 0.5, 1, 0)
             """
             if np.any(np.isnan(x)):
                 print("Found NaN in x")
             if np.any(np.isnan(y)):
                 print("Found NaN in y")
             """
-            return x, y
+            return x, np.float32(y_binary)
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
         input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
@@ -219,6 +219,6 @@ if __name__ == "__main__":
         ax1.imshow(x[20], cmap = "gray")
         ax2.imshow(y[20], cmap = "gray")
         plt.show()
-        print(tf.reduce_max(x), tf.reduce_min(x))
+        print(y[20])
         if idx > 5:
             break
