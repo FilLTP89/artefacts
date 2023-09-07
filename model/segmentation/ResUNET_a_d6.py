@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.keras.layers as kl
 from loss import FocalFrequencyLoss as FFL
 from loss import MSE_loss, SSIMLoss
-
+from metrics import accuracy, precision, recall, f1_score
 """
 ResUNet_a_d6 is a model based on the paper "ResUNet: 
 A Deep Residual U-Net for Image Segmentation"
@@ -20,7 +20,7 @@ class ResUNet(tf.keras.Model):
         self.shape = input_shape  # Input shape has to be power of 2, 256x256 or 512x512
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
-        self.metrics_list = [tf.keras.metrics.RootMeanSquaredError() ]
+        self.metrics_list = [accuracy, precision, recall, f1_score]
         self.loss = self.loss_function
 
 
@@ -28,12 +28,9 @@ class ResUNet(tf.keras.Model):
         self,
         y_true,
         y_pred,
-        use_focal=True,
     ):
-        if use_focal:  # if use focal we use the sum of the MSE and the Focal loss
-            return MSE_loss(y_true, y_pred) + FFL()(y_true, y_pred)
-        # else we use only the MSE
-        return MSE_loss(y_true, y_pred)
+        bce = tf.keras.losses.BinaryCrossentropy()
+        return bce(y_true, y_pred)
 
     def ResBlock_a(
         self,
