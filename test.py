@@ -104,8 +104,8 @@ def test_single_acquistion(dicom = False, big_endian = True,acquisition_number =
     d = 0
     while os.path.exists(f"generated_images/big_endian/experiment_{d}"):
         d += 1
-    os.makedirs(f"generated_images/big_endian/experiment_{d}/acquisition_{acquisition_number}")
     low_name = "low" if low else "high"
+    os.makedirs(f"generated_images/big_endian/experiment_{d}/{low_name}")
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
