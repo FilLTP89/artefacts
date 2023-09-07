@@ -203,7 +203,7 @@ class ResUNet(tf.keras.Model):
         model = tf.keras.Model(inputs=input, outputs=output)
         model.compile(
             optimizer=self.optimizer,
-            loss=tf.keras.losses.binary_crossentropy(),
+            loss="binary_crossentropy",
             metrics=[tf.keras.metrics.AUC(), tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.MeanIoU()]
         )  # compile the model
 
