@@ -1,16 +1,13 @@
 import tensorflow as tf
 import numpy as np
 from glob import glob
-import re
-import os
 from sklearn.model_selection import train_test_split
 from visualize import visualize_from_dataset
-import h5py
 from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 import cv2
-import segmentation_models as sm
-
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 """
@@ -35,7 +32,6 @@ class SegmentationDataset:
         valid_saving_path: str = "valid/",
         seed: int = 2,  # 1612
         shuffle=True,
-        backbone : str = "resnet"
     ) -> None:
 
         self.path = path
@@ -53,7 +49,6 @@ class SegmentationDataset:
         self.seed = seed
         self.shuffle = shuffle
 
-        self.preprocess_input = sm.get_preprocessing(backbone)
         
     def collect_data(self):
 
@@ -117,7 +112,6 @@ class SegmentationDataset:
         def f(x, y):
             x = x.decode("utf-8")
             y = y.decode("utf-8")
-            #print(x.split["."][-2] == y.split["."][-2])
             x = cv2.imread(x)
             y = cv2.imread(y)
             x = cv2.cvtColor(x, cv2.COLOR_BGR2GRAY)
@@ -125,16 +119,20 @@ class SegmentationDataset:
             x = np.array(x, dtype=np.float32)
             y = np.array(y, dtype=np.float32)
 
-            x = self.preprocess_input(x)
-            y = self.preprocess_input(y)
 
             #x = 2 * (x - np.min(x)) / (np.max(x) - np.min(x)) - 1
             #y = 2 * (y - np.min(y)) / (np.max(y) - np.min(y)) - 1
 
+
+            x = x / 255
+            y = y / 255
+
+            """
             if np.any(np.isnan(x)):
                 print("Found NaN in x")
             if np.any(np.isnan(y)):
                 print("Found NaN in y")
+            """
             return x, y
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
@@ -216,9 +214,11 @@ if __name__ == "__main__":
     dataset = SegmentationDataset(path="../data/segmentation", batch_size=32)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    for x, y in test_ds:
+    for idx, (x, y) in enumerate(test_ds):
         fig,(ax1,ax2) = plt.subplots(1,2, figsize = (20,20))
         ax1.imshow(x[20], cmap = "gray")
         ax2.imshow(y[20], cmap = "gray")
         plt.show()
-        break
+        print(tf.reduce_max(x), tf.reduce_min(x))
+        if idx > 5:
+            break

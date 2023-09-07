@@ -10,7 +10,7 @@ import wandb_params
 from wandb.keras import WandbMetricsLogger
 import time
 from tensorflow.keras import mixed_precision
-
+from data_file.processing_segmentation import SegmentationDataset
 # mixed_precision.set_global_policy("mixed_float16")
 
 
@@ -98,6 +98,12 @@ def train(config):
             batch_size=config.batch_size * len(gpus),
             big_endian=config.big_endian,
         )
+    elif config.segmentation:
+        dataset = SegmentationDataset(
+            height=config.img_size,
+            width=config.img_size,
+            batch_size=config.batch_size * len(gpus),
+        )
     else:
         dataset = Dataset(
             height=config.img_size,
@@ -105,6 +111,8 @@ def train(config):
             batch_size=config.batch_size * len(gpus),
             big_endian=config.big_endian,
         )
+
+
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")

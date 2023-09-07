@@ -12,7 +12,7 @@ from loss import (
     generator_gan_loss,
     discriminator_loss,
 )
-
+from segmentation.ResUNET_a_d6 import ResUNet as smResunet
 
 class Model:
     def __init__(
@@ -24,6 +24,7 @@ class Model:
         big_endian=True,
         dicom=True,
         pretrained_MedGAN=True,
+        segmentation=False,
     ) -> None:
         super().__init__()
 
@@ -45,6 +46,9 @@ class Model:
             "model/saved_models/VGG19/low_endian/VGG1910/model.ckpt"
         )
         self.pretrained_vgg_dicom_path = "model/saved_models/VGG19/dicom/grateful-capybara-8/20/model.ckpt"  # acc : dicom normalize between -1 and 1
+
+        self.segmentation = segmentation
+
 
     def build_model(self):
         if self.model_name == "ResUnet":
@@ -94,6 +98,14 @@ class Model:
             )
             model.compile()
             model.compute_output_shape(input_shape=(None, 512, 512, 1))
+
+
+        elif self.model_name == "smResunet":
+            model = smResunet(
+                input_shape=(self.height, self.width, 1),
+                learning_rate=self.learning_rate,
+                nb_class=1,
+            ).build_model()
         return model
 
 

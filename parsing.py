@@ -23,7 +23,8 @@ default_config = SimpleNamespace(
     load_from_checkpoint=False,
     dicom=False,
     save_weights=False,
-    pretrained_MedGAN = False
+    pretrained_MedGAN = False,
+    segmentation = False
 )
 
 
@@ -59,6 +60,13 @@ def parse_args():
         type=bool,
         default=default_config.augment,
         help="Use image augmentation",
+    )
+    argparser.add_argument(
+        "--segmentation",
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        default=default_config.segmentation,
+        help="segmentation dataset",
     )
     argparser.add_argument(
         "--wandb",
