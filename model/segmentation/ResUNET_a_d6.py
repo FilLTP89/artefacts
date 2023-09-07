@@ -20,17 +20,11 @@ class ResUNet(tf.keras.Model):
         self.shape = input_shape  # Input shape has to be power of 2, 256x256 or 512x512
         self.nb_class = nb_class
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
+        """
         self.metrics_list = [accuracy, precision, recall, f1_score]
         self.loss = self.loss_function
+        """
 
-
-    def loss_function(
-        self,
-        y_true,
-        y_pred,
-    ):
-        loss = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.SUM)
-        return loss
 
     def ResBlock_a(
         self,
@@ -209,8 +203,8 @@ class ResUNet(tf.keras.Model):
         model = tf.keras.Model(inputs=input, outputs=output)
         model.compile(
             optimizer=self.optimizer,
-            loss=self.loss,
-            metrics=self.metrics_list,
+            loss=tf.keras.losses.binary_crossentropy(),
+            metrics=[tf.keras.metrics.AUC(), tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.MeanIoU()]
         )  # compile the model
 
         return model
