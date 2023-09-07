@@ -64,7 +64,7 @@ def parse_args():
     argparser.add_argument(
         "--segmentation",
         type=bool,
-        action=argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,  
         default=default_config.segmentation,
         help="segmentation dataset",
     )
