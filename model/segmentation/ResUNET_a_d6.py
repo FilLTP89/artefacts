@@ -2,7 +2,9 @@ import tensorflow as tf
 import tensorflow.keras.layers as kl
 from loss import FocalFrequencyLoss as FFL
 from loss import MSE_loss, SSIMLoss
-from metrics import accuracy, precision, recall, f1_score
+from metrics import accuracy, precision, recall
+
+
 """
 ResUNet_a_d6 is a model based on the paper "ResUNet: 
 A Deep Residual U-Net for Image Segmentation"
@@ -204,7 +206,8 @@ class ResUNet(tf.keras.Model):
         model.compile(
             optimizer=self.optimizer,
             loss="binary_crossentropy",
-            metrics=[tf.keras.metrics.MeanIoU(num_classes=2, sparse_y_pred=True)],
+            metrics=[tf.keras.metrics.MeanIoU(num_classes=2, sparse_y_pred=False),
+                     accuracy, precision, recall,],
         )  # compile the model
 
         return model
