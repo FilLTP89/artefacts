@@ -16,7 +16,7 @@ def load_model(
     except:
         model_path += "/model.ckpt"
         model = ResUNet()
-        model.build(input_shape=(None, 512, 512, 1))
+        #model.build(input_shape=(None, 512, 512, 1))
         model.load_weights(model_path).expect_partial()
     return model
 
