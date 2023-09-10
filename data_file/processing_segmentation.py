@@ -219,6 +219,6 @@ if __name__ == "__main__":
         ax1.imshow(x[20], cmap = "gray")
         ax2.imshow(y[20], cmap = "gray")
         plt.show()
-        print(y[20])
-        if idx > 5:
+        print(y.shape)
+        if idx > 1:
             break
