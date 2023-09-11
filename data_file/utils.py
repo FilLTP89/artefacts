@@ -179,7 +179,7 @@ def transform_to_big_endian(filename):
     dir = "".join([z + "/" for z in (filename.split("/")[:-1])])
     name = filename.split("/")[-1]
     big_endian_dir = dir + "big_endian/" + category
-    if not os.exists(big_endian_dir):
+    if not os.path.exists(big_endian_dir):
         os.makedirs(big_endian_dir)
     data_little_endian = np.fromfile(filename, dtype='<u2')
     data_little_endian = additional_transformation(data_little_endian)
