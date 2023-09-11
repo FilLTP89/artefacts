@@ -31,7 +31,7 @@ def generate(batch_size=32,):
     os.makedirs(f"generated_images/segmentation/experiment_{d}")
     data = dataset.train_ds
     for _, (x, y) in enumerate(data):
-        preds = model.predict(x)
+        preds = tf.round(model.predict(x))
         for i in range(preds.shape[0]):
             fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 20))  
             ax1.imshow(x[i], cmap="gray")
@@ -46,4 +46,4 @@ def generate(batch_size=32,):
 
 
 if __name__ == "__main__":
-    generate(batch_size=10)
+    generate(batch_size=32)
