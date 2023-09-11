@@ -25,6 +25,7 @@ def generate(batch_size=32,):
     dataset = SegmentationDataset(batch_size=batch_size,)
     dataset.setup()
     model = load_model()
+    d = 0
     while os.path.exists(f"generated_images/segmentation/experiment_{d}"):
         d += 1
     os.makedirs(f"generated_images/segmentation/experiment_{d}")
