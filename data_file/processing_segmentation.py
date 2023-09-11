@@ -15,6 +15,14 @@ Classic segmentation Dataset
 """
 
 
+"""
+TODO:
+    - Verify sample, it seems that some sample are incorrect
+    - Verify how to use it, x and y seems to be way different, can we 
+    really create substract the metal using (x - y_pred)? 
+        - Create x-y and see how it goes
+    """
+
 # Try to save to use the save function to save the dataset in folder -> Actually took too much times
 # See how much volume they take, and how long we take to load them
 

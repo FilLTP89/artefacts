@@ -6,7 +6,11 @@ import SimpleITK as sitk
 import os
 import cv2
 
-
+"""
+TODO:
+    - Redo the saving so it is in big endian, np.uint16, good scale (137, 52578)
+    - Try to not have to save the little endian image in the first place
+"""
 def save_file(
     x,
     preds,
@@ -156,7 +160,9 @@ def save_to_raw(
        image_size=shape, 
        big_endian= big_endian
    )
-    
+    transform_to_big_endian(path + name + "_original.raw")
+    transform_to_big_endian(path + name + "_predicted.raw")
+    transform_to_big_endian(path + name + "_ground_truth.raw")
 """
 
 IMPORTANT !!!!
@@ -174,13 +180,16 @@ def transform_to_big_endian(filename):
     name = filename.split("/")[-1]
     big_endian_dir = dir + "big_endian/" + category
     data_little_endian = np.fromfile(filename, dtype='<u2')
+    data_little_endian = additional_transformation(data_little_endian)
     data_big_endian = data_little_endian.byteswap()
     output_file_path = big_endian_dir + name    
     print(output_file_path)
     data_big_endian.tofile(output_file_path)
 
 
-
+def additional_transformation(array,umin = 137, umax = 52578,):
+    array = (array * (umax - umin)) + umin
+    return array.astype(np.uint16)
 
 if __name__ == "__main__":
     path = "../generated_test/experiment_4/acquisition_1/"
