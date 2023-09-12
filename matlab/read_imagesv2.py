@@ -23,7 +23,7 @@ for i in images:
             V = np.fromfile(f, dtype=datatype)
     
     # Reshape it
-    sino[:, :, i-1] = V.reshape(im_size)
+    sino[:, :, i-19] = V.reshape(im_size)
 
 # Get background intensity
 intensity = np.mean(sino[-21:, 100:300, 350])
