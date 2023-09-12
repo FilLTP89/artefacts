@@ -124,9 +124,9 @@ def parse_args():
         help="Train on one batch",
     )
     argparser.add_argument(
-        "--load_from_checkpoint",
+        "--pretrained_MedGAN",
         action=argparse.BooleanOptionalAction,
-        default=default_config.pretrained_MedGAN,
+        default=default_config.pretrained_MedGAN ,
         help="Use pretrained MedGAN",
     )
     argparser.add_argument(
