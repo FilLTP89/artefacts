@@ -137,6 +137,8 @@ def load_MedGAN_from_checkpoint(path=None):
         model = MEDGAN(learning_rate=5e-5)
         model.build(input_shape=(None, 512, 512, 1))
         model.load_weights(path).expect_partial()
+        model.compile()
+        model.compute_output_shape(input_shape=(None, 512, 512, 1))
         print("MedGAN loaded")
     except :
         print("Error while loading the model")
