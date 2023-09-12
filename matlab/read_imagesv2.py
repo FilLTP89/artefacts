@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 tag = "original"
-images = range(871)
+images = range(19,890)
 datatype = np.uint16
 im_size = (400, 400)
 endianness = 'big'  # 'b' in MATLAB is big-endian
