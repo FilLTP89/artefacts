@@ -249,4 +249,8 @@ if __name__ == "__main__":
             )
     """
     acquisition = dataset.load_single_acquisition(1)
-    print(len(acquisition))
+    for idx , (x,y) in enumerate(acquisition):
+        print(tf.reduce_max(x[0]) )
+
+        if idx > 3:
+            break

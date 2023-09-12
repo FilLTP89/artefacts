@@ -164,11 +164,11 @@ def save_to_raw(
     transform_to_big_endian(path + name + "_predicted.raw")
     transform_to_big_endian(path + name + "_ground_truth.raw")
 """
-
 IMPORTANT !!!!
-Maybe this is useless as the bytes order doesnt seems to matter right now
-
+Maybe this is useless as the bytes order doesnt seems to matter right now -> it seems to matters
 """
+
+
 def transform_to_big_endian(filename):
     """
     filename (string): The path to the file containing the data to be converted. 
@@ -186,16 +186,12 @@ def transform_to_big_endian(filename):
     if not os.path.exists(big_endian_dir):
         os.makedirs(big_endian_dir)
     data_little_endian = np.fromfile(filename, dtype='<u2')
-    data_little_endian = additional_transformation(data_little_endian)
     data_big_endian = data_little_endian.byteswap()
     output_file_path = big_endian_dir + name    
-    print(output_file_path)
     data_big_endian.tofile(output_file_path)
 
 
-def additional_transformation(array,umin = 137, umax = 52578,):
-    array = (array * (umax - umin)) + umin
-    return array.astype(np.uint16)
+    
 
 if __name__ == "__main__":
     path = "../generated_test/experiment_4/acquisition_1/"

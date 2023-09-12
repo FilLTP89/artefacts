@@ -9,9 +9,11 @@ import wandb
 import wandb_params
 from wandb.keras import WandbMetricsLogger
 import time
-from tensorflow.keras import mixed_precision
 from data_file.processing_segmentation import SegmentationDataset
-# mixed_precision.set_global_policy("mixed_float16")
+
+
+from tensorflow.keras import mixed_precision
+mixed_precision.set_global_policy("mixed_float16")
 
 
 def scheduler(epoch, lr):
