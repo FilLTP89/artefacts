@@ -170,7 +170,11 @@ Maybe this is useless as the bytes order doesnt seems to matter right now
 
 """
 def transform_to_big_endian(filename):
-    if "ground_truth" in filename :
+    """
+    filename (string): The path to the file containing the data to be converted. 
+    """
+    
+    if "ground_truth"  in filename :
         category = "ground_truth/"
     elif "original" in filename:
         category = "original/"
