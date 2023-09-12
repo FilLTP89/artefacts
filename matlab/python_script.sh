@@ -22,3 +22,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/candemilam/.conda/envs/artefact/lib/"
 python3 read_imagesv2.py
 python3 reconstruct_volumev2.py
+python3 convert2iimage.py

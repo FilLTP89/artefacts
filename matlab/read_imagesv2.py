@@ -13,7 +13,7 @@ sino = np.zeros((400, 400, 871))
 
 for i in images:
     im_name = filename.format(i)
-    print(im_name)
+    #print(im_name)
     
     # Read the data
     with open(im_name, 'rb') as f:
