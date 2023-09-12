@@ -7,7 +7,7 @@ tag = "original"
 values = [0] + np.linspace(-5, 5, 10).tolist()
 
 for idx,v in enumerate(values):
-    print("Iteration", idx)
+    print("Iteration : ", idx)
     data = np.load(f"sino_{tag}.npz")
     sino = data['sino']
     
