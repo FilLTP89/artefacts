@@ -23,7 +23,7 @@ class Model:
         pretrained_vgg=True,
         big_endian=True,
         dicom=True,
-        pretrained_MedGAN=True,
+        pretrained_MedGAN=False,
         segmentation=False,
     ) -> None:
         super().__init__()
