@@ -17,3 +17,6 @@ results/
 reconstruction/
 generated_test/
 
+*.tif
+*.tif
+
