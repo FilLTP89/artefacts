@@ -113,7 +113,9 @@ def train(config):
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     print("Num GPUs Available:", len(gpus))
+    print("Batch size :", config.batch_size * len(gpus))
     strategy = tf.distribute.MirroredStrategy(gpus)
+    print("Using prerained MedGAN :", config.pretrained_MedGAN)
     with strategy.scope():
         print("Creating the model ...")
         model = Model(

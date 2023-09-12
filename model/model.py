@@ -35,7 +35,7 @@ class Model:
         self.dicom = dicom
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
-        self.pretrained_MedGAN = pretrained_MedGAN
+        self.pretrained_MedGAN = False
         #self.pretrained_MedGAN_path = ("model/saved_models/MedGAN/big_endian/genuine-caress-15/03")
         self.pretrained_MedGAN = "model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40"
         self.pretrained_vgg_big_endian_path = (
@@ -67,7 +67,7 @@ class Model:
             ).build_model()
         elif self.model_name == "MedGAN":
             if self.pretrained_MedGAN:
-                print("Using Pretrained MedGAN")
+                print("Using pretrained MedGAN")
                 model = load_MedGAN_from_checkpoint(self.pretrained_MedGAN)
                 return model 
             else:
@@ -140,7 +140,6 @@ def load_MedGAN_from_checkpoint(path=None):
         model.load_weights(path).expect_partial()
         model.compile( )
         model.compute_output_shape(input_shape=(None, 512, 512, 1))
-        print("MedGAN loaded")
     except :
         print("Error while loading the model")
     return model
