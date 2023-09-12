@@ -47,10 +47,10 @@ for v in values:
 
     for i, angle in enumerate(angles):
         R = np.array([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]]) @ Rz @ Ry @ Rx
-        vectors[i, 0:3] = (R @ (source_pos - axis_pos) + axis_pos - vol_pos)
-        vectors[i, 4:6] = (R @ (detect_pos - axis_pos) + axis_pos - vol_pos)
-        vectors[i, 7:9] = pixel_size * (R @ np.array([1, 0, 0]))
-        vectors[i, 10:12] = pixel_size * (R @ np.array([0, 0, 1]))
+        vectors[i, 0:3] = (R @ (source_pos - axis_pos) + axis_pos - vol_pos).T
+        vectors[i, 3:6] = (R @ (detect_pos - axis_pos) + axis_pos - vol_pos).T
+        vectors[i, 6:9] = pixel_size * (R @ np.array([1, 0, 0])).T
+        vectors[i, 10:12] = (pixel_size * (R @ np.array([0, 0, 1]))).T
 
     sino = np.transpose(sino, (1, 2, 0))
     proj_size = SizeImage
