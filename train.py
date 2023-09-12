@@ -23,14 +23,6 @@ def scheduler(epoch, lr):
         return lr * tf.math.exp(-0.1)
 
 
-def final_metrics(learn):
-    "Log latest metrics values"
-    scores = learn.validate()
-    metric_names = ["final_loss"] + [f"final_{x.name}" for x in learn.metrics]
-    final_results = {metric_names[i]: scores[i] for i in range(len(scores))}
-    for k, v in final_results.items():
-        wandb.summary[k] = v
-
 
 def fit_model(model, config, train_ds, valid_ds, test_ds):
     callbacks = []
@@ -43,7 +35,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     if config.wandb:
         callbacks = [
             tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
-            WandbMetricsLogger(),
+            WandbMetricsLogger(log_freq = "batch"),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
                 + dicom_path
