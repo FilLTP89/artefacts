@@ -76,11 +76,15 @@ for v in values:
     cfg['option']['GPUIndex'] = 0
 
     id_alg = astra.algorithm.create(cfg)
+    print("Run first reconstruction")
     astra.algorithm.run(id_alg, 1)
+    print("End first reconstruction")
 
     cfg['type'] = 'SIRT3D_CUDA'
     id_alg = astra.algorithm.create(cfg)
-    astra.algorithm.run(id_alg, 100)
+    print("Run second reconstruction")
+    astra.algorithm.run(id_alg, 20)
+    print("End second reconstruction")
 
     Vol = astra.data3d.get(id_vol)
 
