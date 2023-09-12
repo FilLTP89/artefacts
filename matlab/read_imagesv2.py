@@ -15,10 +15,12 @@ for i in images:
     
     # Read the data
     with open(im_name, 'rb') as f:
+        """
         if endianness == 'big':
             V = np.fromfile(f, dtype=datatype).byteswap()
         else:
-            V = np.fromfile(f, dtype=datatype)
+        """
+        V = np.fromfile(f, dtype=datatype)
     
     # Reshape it
     sino[:, :, i-19] = V.reshape(im_size)

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=artefact_matlab
 #SBATCH --output=%x.o%j 
-#SBATCH --time=00:20:00 
+#SBATCH --time=01:00:00 
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpua100
 #SBATCH --nodes=1 
