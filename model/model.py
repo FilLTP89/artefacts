@@ -35,9 +35,9 @@ class Model:
         self.dicom = dicom
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
-        self.pretrained_MedGAN = False
+        self.pretrained_MedGAN = pretrained_MedGAN
         #self.pretrained_MedGAN_path = ("model/saved_models/MedGAN/big_endian/genuine-caress-15/03")
-        self.pretrained_MedGAN = "model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40"
+        self.pretrained_MedGAN_path = "model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40"
         self.pretrained_vgg_big_endian_path = (
             "model/saved_models/VGG19/big_endian/VGG1910/model.ckpt"
         )
@@ -68,11 +68,11 @@ class Model:
         elif self.model_name == "MedGAN":
             if self.pretrained_MedGAN:
                 print("Using pretrained MedGAN")
-                model = load_MedGAN_from_checkpoint(self.pretrained_MedGAN)
+                model = load_MedGAN_from_checkpoint(self.pretrained_MedGAN_path)
                 return model 
             else:
                 if self.pretrained_vgg:
-                    print("Using pretrained VGG19")
+                    print("Using pretrainedsq VGG19")
                     if self.dicom:
                         vgg19 = load_vgg19(path=self.pretrained_vgg_dicom_path)
                     elif self.big_endian:
