@@ -52,10 +52,13 @@ for idx,v in enumerate(values):
               [0, 0, 1]]) @ Rz @ Ry @ Rx
         # source position
         vectors[i, 0:3] = (R @ (source_pos - axis_pos)).T + axis_pos.T - vol_pos.T
+
         # detector position
         vectors[i, 3:6] = (R @ (detect_pos - axis_pos)).T + axis_pos.T - vol_pos.T
+
         # vector from detector pixel (0,0) to (0,1)
         vectors[i, 6:9] = pixel_size * (R @ np.array([1, 0, 0])).T
+
         # vector from detector pixel (0,0) to (1,0)
         vectors[i, 9:12] = pixel_size * (R @ np.array([0, 0, 1])).T
 
@@ -76,16 +79,11 @@ for idx,v in enumerate(values):
     cfg['option']['MinConstraint'] = 0
     cfg['option']['GPUIndex'] = 0
 
-    id_alg = astra.algorithm.create(cfg)
-    print("Run first reconstruction")
-    astra.algorithm.run(id_alg, 1)
-    print("End first reconstruction")
-
     cfg['type'] = 'SIRT3D_CUDA'
     id_alg = astra.algorithm.create(cfg)
-    print("Run second reconstruction")
-    astra.algorithm.run(id_alg, 20)
-    print("End second reconstruction")
+    print("Run reconstruction")
+    astra.algorithm.run(id_alg, 100)
+    print("End reconstruction")
 
     Vol = astra.data3d.get(id_vol)
 
