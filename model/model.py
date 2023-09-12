@@ -36,9 +36,8 @@ class Model:
         self.learning_rate = learning_rate
         self.pretrained_vgg = pretrained_vgg
         self.pretrained_MedGAN = pretrained_MedGAN
-        self.pretrained_MedGAN_path = (
-            "model/saved_models/MedGAN/big_endian/genuine-caress-15/03"
-        )
+        #self.pretrained_MedGAN_path = ("model/saved_models/MedGAN/big_endian/genuine-caress-15/03")
+        self.pretrained_MedGAN = "model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40"
         self.pretrained_vgg_big_endian_path = (
             "model/saved_models/VGG19/big_endian/VGG1910/model.ckpt"
         )
@@ -68,7 +67,8 @@ class Model:
             ).build_model()
         elif self.model_name == "MedGAN":
             if self.pretrained_MedGAN:
-                model = load_MedGAN(self.pretrained_MedGAN_path)
+                print("Using Pretrained MedGAN")
+                model = load_MedGAN_from_checkpoint(self.pretrained_MedGAN_path)
             else:
                 if self.pretrained_vgg:
                     print("Using pretrained VGG19")
@@ -130,6 +130,13 @@ def load_MedGAN(path=None):
     )
     return model
 
+
+def load_MedGAN_from_checkpoint(path=None):
+    model = MEDGAN(learning_rate=5e-5)
+    model.build(input_shape=(None, 512, 512, 1))
+    model.load_weights(path).expect_partial()
+    print("MedGAN loaded")
+    return model
 
 def load_vgg19(path=None):
     model = VGG19( load_whole_architecture = False, classifier_training= False)
