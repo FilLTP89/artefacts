@@ -11,13 +11,13 @@ from wandb.keras import WandbMetricsLogger
 import time
 from data_file.processing_segmentation import SegmentationDataset
 
-
+"""
 from tensorflow.keras import mixed_precision
 mixed_precision.set_global_policy("mixed_float16")
-
+""" # Contentn loss goes to +inf if mixed precision is used 
 
 def scheduler(epoch, lr):
-    if epoch < 5:
+    if epoch < 10:
         return lr
     else:
         return lr * tf.math.exp(-0.1)
