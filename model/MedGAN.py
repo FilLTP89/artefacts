@@ -11,6 +11,7 @@ from loss import (
     perceptual_loss,
     generator_gan_loss,
     discriminator_loss,
+    MSE_loss
 )
 
 
@@ -152,6 +153,7 @@ class MEDGAN(tf.keras.Model):
         self.discriminator_loss_tracker = tf.keras.metrics.Mean(
             name="discriminator_loss"
         )
+        self.mse_loss_tracker = tf.keras.metrics.Mean(name="MSE_loss")
 
     @property
     def metrics(self):
@@ -167,6 +169,7 @@ class MEDGAN(tf.keras.Model):
             self.generator_gan_loss_tracker,
             self.generator_loss_tracker,
             self.discriminator_loss_tracker,
+            self.mse_loss_tracker,
         ]
 
     def train_step(self, data):
@@ -286,7 +289,7 @@ class MEDGAN(tf.keras.Model):
             y_true_discriminator_last_layer, y_pred_discriminator_last_layer
         )
         # Compute the gradiants of the loss with respect to the weights of the discriminator
-
+        mse_l = MSE_loss(y, y_pred) 
         # Try to do it the same way as the training step
         self.style_loss_tracker.update_state(style_l)
         self.content_loss_tracker.update_state(content_l)
@@ -294,6 +297,7 @@ class MEDGAN(tf.keras.Model):
         self.generator_gan_loss_tracker.update_state(generator_gan_l)
         self.generator_loss_tracker.update_state(generator_loss)
         self.discriminator_loss_tracker.update_state(discriminator_l)
+        self.mse_loss_tracker.update_state(mse_l)
 
         return {
             "style_loss": self.style_loss_tracker.result(),
@@ -302,6 +306,7 @@ class MEDGAN(tf.keras.Model):
             "generator_gan_loss": self.generator_gan_loss_tracker.result(),
             "generator_loss": self.generator_loss_tracker.result(),
             "discriminator_loss": self.discriminator_loss_tracker.result(),
+            "MSE_loss": self.mse_loss_tracker.result(),
         }
 
     def call(self, x):

@@ -69,6 +69,7 @@ class Model:
             if self.pretrained_MedGAN:
                 print("Using Pretrained MedGAN")
                 model = load_MedGAN_from_checkpoint(self.pretrained_MedGAN)
+                return model 
             else:
                 if self.pretrained_vgg:
                     print("Using pretrained VGG19")
@@ -134,10 +135,10 @@ def load_MedGAN(path=None):
 def load_MedGAN_from_checkpoint(path=None):
     try : 
         path += "/model.ckpt"
-        model = MEDGAN(learning_rate=5e-5)
+        model = MEDGAN(learning_rate=2e-5)
         model.build(input_shape=(None, 512, 512, 1))
         model.load_weights(path).expect_partial()
-        model.compile()
+        model.compile( )
         model.compute_output_shape(input_shape=(None, 512, 512, 1))
         print("MedGAN loaded")
     except :
