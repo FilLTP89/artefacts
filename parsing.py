@@ -126,7 +126,7 @@ def parse_args():
     argparser.add_argument(
         "--load_from_checkpoint",
         action=argparse.BooleanOptionalAction,
-        default=default_config.load_from_checkpoint,
+        default=default_config.pretrained_MedGAN,
         help="Use pretrained MedGAN",
     )
     argparser.add_argument(
