@@ -79,7 +79,7 @@ def train(config):
         )
 
     config = wandb.config if config.wandb else config
-    if config.mix_precision:
+    if config.mixed_precision:
         print("Using mixed precision")
         from tensorflow.keras import mixed_precision
         policy = mixed_precision.Policy("mixed_float16")
