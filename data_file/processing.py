@@ -250,11 +250,17 @@ if __name__ == "__main__":
             )
     """
     for idx , (x,y) in enumerate(train_ds):
-        print(x.shape, y.shape)
-        print(x.dtype, y.dtype)
-        print(x.max(), y.max())
-        print(x.min(), y.min())
-        print()
+        """
+        Various check on data
+        """
+        if idx == 0:
+            print(x.shape, y.shape)
+            print(x.dtype, y.dtype)
+        assert tf.reduce_max(x) <= 1
+        assert tf.reduce_min(x) >= 0.0
+        assert tf.reduce_max(y) <= 1.0
+        assert tf.reduce_min(y) >= 0.0
+        assert tf.math.reduce_any(tf.math.is_nan(x)) == False
+        assert tf.math.reduce_any(tf.math.is_nan(y)) == False
 
-        if idx > 10:
-            break
+        
