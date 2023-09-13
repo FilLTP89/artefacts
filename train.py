@@ -23,6 +23,12 @@ def scheduler(epoch, lr):
         return lr * tf.math.exp(-0.1)
 
 
+def lr_time_based_decay(epoch, lr):
+        global original_lr
+        global epochs
+        decay = original_lr / epochs
+        return lr * 1 / (1 + decay * epoch)
+
 
 def fit_model(model, config, train_ds, valid_ds, test_ds):
     callbacks = []
@@ -34,7 +40,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     print("Saving weights only :", config.save_weights)
     if config.wandb:
         callbacks = [
-            tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0),
+            tf.keras.callbacks.LearningRateScheduler(lr_time_based_decay, verbose=1),
             WandbMetricsLogger(log_freq = "batch"),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
@@ -121,6 +127,7 @@ def train(config):
     print("Sample Generated!")
     print("Num GPUs Available:", len(gpus))
     print("Batch size :", config.batch_size * len(gpus))
+    print("Starting learning rate :", config.learning_rate)
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
         model = Model(
@@ -194,4 +201,6 @@ def train_dicom(config):
 
 if __name__ == "__main__":
     parse_args()
+    original_lr = default_config.learning_rate
+    epochs = default_config.epochs
     train_dicom(default_config) if default_config.dicom else train(default_config)

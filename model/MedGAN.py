@@ -113,6 +113,7 @@ class MEDGAN(tf.keras.Model):
         learning_rate=3e-5,
         N_g=3,
         vgg_whole_arc=False,
+        cosine_decay=False,
     ):
         super().__init__()
 
@@ -127,7 +128,6 @@ class MEDGAN(tf.keras.Model):
 
         # self.learning_rate = learning_rate
         self.learning_rate = learning_rate
-
         self.g_optimizer = tf.keras.optimizers.Adam(
             self.learning_rate,
             ema_momentum=0.5,
