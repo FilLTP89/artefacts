@@ -72,7 +72,7 @@ class Model:
                 return model 
             else:
                 if self.pretrained_vgg:
-                    print("Using pretrainedsq VGG19")
+                    print("Using pretrained VGG19")
                     if self.dicom:
                         vgg19 = load_vgg19(path=self.pretrained_vgg_dicom_path)
                     elif self.big_endian:

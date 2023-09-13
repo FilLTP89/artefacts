@@ -79,12 +79,19 @@ def train(config):
         )
 
     config = wandb.config if config.wandb else config
+    if config.mix_precision:
+        print("Using mixed precision")
+        from tensorflow.keras import mixed_precision
+        policy = mixed_precision.Policy("mixed_float16")
+        mixed_precision.set_global_policy(policy)
+    else:
+        print("Not using mixed precision")
+        
     gpus = (
         tf.config.list_logical_devices("GPU")
         if len(tf.config.list_physical_devices("GPU")) > 0
         else 1
     )
-    print(f"Generating sample  with batch_size = {config.batch_size * len(gpus)}")
     if config.model == "VGG19":
         print("VGG19 Dataset")
         dataset = VGGDataset(
@@ -116,7 +123,6 @@ def train(config):
     print("Batch size :", config.batch_size * len(gpus))
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
-        print("Creating the model ...")
         model = Model(
             model_name=config.model,
             input_shape=config.img_size,
@@ -124,7 +130,6 @@ def train(config):
             big_endian=config.big_endian,
             pretrained_MedGAN=config.pretrained_MedGAN,
         ).build_model()
-        print("Model Created!")
 
     print("Start Training")
     if config.one_batch_training:

@@ -235,7 +235,7 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=1, big_endian=True)
+    dataset = Dataset(path="../data/", batch_size=20, big_endian=True, shuffle=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     """
@@ -250,7 +250,11 @@ if __name__ == "__main__":
             )
     """
     for idx , (x,y) in enumerate(train_ds):
-        nan_in_x = tf.math.reduce_any(tf.math.is_nan(x))
-        nan_in_y = tf.math.reduce_any(tf.math.is_nan(y))
-        if nan_in_x or nan_in_y:
-            print(f"nan in x : {nan_in_x} and nan in y : {nan_in_y} at index {idx}")
+        print(x.shape, y.shape)
+        print(x.dtype, y.dtype)
+        print(x.max(), y.max())
+        print(x.min(), y.min())
+        print()
+
+        if idx > 10:
+            break
