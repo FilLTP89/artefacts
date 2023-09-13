@@ -1,14 +1,14 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from glob import glob
 import re
-import os
 from sklearn.model_selection import train_test_split
 from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
 from sklearn.utils import shuffle
-
 """
 We know that corresponding image from the different folder 
 have the same name and that the input are in folder 2 & 4 while the the 
@@ -152,6 +152,7 @@ class Dataset:
                 image_size=(self.original_height, self.original_width),
                 big_endian=self.big_endian,
             )
+
             return with_artefact, without_artefact
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
@@ -248,9 +249,8 @@ if __name__ == "__main__":
                 brightness_fact=4,
             )
     """
-    acquisition = dataset.load_single_acquisition(1)
-    for idx , (x,y) in enumerate(acquisition):
-        print(tf.reduce_max(x[0]) )
-
-        if idx > 3:
-            break
+    for idx , (x,y) in enumerate(train_ds):
+        nan_in_x = tf.math.reduce_any(tf.math.is_nan(x))
+        nan_in_y = tf.math.reduce_any(tf.math.is_nan(y))
+        if nan_in_x or nan_in_y:
+            print(f"nan in x : {nan_in_x} and nan in y : {nan_in_y} at index {idx}")
