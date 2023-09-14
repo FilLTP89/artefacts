@@ -13,6 +13,8 @@ from loss import (
     discriminator_loss,
 )
 from segmentation.ResUNET_a_d6 import ResUNet as smResunet
+from Attention_MedGAN import AttentionMEDGAN
+
 
 class Model:
     def __init__(
@@ -107,6 +109,16 @@ class Model:
                 learning_rate=self.learning_rate,
                 nb_class=1,
             ).build_model()
+
+        elif self.model_name == "AttentionMedGAN":
+            if self.pretrained_MedGAN:
+                if self.big_endian:
+                    vgg19 = load_vgg19(path=self.pretrained_vgg_big_endian_path)
+                    model = AttentionMEDGAN(
+                    learning_rate=self.learning_rate,
+                    feature_extractor=vgg19,
+            )
+
         return model
 
 

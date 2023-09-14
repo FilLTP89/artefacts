@@ -17,7 +17,33 @@ from loss import (
 
 
 class SelfAttention(tf.keras.layers.Layer):
-    pass
+    def __init__(self, channels, **kwargs):
+
+        self.W_gate = kl.Sequential(
+            [ kl.Conv2D(channels, 1, 1, padding="same"), 
+             kl.BatchNormalization()]
+        )
+        self.W_x = kl.Sequential(
+            [ kl.Conv2D(channels, 1, 1, padding="same"),
+                kl.BatchNormalization()]
+        )
+        self.phi = kl.Sequential(
+            [ kl.Conv2D(channels, 1, 1, padding="same"),
+                kl.BatchNormalization()]
+        )
+
+        self.attention = kl.Attention()
+
+    def call(self, x, g ):
+        g = self.W_gate(g)
+        x = self.W_x(x)
+        phi = g + x
+        phi = kl.Activation("relu")(phi)
+        phi = self.phi(phi)
+        phi = kl.Activation("sigmoid")(phi)
+        return self.attenion([x, phi])
+
+       
 
 
 class U_block(tf.keras.Model):
@@ -33,6 +59,29 @@ class U_block(tf.keras.Model):
     def __init__(self, shape=(512, 512, 1)) -> None:
         super().__init__()
         self.shape = shape
+        self.filters = [32,64,128,256,512,1024]
+        self.attention_layers = [SelfAttention(filter) for filter in self.filters]
+
+    def original_conv(self, input, filters = 32, kernel_size=1, strides=1, padding="same"):
+        x = kl.Conv2D(
+            filters,
+            kernel_size,
+            strides,
+            padding,
+        )(input)
+        x = kl.BatchNormalization()(x)
+        x = kl.ReLU()(x)
+        return x
+
+    def last_conv(self, input, filters = 1, kernel_size=1, strides=1, padding="same"):
+        x = kl.Conv2D(
+            filters,
+            kernel_size,
+            strides,
+            padding,
+        )(input)
+        return x
+    
 
     def down_conv_block(self, input, filters, kernel_size=4, strides=2, padding="same"):
         x = kl.Conv2D(
@@ -58,40 +107,44 @@ class U_block(tf.keras.Model):
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
         x = kl.Concatenate()([x, skip_input])
+
         return x
 
-    def bottele_neck_block(self, input, filters=512):
-        pass
+    def bottele_neck_block(self, input, filters=2048):
+        x = kl.Conv2D(filters, 4, 2, padding="same")(input)
+        x = kl.BatchNormalization()(x)
+        x = kl.ReLU()(x)
+        return x
     
     
-    def encoder_block(self, input, filters=[64, 128, 256, 512, 512, 512, 512, 512]):
-        encoder_list = []
-        for i, filter in enumerate(filters):
-            if i == 0:
-                x = self.down_conv_block(input, filter)
-                encoder_list.append(x)
-            else:
-                x = self.down_conv_block(encoder_list[i - 1], filter)
-                encoder_list.append(x)
+    def encoder_block(self, input):
+        x = input
+        encoder_list = [x]
+        for i, filter in enumerate(self.filters):
+            x = self.down_conv_block(x, filter)
+            encoder_list.append(x)
         return encoder_list
 
 
 
     def decoder_block(
-        self, encoder_list, filters=[512, 1024, 1024, 1024, 1024, 512, 256, 128]
+        self, encoder_list,
     ):
+        last_layer = encoder_list[-1]
         encoder_list = encoder_list[::-1]
-        y = self.up_conv_block(encoder_list[0], encoder_list[1], filters[0])
-        for i, filter in enumerate(filters[2:]):
-            y = self.up_conv_block(y, encoder_list[i + 2], filter)
+        y = self.bottele_neck_block(last_layer)
+        for i, (filter,encoded) in enumerate(zip(self.filters[::-1], encoder_list)):
+            y = self.up_conv_block(y, encoded, filter)
         y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
         return y
 
     def build_model(self):
         input = kl.Input(shape=self.shape)
-        encoder_list = self.encoder_block(input)
+        x = self.original_conv(input)
+        encoder_list = self.encoder_block(x)
         decoder_output = self.decoder_block(encoder_list)
-        model = tf.keras.Model(inputs=input, outputs=decoder_output)
+        output = self.last_conv(decoder_output)
+        model = tf.keras.Model(inputs=input, outputs=output)
         return model
 
 
@@ -110,7 +163,7 @@ class ConsNet(tf.keras.Model):
         return y
 
 
-class MEDGAN(tf.keras.Model):
+class AttentionMEDGAN(tf.keras.Model):
     """
     Implementation of the MedGAN model presented in the paper
     """
@@ -148,7 +201,7 @@ class MEDGAN(tf.keras.Model):
             ema_momentum=0.5,
         )
 
-        self.generator = generator or ConsNet(6, self.shape)
+        self.generator = generator or ConsNet(3, self.shape)
         self.discriminator = discriminator or PatchGAN(self.shape)
         self.feature_extractor = feature_extractor or VGG19(
             self.shape, load_whole_architecture=vgg_whole_arc
@@ -328,6 +381,8 @@ class MEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    model = MEDGAN()
-    model(tf.random.normal((1, 512, 512, 1)))
+    model = AttentionMEDGAN()
+    #model = U_block().build_model()
+    y = model(tf.random.normal((2, 512, 512, 1)))
+    print(y.shape)
     model.summary()
