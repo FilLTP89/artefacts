@@ -148,15 +148,14 @@ class U_block(tf.keras.Model):
 class ConsNet(tf.keras.Model):
     def __init__(self, n_block=6, input_shape=(512, 512, 1)) -> None:
         super().__init__()
-        self.n_block = n_block
         self.shape = input_shape
         self.Ublock = [U_block(self.shape).build_model() for _ in range(n_block)]
 
     def call(self, inputs, training=False):
         x = inputs
-        for i in range(self.n_block):
-            x = self.Ublock[i](x)
-        y = kl.Activation("sigmoid", dtype="float32")(x)
+        for block in self.Ublock:
+            x = block(x)
+        y = kl.Activation("sigmoid")(x)
         return y
 
 
@@ -378,8 +377,8 @@ class AttentionMEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    #model = AttentionMEDGAN()
-    model = U_block().build_model()
+    model = AttentionMEDGAN()
+    #model = U_block().build_model()
     y = model(tf.random.normal((2, 512, 512, 1)))
-    print(y.shape)
-    #model.summary()
+    #print(y.shape)
+    model.summary()
