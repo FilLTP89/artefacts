@@ -14,8 +14,8 @@ def MSE_loss(y_true, y_pred):
     """
     Mean square error loss function
     """
-    return K.mean(K.square(y_pred - y_true), axis=-1)
-    #return tf.reduce_mean(tf.square(y_true - y_pred))
+    #return K.mean(K.square(y_pred - y_true), axis=-1)
+    return tf.reduce_mean(tf.square(y_true - y_pred))
 
 
 # Loss for the generator, the input does generator -> feature extractor
