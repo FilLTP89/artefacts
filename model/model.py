@@ -118,6 +118,8 @@ class Model:
                     learning_rate=self.learning_rate,
                     feature_extractor=vgg19,
             )
+            model.compile()
+            model.compute_output_shape(input_shape=(None, 512, 512, 1))
         return model
 
 
