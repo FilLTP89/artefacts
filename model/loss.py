@@ -14,10 +14,12 @@ def MSE_loss(y_true, y_pred):
     """
     Mean square error loss function
     """
-    return tf.reduce_mean(tf.square(y_true - y_pred))
+    return K.mean(K.square(y_pred - y_true), axis=-1)
+    #return tf.reduce_mean(tf.square(y_true - y_pred))
 
 
 # Loss for the generator, the input does generator -> feature extractor
+
 
 
 def style_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list=[]):
@@ -61,13 +63,6 @@ def style_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list
 
 # Loss for the generator, the input does generator -> feature extractor
 def content_loss(y_true_extractor_features, y_pred_extractor_features, lambda_list=[]):
-    """
-    TODO : Use the lambda_list as hyperparameter for the weight contribution of the different convolutional block
-    """
-    """
-    List of shape (nb_conv_block,batch_size,Hi,Wi,Ci)
-    Need to be list since Hi,Wi,Ci are different for each block
-    """
     loss = 0
     for feature_ytrue, feature_ypred in zip(
         y_true_extractor_features, y_pred_extractor_features

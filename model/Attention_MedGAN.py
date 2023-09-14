@@ -184,6 +184,7 @@ class AttentionMEDGAN(tf.keras.Model):
         self.lambda_1 = 20
         self.lambda_2 = 1e-4
         self.lambda_3 = 1
+        self.lambda_4 = 1
 
         # self.learning_rate = learning_rate
         self.learning_rate = learning_rate
@@ -259,11 +260,15 @@ class AttentionMEDGAN(tf.keras.Model):
                 style_l = style_loss(y_pred_feature, y_true_feature)
                 # content loss
                 content_l = content_loss(y_pred_feature, y_true_feature)
+
+                mse_l = MSE_loss(y, y_pred)
+
                 generator_loss = (
                     generator_gan_l
                     + self.lambda_1 * perceptual_l
                     + self.lambda_2 * style_l
                     + self.lambda_3 * content_l
+                    + self.lambda_4 * mse_l
                 )
                 # Compute the gradiants of the loss with respect to the weights of the generator
             gen_grads = gen_tape.gradient(
@@ -299,6 +304,7 @@ class AttentionMEDGAN(tf.keras.Model):
         self.generator_gan_loss_tracker.update_state(generator_gan_l)
         self.generator_loss_tracker.update_state(generator_loss)
         self.discriminator_loss_tracker.update_state(discriminator_l)
+        self.mse_loss_tracker.update_state(mse_l)
 
         return {
             "style_loss": self.style_loss_tracker.result(),
@@ -307,6 +313,7 @@ class AttentionMEDGAN(tf.keras.Model):
             "generator_gan_loss": self.generator_gan_loss_tracker.result(),
             "generator_loss": self.generator_loss_tracker.result(),
             "discriminator_loss": self.discriminator_loss_tracker.result(),
+            "mse_loss": self.mse_loss_tracker.result(),
         }
 
     def test_step(self, data):
