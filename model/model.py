@@ -111,14 +111,13 @@ class Model:
             ).build_model()
 
         elif self.model_name == "AttentionMedGAN":
-            if self.pretrained_MedGAN:
-                if self.big_endian:
-                    vgg19 = load_vgg19(path=self.pretrained_vgg_big_endian_path)
-                    model = AttentionMEDGAN(
+            vgg19 = None
+            if self.pretrained_vgg:
+                vgg19 = load_vgg19(path=self.pretrained_vgg_big_endian_path)
+            model = AttentionMEDGAN(
                     learning_rate=self.learning_rate,
                     feature_extractor=vgg19,
             )
-
         return model
 
 
