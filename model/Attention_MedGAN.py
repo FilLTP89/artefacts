@@ -19,15 +19,15 @@ from loss import (
 class SelfAttention(tf.keras.layers.Layer):
     def __init__(self, channels, **kwargs):
 
-        self.W_gate = kl.Sequential(
+        self.W_gate = tf.keras.Sequential(
             [ kl.Conv2D(channels, 1, 1, padding="same"), 
              kl.BatchNormalization()]
         )
-        self.W_x = kl.Sequential(
+        self.W_x = tf.keras.Sequential(
             [ kl.Conv2D(channels, 1, 1, padding="same"),
                 kl.BatchNormalization()]
         )
-        self.phi = kl.Sequential(
+        self.phi = tf.keras.Sequential(
             [ kl.Conv2D(channels, 1, 1, padding="same"),
                 kl.BatchNormalization()]
         )
@@ -48,14 +48,6 @@ class SelfAttention(tf.keras.layers.Layer):
 
 class U_block(tf.keras.Model):
 
-    """
-    One U_block is composed of 16 convolutional layer
-    Encoder part filter = [64, 128, 256, 512, 512, 512, 512, 512]
-    Decoder part filter = [512, 1024, 1024, 1024, 1024, 512, 256, 128]
-
-    Interrogation : why do the last layer 128 filters and not 1 ?
-    """
-
     def __init__(self, shape=(512, 512, 1)) -> None:
         super().__init__()
         self.shape = shape
@@ -70,7 +62,7 @@ class U_block(tf.keras.Model):
             padding,
         )(input)
         x = kl.BatchNormalization()(x)
-        x = kl.ReLU()(x)
+        x = kl.LeakyReLU()(x)
         return x
 
     def last_conv(self, input, filters = 1, kernel_size=1, strides=1, padding="same"):
@@ -80,6 +72,13 @@ class U_block(tf.keras.Model):
             strides,
             padding,
         )(input)
+        return x
+    
+    def skip_connection(self, input, skip_input):
+        """
+        Modify this with the attention layer 
+        """
+        x = kl.Concatenate()([input, skip_input])
         return x
     
 
@@ -106,12 +105,11 @@ class U_block(tf.keras.Model):
         x = kl.Conv2DTranspose(filters, kernel_size, strides, padding)(input)
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
-        x = kl.Concatenate()([x, skip_input])
-
+        x = self.skip_connection(x, skip_input)
         return x
 
     def bottele_neck_block(self, input, filters=2048):
-        x = kl.Conv2D(filters, 4, 2, padding="same")(input)
+        x = kl.Conv2D(filters, kernel_size = 4, strides = 2, padding="same")(input)
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
         return x
@@ -120,22 +118,21 @@ class U_block(tf.keras.Model):
     def encoder_block(self, input):
         x = input
         encoder_list = [x]
-        for i, filter in enumerate(self.filters):
+        for filter in self.filters:
             x = self.down_conv_block(x, filter)
             encoder_list.append(x)
         return encoder_list
 
 
 
-    def decoder_block(
-        self, encoder_list,
-    ):
+    def decoder_block(self, encoder_list):
         last_layer = encoder_list[-1]
         encoder_list = encoder_list[::-1]
         y = self.bottele_neck_block(last_layer)
         for i, (filter,encoded) in enumerate(zip(self.filters[::-1], encoder_list)):
             y = self.up_conv_block(y, encoded, filter)
         y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
+        y = kl.Concatenate()([y, encoder_list[-1]])
         return y
 
     def build_model(self):
@@ -381,8 +378,8 @@ class AttentionMEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
-    model = AttentionMEDGAN()
-    #model = U_block().build_model()
+    #model = AttentionMEDGAN()
+    model = U_block().build_model()
     y = model(tf.random.normal((2, 512, 512, 1)))
     print(y.shape)
-    model.summary()
+    #model.summary()
