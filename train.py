@@ -40,7 +40,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     print("Saving weights only :", config.save_weights)
     if config.wandb:
         callbacks = [
-            #tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1),
+            tf.keras.callbacks.LearningRateScheduler(lr_time_based_decay, verbose=1),
             WandbMetricsLogger(log_freq = "batch"),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
@@ -119,6 +119,7 @@ def train(config):
             width=config.img_size,
             batch_size=config.batch_size * len(gpus),
             big_endian=config.big_endian,
+            shuffle=config.shuffle,
         )
 
 
@@ -129,6 +130,7 @@ def train(config):
     print("Batch size :", config.batch_size * len(gpus))
     print("Starting learning rate :", config.learning_rate)
     print("Using model :", config.model)
+    print("Shuffle :", config.shuffle)
     strategy = tf.distribute.MirroredStrategy(gpus)
     with strategy.scope():
         model = Model(

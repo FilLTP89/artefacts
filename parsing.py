@@ -24,7 +24,8 @@ default_config = SimpleNamespace(
     dicom=False,
     save_weights=False,
     pretrained_MedGAN = False,
-    segmentation = False
+    segmentation = False,
+    shuffle = False
 )
 
 
@@ -97,9 +98,15 @@ def parse_args():
     )
     argparser.add_argument(
         "--mixed_precision",
-        type=bool,
+        action=argparse.BooleanOptionalAction,
         default=default_config.mixed_precision,
         help="use fp16",
+    )
+    argparser.add_argument(
+        "--shuffle",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.shuffle,
+        help="shuffle the dataset",
     )
     argparser.add_argument(
         "--save",
