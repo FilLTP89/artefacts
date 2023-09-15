@@ -173,8 +173,22 @@ class AttentionMEDGAN(tf.keras.Model):
         learning_rate=3e-5,
         N_g=3,
         vgg_whole_arc=False,
+        cosine_decay=True,
     ):
         super().__init__()
+
+        decay_steps = 1000
+        alpha = 0.0  # Minimum learning rate value as a fraction of the initial_learning_rate.
+
+        self.learning_rate = learning_rate
+        # Create the cosine decay schedule
+        
+        if cosine_decay:
+            print("Using cosine decay")
+            cosine_decay = tf.keras.optimizers.schedules.CosineDecay(self.learning_rate, decay_steps, alpha=alpha)
+        else:
+            print("Using exponential decay")
+            cosine_decay = tf.keras.optimizers.schedules.ExponentialDecay(self.learning_rate, decay_steps, alpha=alpha)
 
         self.shape = input_shape
 
@@ -187,14 +201,13 @@ class AttentionMEDGAN(tf.keras.Model):
         self.lambda_4 = 1
 
         # self.learning_rate = learning_rate
-        self.learning_rate = learning_rate
 
         self.g_optimizer = tf.keras.optimizers.Adam(
-            self.learning_rate,
+            cosine_decay,
             ema_momentum=0.5,
         )
         self.d_optimizer = tf.keras.optimizers.Adam(
-            self.learning_rate,
+            cosine_decay,
             ema_momentum=0.5,
         )
 

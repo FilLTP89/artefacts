@@ -17,7 +17,7 @@ mixed_precision.set_global_policy("mixed_float16")
 """ # Contentn loss goes to +inf if mixed precision is used 
 
 def scheduler(epoch, lr):
-    if epoch < 10:
+    if epoch < 3:
         return lr
     else:
         return lr * tf.math.exp(-0.1)
@@ -40,7 +40,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     print("Saving weights only :", config.save_weights)
     if config.wandb:
         callbacks = [
-            tf.keras.callbacks.LearningRateScheduler(lr_time_based_decay, verbose=1),
+            #tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1),
             WandbMetricsLogger(log_freq = "batch"),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
