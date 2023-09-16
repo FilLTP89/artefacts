@@ -16,9 +16,9 @@ from loss import (
 
 
 
-class SelfAttention(tf.keras.layers.Layer):
+class AttentionGate(tf.keras.layers.Layer):
     def __init__(self, channels, **kwargs):
-
+        super(AttentionGate, self).__init__(**kwargs)
         self.W_gate = tf.keras.Sequential(
             [ kl.Conv2D(channels, 1, 1, padding="same"), 
              kl.BatchNormalization()]
@@ -41,7 +41,8 @@ class SelfAttention(tf.keras.layers.Layer):
         phi = kl.Activation("relu")(phi)
         phi = self.phi(phi)
         phi = kl.Activation("sigmoid")(phi)
-        return self.attenion([x, phi])
+        phi = self.attention([phi, phi])
+        return x * phi
 
        
 
@@ -52,7 +53,7 @@ class U_block(tf.keras.Model):
         super().__init__()
         self.shape = shape
         self.filters = [32,64,128,256,512,1024]
-        self.attention_layers = [SelfAttention(filter) for filter in self.filters]
+        self.attention_layers = [AttentionGate(filter) for filter in self.filters[::-1]]
 
     def original_conv(self, input, filters = 32, kernel_size=1, strides=1, padding="same"):
         x = kl.Conv2D(
@@ -74,11 +75,15 @@ class U_block(tf.keras.Model):
         )(input)
         return x
     
-    def skip_connection(self, input, skip_input):
+    def skip_connection(self, input, skip_input, attention_gate = None):
         """
         Modify this with the attention layer 
         """
-        x = kl.Concatenate()([input, skip_input])
+        if attention_gate is not None:
+            x = attention_gate(input, skip_input)
+            x = kl.Concatenate()([x, skip_input])
+        else:
+            x = kl.Concatenate()([input, skip_input])
         return x
     
 
@@ -98,17 +103,22 @@ class U_block(tf.keras.Model):
         input,
         skip_input,
         filters,
+        attention_gate,
         kernel_size=4,
         strides=2,
         padding="same",
+        use_attention=True,
     ):
         x = kl.Conv2DTranspose(filters, kernel_size, strides, padding)(input)
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
-        x = self.skip_connection(x, skip_input)
+        if use_attention:
+            x = self.skip_connection(x, skip_input,attention_gate)
+        else:
+            x = self.skip_connection(x, skip_input)
         return x
 
-    def bottele_neck_block(self, input, filters=2048):
+    def bottleneck_block(self, input, filters=2048):
         x = kl.Conv2D(filters, kernel_size = 4, strides = 2, padding="same")(input)
         x = kl.BatchNormalization()(x)
         x = kl.ReLU()(x)
@@ -128,9 +138,9 @@ class U_block(tf.keras.Model):
     def decoder_block(self, encoder_list):
         last_layer = encoder_list[-1]
         encoder_list = encoder_list[::-1]
-        y = self.bottele_neck_block(last_layer)
-        for i, (filter,encoded) in enumerate(zip(self.filters[::-1], encoder_list)):
-            y = self.up_conv_block(y, encoded, filter)
+        y = self.bottleneck_block(last_layer)
+        for i, (filter,encoded, attention_gate) in enumerate(zip(self.filters[::-1], encoder_list, self.attention_layers)):
+            y = self.up_conv_block(y, encoded, filter, attention_gate)
         y = kl.Conv2DTranspose(1, 4, 2, padding="same")(y)
         y = kl.Concatenate()([y, encoder_list[-1]])
         return y
@@ -173,7 +183,7 @@ class AttentionMEDGAN(tf.keras.Model):
         learning_rate=3e-5,
         N_g=3,
         vgg_whole_arc=False,
-        cosine_decay=True,
+        cosine_decay=False,
     ):
         super().__init__()
 
@@ -185,10 +195,9 @@ class AttentionMEDGAN(tf.keras.Model):
         
         if cosine_decay:
             print("Using cosine decay")
-            cosine_decay = tf.keras.optimizers.schedules.CosineDecay(self.learning_rate, decay_steps, alpha=alpha)
+            scheduler = tf.keras.optimizers.schedules.CosineDecay(self.learning_rate, decay_steps, alpha=alpha)
         else:
-            print("Using exponential decay")
-            cosine_decay = tf.keras.optimizers.schedules.ExponentialDecay(self.learning_rate, decay_steps, alpha=alpha)
+            scheduler = self.learning_rate 
 
         self.shape = input_shape
 
@@ -203,11 +212,11 @@ class AttentionMEDGAN(tf.keras.Model):
         # self.learning_rate = learning_rate
 
         self.g_optimizer = tf.keras.optimizers.Adam(
-            cosine_decay,
+            scheduler,
             ema_momentum=0.5,
         )
         self.d_optimizer = tf.keras.optimizers.Adam(
-            cosine_decay,
+            scheduler,
             ema_momentum=0.5,
         )
 
@@ -216,6 +225,8 @@ class AttentionMEDGAN(tf.keras.Model):
         self.feature_extractor = feature_extractor or VGG19(
             self.shape, load_whole_architecture=vgg_whole_arc
         )
+        for layer in self.feature_extractor.layers:
+            layer.trainable = False
 
         self.style_loss_tracker = tf.keras.metrics.Mean(name="style_loss")
         self.content_loss_tracker = tf.keras.metrics.Mean(name="content_loss")
@@ -400,5 +411,5 @@ if __name__ == "__main__":
     model = AttentionMEDGAN()
     #model = U_block().build_model()
     y = model(tf.random.normal((2, 512, 512, 1)))
-    #print(y.shape)
+    print(y.shape)
     model.summary()
