@@ -90,7 +90,7 @@ def generate_image(dicom = True):
             )
     print("Finish generating images!")
 
-def test_single_acquistion(dicom = False, big_endian = True,acquisition_number = 1,batch_size = 32, low = False):
+def test_single_acquistion(dicom = False, big_endian = True,acquisition_number = 1,batch_size = 32, low = True):
     if dicom : 
         model = load_model_with_weights()
         dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
-    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1, low = False) # batch_size = 1 to avoid memory error on GPU
+    test_single_acquistion(big_endian=True, dicom=False, acquisition_number=1, batch_size=1, low = True) # batch_size = 1 to avoid memory error on GPU
     #test_metrics(dicom = False, big_endian = True, batch_size = 32, low=False)
 
 

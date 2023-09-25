@@ -10,6 +10,7 @@ import wandb_params
 from wandb.keras import WandbMetricsLogger
 import time
 from data_file.processing_segmentation import SegmentationDataset
+from model.custom_callback import LRLogger
 
 """
 from tensorflow.keras import mixed_precision
@@ -40,7 +41,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
     print("Saving weights only :", config.save_weights)
     if config.wandb:
         callbacks = [
-            #tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1),
+            tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1),
             WandbMetricsLogger(log_freq = "batch"),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=config.saving_path
@@ -50,6 +51,7 @@ def fit_model(model, config, train_ds, valid_ds, test_ds):
                 + "/{epoch:02d}/model.ckpt",
                 save_weights_only=config.save_weights,  # save only the weights
             ),
+            LRLogger(),
         ]
     model.fit(
         train_ds,
