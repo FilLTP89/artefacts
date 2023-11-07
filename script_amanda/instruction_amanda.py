@@ -26,10 +26,10 @@ def ask():
     
     if method == 1:
         """ Generate images for a single acqusition"""
-        command = f"bash command.sh {True} {dicom} {low_high} {acquisition_number} "
+        command = f"sbatch command.sh {True} {dicom} {low_high} {acquisition_number} "
     elif method == 2:
         """Test the metrics"""
-        command = f"bash command.sh {False} {dicom} {low_high} {acquisition_number} "
+        command = f"sbatch command.sh {False} {dicom} {low_high} {acquisition_number} "
     os.system(command)
     
 
