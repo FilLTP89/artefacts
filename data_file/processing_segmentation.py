@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
+from segmentation_models import get_preprocessing
 
 """
 Classic segmentation Dataset 
@@ -40,6 +40,7 @@ class SegmentationDataset:
         valid_saving_path: str = "valid/",
         seed: int = 2,  # 1612
         shuffle=True,
+        backbone = None
     ) -> None:
 
         self.path = path
@@ -57,9 +58,10 @@ class SegmentationDataset:
         self.seed = seed
         self.shuffle = shuffle
 
+        self.processor = get_preprocessing(backbone) if backbone else None
+
         
     def collect_data(self):
-
 
         images_path = f"{self.path}/images/"
         masks_path = f"{self.path}/masks/"
@@ -141,6 +143,9 @@ class SegmentationDataset:
             if np.any(np.isnan(y)):
                 print("Found NaN in y")
             """
+            if self.processor:
+                x = self.processor(x)
+                y = self.processor(y)
             return x, np.float32(y_binary)
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])

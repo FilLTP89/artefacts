@@ -31,7 +31,7 @@ def lr_time_based_decay(epoch, lr):
         return lr * 1 / (1 + decay * epoch)
 
 
-def fit_model(model, config, train_ds, valid_ds, test_ds):
+def fit_model(model, config, train_ds, valid_ds, test_ds,):
     callbacks = []
     if config.dicom:
         endian_path = ""
