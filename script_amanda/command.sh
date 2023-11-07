@@ -15,4 +15,6 @@
 
 module purge
 source $WORKDIR/launch_script.sh
+cd $WORKDIR/artefacts
+export PYTHONPATH="./"
 python3 test_amanda.py --generate=$1 --dicom=$2 --low=$3 --acquisition_number=$4
