@@ -1,47 +1,41 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from glob import glob
+import re
 from sklearn.model_selection import train_test_split
+from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
+import h5py
 from sklearn.utils import shuffle
-import matplotlib.pyplot as plt
-import cv2
-import os
-import tifffile
-
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 """
-Classic segmentation Dataset 
+We know that corresponding image from the different folder 
+have the same name and that the input are in folder 2 & 4 while the the 
+label are in folder 1.
+So we will create couple 
+(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
+We will exploit that in order to create the training and test couples.
 """
 
-
-"""
-TODO:
-    - Verify sample, it seems that some sample are incorrect
-    - Verify how to use it, x and y seems to be way different, can we 
-    really create substract the metal using (x - y_pred)? 
-        - Create x-y and see how it goes
-    """
 
 # Try to save to use the save function to save the dataset in folder -> Actually took too much times
 # See how much volume they take, and how long we take to load them
 
 
-class SegmentationDataset:
+class Dataset:
     def __init__(
         self,
-        path: str = "./data/segmentation/",
+        path: str = "./data/Newdata/protocole_1",
         width: int = 512,
         height: int = 512,
         batch_size: int = 32,
         saving_format: str = None,
         train_saving_path: str = "train/",
         test_saving_path: str = "test/",
-        valid_saving_path: str = "valid/",
-        seed: int = 2,  # 1612
-        shuffle=True,
+        seed: int = 42,
+        big_endian: bool = True,
+        shuffle = False
     ) -> None:
 
         self.path = path
@@ -51,59 +45,62 @@ class SegmentationDataset:
         self.saving_format = saving_format
         self.train_saving_path = path + train_saving_path
         self.test_saving_path = path + test_saving_path
-        self.valid_saving_path = path + valid_saving_path
 
         self.original_width = 400
         self.original_height = 400
 
         self.seed = seed
+        self.big_endian = big_endian
         self.shuffle = shuffle
-        self.processor = None
 
-        
     def collect_data(self):
+        """
+        Create list of path of the raw image from each folder
 
-        images_path = f"{self.path}/images/"
-        masks_path = f"{self.path}/masks/"
-        
-        images_folder = [
+        Args
+        ----
+
+        Returns
+        -----
+        sorted_folder_1_name(list) : list of the path of all image in folder 1 path
+        sorted_folder_2_name(list) : list of the path of all image in folder 2 path
+        sorted_folder_4_name(list) : list of the path of all image in folder 4 path
+        """
+        control_folders = [
             sorted(
-                glob(os.path.join(images_path, str(i) + "/*.tif")),
+                glob(os.path.join(self.path,  f"control/{i}/dcm/*")),
+                key=lambda x: [
+                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
+                ],
             )
             for i in range(1,6)
         ]
-        mask_folder = [
+
+        fracture_folder = [
             sorted(
-            glob(os.path.join(masks_path, str(i) + "/*.tif")),
+                glob(os.path.join(self.path,  f"fracture/{i}/dcm/*")),
+                key=lambda x: [
+                    int(c) if c.isdigit() else c for c in re.split(r"(\d+)", x)
+                ],
             )
             for i in range(1,6)
         ]
 
-        images_list = [item for sublist in images_folder for item in sublist]
-        masks_list = [item for sublist in mask_folder for item in sublist]
-
-        return (images_list, masks_list)
-        
+        return control_folders, fracture_folder
 
     def load_data(self):
         """
         Generate the training and testing (X,y) couple using the previously generated list
         """
-        images_list,masks_list = self.collect_data()
+        no_metal_list, high_metal_list, low_metal_list = self.collect_data()
 
+        label = 2 * no_metal_list
+        input = high_metal_list + low_metal_list
         X_train, X_test_1, y_train, y_test_1 = train_test_split(
-            images_list,
-            masks_list,
-            test_size=(2 / 11),
-            random_state=self.seed,
-            shuffle=self.shuffle,
+            input, label, test_size=(2 / 11), random_state=self.seed, shuffle=self.shuffle
         )  # 8 acquisition for training
         X_test, X_valid, y_test, y_valid = train_test_split(
-            X_test_1,
-            y_test_1,
-            test_size=0.5,
-            random_state=self.seed,
-            shuffle=self.shuffle,
+            X_test_1, y_test_1, test_size=0.5, random_state=self.seed, shuffle=self.shuffle
         )  # 1 acquisition for validation & 1 acquisition for testing
 
         # X_train, y_train = shuffle(X_train, y_train, random_state=self.seed)
@@ -122,36 +119,18 @@ class SegmentationDataset:
         def f(x, y):
             x = x.decode("utf-8")
             y = y.decode("utf-8")
-            """
-            x = cv2.imread(x)
-            y = cv2.imread(y)
-            x = cv2.cvtColor(x, cv2.COLOR_BGR2GRAY)
-            y = cv2.cvtColor(y, cv2.COLOR_BGR2GRAY) 
-            """
-            x = tifffile.imread(x)[:,:,0]
-            y = tifffile.imread(y)[:,:,0]
-            
-            x = np.array(x, dtype=np.float32)
-            y = np.array(y, dtype=np.float32)
+            with_artefact = read_raw(
+                x,
+                image_size=(self.original_height, self.original_width),
+                big_endian=self.big_endian,
+            )
+            without_artefact = read_raw(
+                y,
+                image_size=(self.original_height, self.original_width),
+                big_endian=self.big_endian,
+            )
 
-
-            #x = 2 * (x - np.min(x)) / (np.max(x) - np.min(x)) - 1
-            #y = 2 * (y - np.min(y)) / (np.max(y) - np.min(y)) - 1
-
-
-            x = x / 255
-            y = y / 255
-            y_binary = np.where(y > 0.5, 1, 0)
-            """
-            if np.any(np.isnan(x)):
-                print("Found NaN in x")
-            if np.any(np.isnan(y)):
-                print("Found NaN in y")
-            """
-            if self.processor:
-                x = self.processor(x)
-                y = self.processor(y)
-            return x, np.float32(y_binary)
+            return with_artefact, without_artefact
 
         input, label = tf.numpy_function(f, [x, y], [tf.float32, tf.float32])
         input = tf.expand_dims(input, axis=-1)  # (Height,Width) -> (Height,Width,1)
@@ -161,26 +140,21 @@ class SegmentationDataset:
 
         input = tf.image.resize(input, [self.width, self.height])
         label = tf.image.resize(label, [self.width, self.height])
-
         return input, label
 
     def tf_dataset(self, x, y):
         """
         TO DO : Understand the buffer size
+        TO DO : Add other parameters (maybe look on youtube)
         """
         ds = tf.data.Dataset.from_tensor_slices(
             (x, y)
         )  # Create a tf.data.Dataset from the couple
         ds = ds.map(
-            map_func=self.preprocess,
-            num_parallel_calls=tf.data.AUTOTUNE,
+            self.preprocess
         )  # apply the processing function on the couple (from path of raw image to sinongram)
-        ds = ds.batch(
-            self.batch_size,
-            num_parallel_calls=tf.data.AUTOTUNE,
-        )  # Batch the couple into batch of couple
+        ds = ds.batch(self.batch_size)  # Batch the couple into batch of couple
         # ds = ds.prefetch(buffer_size=1024)
-        ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
         return ds
 
     def load_dataset(self):
@@ -207,9 +181,19 @@ class SegmentationDataset:
         """
         Save the train and test dataset in their corresponding path
         """
-        self.train_ds.save(self.train_saving_path)
-        self.test_ds.save(self.test_saving_path)
-        self.valid_ds.save(self.valid_saving_path)
+        if self.saving_format == ("hdf5" or "h5"):
+            with h5py.File(f"{self.path}/save/train_dataset.h5", "w") as f:
+                dset = f.create_dataset("data", (len(self.train_ds),), dtype="i")
+                for i, data in enumerate(self.train_ds):
+                    dset[i] = data
+            with h5py.File(f"{self.path}/save/test_dataset.h5", "w") as f:
+                dset = f.create_dataset("data", (len(self.test_ds),), dtype="i")
+                for i, data in enumerate(self.test_ds):
+                    dset[i] = data
+        else:
+            self.train_ds.save(self.train_saving_path)
+            self.test_ds.save(self.test_saving_path)
+            self.valid_ds.save(self.valid_saving_path)
 
     def load(self):
         """
@@ -218,25 +202,17 @@ class SegmentationDataset:
         self.train_ds = tf.data.Dataset.load(self.train_saving_path)
         self.test_ds = tf.data.Dataset.load(self.test_saving_path)
         self.valid_ds = tf.data.Dataset.load(self.valid_saving_path)
-
+    
     def load_single_acquisition(self, acquistion_number = 1, low = False):
         no_metal_folder = self.no_metal_folder[acquistion_number]
-        metal_folder = self.low_metal_fodler[acquistion_number] if low else self.high_metal_folder[acquistion_number]
+        metal_folder = self.low_metal_folder[acquistion_number] if low else self.high_metal_folder[acquistion_number]
         ds = self.tf_dataset(metal_folder, no_metal_folder)
         return ds
-        
 
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = SegmentationDataset(path="../data/segmentation", batch_size=32)
+    dataset = Dataset(path="../data/", batch_size=20, big_endian=True, shuffle=True)
     dataset.setup()
-    train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    for idx, (x, y) in enumerate(test_ds):
-        fig,(ax1,ax2) = plt.subplots(1,2, figsize = (20,20))
-        ax1.imshow(x[20], cmap = "gray")
-        ax2.imshow(y[20], cmap = "gray")
-        plt.show()
-        print(y.shape)
-        if idx > 1:
-            break
+
+        
