@@ -7,7 +7,8 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 from data_file.utils import save_to_raw
 import numpy as np
-import os 
+import os
+from data_file.processing_segmentation import SegmentationDataset 
 def best_model_path(model_name):
     if model_name == 'MedGAN':
         return "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
@@ -31,6 +32,10 @@ def load_model(
         model.load_weights(model_path).expect_partial()
     return model
 
+def load_segmentation_model(
+        model_path = ""
+    ):
+    return load_model(model_path)
 
 def load_model_with_weights(
     model_path="model/saved_models/MedGAN/dicom/serene-field-24/20/model.ckpt",
@@ -250,6 +255,19 @@ def test_metricsvsBaseline():
     print("Baseline PSNR: ", baseline_psnr / len(test_ds))
     print("Baseline MAE: ", baseline_mae / len(test_ds))
     print("Baseline RMSE: ", baseline_rmse / len(test_ds))
+
+def segmentation_generation():
+    dataset = SegmentationDataset()
+    dataset.setup()
+    model = load_segmentation_model()
+    for batch, (x, y) in enumerate(dataset.train_ds):
+        preds = model(x)
+        preds = tf.math.round(preds)
+
+    return  
+
+
+
 
 
 if __name__ == "__main__":
