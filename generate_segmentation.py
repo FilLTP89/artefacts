@@ -22,7 +22,7 @@ def load_model(
 
 
 def generate(batch_size=32,):
-    dataset = SegmentationDataset(batch_size=batch_size,)
+    dataset = SegmentationDataset(batch_size=batch_size)
     dataset.setup()
     model = load_model()
     d = 0
@@ -30,7 +30,7 @@ def generate(batch_size=32,):
         d += 1
     os.makedirs(f"generated_images/segmentation/experiment_{d}")
     data = dataset.train_ds
-    for _, (x, y) in enumerate(data):
+    for batch_id, (x, y) in enumerate(data):
         preds = tf.round(model.predict(x))
         for i in range(preds.shape[0]):
             fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 20))  
@@ -40,7 +40,7 @@ def generate(batch_size=32,):
             ax1.set_title("Input")
             ax2.set_title("Ground Truth")
             ax3.set_title("Prediction")
-            plt.savefig(f"generated_images/segmentation/experiment_{d}/{i}.png")
+            plt.savefig(f"generated_images/segmentation/experiment_{d}/batch_{batch_id}_image_{i}.png")
             plt.close()
         break
 
