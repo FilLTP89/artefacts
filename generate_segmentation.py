@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def load_model(
     model_path = "/gpfs/workdir/candemilam/artefacts/model/saved_models/ResUnet/low_endian/revived-firefly-13/16"
     ): 
-
+    model_path = "/gpfs/workdir/candemilam/artefacts/model/saved_models/ResUnet/low_endian/confused-glitter-14/200" #New try
     try:
         model = tf.keras.models.load_model(model_path)
         model.compile()
