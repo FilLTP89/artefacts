@@ -36,7 +36,7 @@ def generate(batch_size=32,):
             fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 20))  
             ax1.imshow(x[i], cmap="gray")
             ax2.imshow(y[i], cmap="gray")
-            ax3.imshow(preds[i], cmap="gray")
+            ax3.imshow(y[i], cmap="gray")
             ax1.set_title("Input")
             ax2.set_title("Ground Truth")
             ax3.set_title("Prediction")
