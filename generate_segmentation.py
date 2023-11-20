@@ -42,7 +42,6 @@ def generate(batch_size=32,):
             ax3.set_title("Prediction")
             plt.savefig(f"generated_images/segmentation/experiment_{d}/batch_{batch_id}_image_{i}.png")
             plt.close()
-        break
 
 
 if __name__ == "__main__":
