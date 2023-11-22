@@ -217,9 +217,9 @@ if __name__ == "__main__":
     model = ResUNet(
         (256, 256, 1), 1
     ).build_model()  # width and height have to multiple of power of 2
-    #model.summary()
+    model.summary()
     # model.save("ResUNet.h5")  # save the model
-    x = tf.random.uniform((1, 256, 256, 1))   
-    y = model(x)
-    y_true = tf.random.uniform((1, 256, 256, 1))
-    print(model.loss(y_true, y))   
+    #x = tf.random.uniform((1, 256, 256, 1))   
+    #y = model(x)
+    #y_true = tf.random.uniform((1, 256, 256, 1))
+    #print(model.loss(y_true, y))   

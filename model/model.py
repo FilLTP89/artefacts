@@ -121,6 +121,21 @@ class Model:
             model.compile()
             model.compute_output_shape(input_shape=(None, 512, 512, 1))
         return model
+    
+
+        """
+        elif self.model_name == "smAttentionMedGAN":
+            vgg19 = None
+            if self.pretrained_vgg:
+                vgg19 = load_vgg19(path=self.pretrained_vgg_big_endian_path)
+            model = AttentionMEDGAN(
+                    learning_rate=self.learning_rate,
+                    feature_extractor=vgg19,
+            )
+            model.compile()
+            model.compute_output_shape(input_shape=(None, 512, 512, 1))
+        """
+
 
 
 def load_MedGAN(path=None):

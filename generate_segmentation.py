@@ -3,7 +3,7 @@ import tensorflow as tf
 from data_file.processing_segmentation import SegmentationDataset
 from model.segmentation.ResUNET_a_d6 import ResUNet
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 
 def load_model(
@@ -20,6 +20,12 @@ def load_model(
         model.load_weights(model_path).expect_partial()
     return model
 
+
+def double_x_where_y_is_one(x, y):
+    # Assuming x and y are NumPy arrays of the same shape
+    doubled_x = x * (1 + y)  # y is either 0 or 1, so this doubles x where y is 1
+    # doubled_x = np.where(y == 1, x * 2, x)
+    return doubled_x
 
 def generate(batch_size=32,):
     dataset = SegmentationDataset(batch_size=batch_size)
@@ -42,6 +48,19 @@ def generate(batch_size=32,):
             ax3.set_title("Prediction")
             plt.savefig(f"generated_images/segmentation/experiment_{d}/batch_{batch_id}_image_{i}.png")
             plt.close()
+
+def transform_x(batch_size=32):
+    dataset = SegmentationDataset(batch_size=batch_size)
+    dataset.setup()
+    model = load_model()
+    d = 0
+    while os.path.exists(f"generated_images/segmentation/transform_x_{d}"):
+        d += 1
+    os.makedirs(f"generated_images/segmentation/transform_x_{d}")
+    data = dataset.train_ds
+    for batch_id, (x, y) in enumerate(data):
+        preds = tf.round(model.predict(x))
+        new_x = double_x_where_y_is_one(x, preds)
 
 
 if __name__ == "__main__":
