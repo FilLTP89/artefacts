@@ -85,14 +85,14 @@ def get_bounding_boxes(ground_truth_map):
 
 
 class SAMDataset(Dataset):
-    def __init__(self, dataset = None , processor = "facebook/sam-vit-base", precomputed_data_path="data/segmentation/precomputed_data.pkl"):
+    def __init__(self, dataset = "data/segmentation" , processor = "facebook/sam-vit-base", precomputed_data_path="data/segmentation/precomputed_data.pkl"):
         self.processor = SamProcessor.from_pretrained(processor)
-        self.dataset = dataset
+        self.dataset = load_image_and_mask(dataset)
         if precomputed_data_path and os.path.exists(precomputed_data_path):
             self.load_precomputed_data(precomputed_data_path)
         else:
             self.saved_data = []
-            self.precompute_data(dataset)
+            self.precompute_data(self.dataset)
             if precomputed_data_path:
                 self.save_precomputed_data(precomputed_data_path)
 
