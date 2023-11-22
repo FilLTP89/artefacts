@@ -6,7 +6,9 @@ from transformers import SamModel
 import torch
 from tqdm import tqdm
 from statistics import mean
-import sys
+import faulthandler
+
+faulthandler.enable()
 
 def train(model, num_epochs, device, train_dataloader, optimizer):
     model = model.to(device)
