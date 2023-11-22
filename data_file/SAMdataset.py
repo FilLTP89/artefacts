@@ -13,6 +13,8 @@ from transformers import SamProcessor
 from scipy.ndimage import label
 from torch.utils.data import DataLoader
 import pickle
+import torchvision.transforms as T
+np.random.seed = 42
 
 def plot_mask_with_bboxes(img,ground_truth_map, bounding_boxes):
     fig, ax = plt.subplots(1,2,figsize=(20, 20))
@@ -95,7 +97,7 @@ class SAMDataset(Dataset):
             self.precompute_data(self.dataset)
             if precomputed_data_path:
                 self.save_precomputed_data(precomputed_data_path)
-
+        self.resize = T.Resize((256,256))
     def precompute_data(self, dataset):
         for item in dataset:
             ground_truth_mask = np.array(tifffile.imread(item["label"])[:, :, 0])
@@ -131,7 +133,7 @@ class SAMDataset(Dataset):
         prompt = [[float(num) for num in bbox]]
         inputs = self.processor(image, input_boxes=[prompt], return_tensors="pt")
         inputs = {k: v.squeeze(0) for k, v in inputs.items()}
-        inputs["ground_truth_mask"] = torch.tensor(ground_truth_mask)
+        inputs["ground_truth_mask"] = self.resize(torch.tensor(ground_truth_mask))
         return inputs
 
 class SAMModule:
