@@ -21,10 +21,9 @@ def train(model, num_epochs, device, train_dataloader, optimizer):
     model.train()
     for epoch in range(num_epochs):
         epoch_losses = []
-        for batch in tqdm(train_dataloader):
+        bar = tqdm(train_dataloader)
+        for batch in bar:
           # forward pass
-          print(batch["pixel_values"].shape)
-          print(batch["input_boxes"].shape)
           pixel_values = batch["pixel_values"].to(device)
           input_boxes = batch["input_boxes"].to(device)
           outputs = model(pixel_values=pixel_values,
@@ -41,7 +40,7 @@ def train(model, num_epochs, device, train_dataloader, optimizer):
           optimizer.step()
           optimizer.zero_grad()
           epoch_losses.append(loss.item())
-          print(f'Loss: {loss.item()}')
+          bar.set_postfix(loss = loss.item())
         print(f'EPOCH: {epoch}')
         print(f'Mean loss: {mean(epoch_losses)}')
     
