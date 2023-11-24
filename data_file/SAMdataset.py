@@ -108,14 +108,24 @@ class SAMDataset(Dataset):
                 # Store only the file paths and bounding box coordinates
                 self.saved_data.append((item["image"], item["label"], bbox.tolist()))
 
-    def save_precomputed_data(self, file_path):
+    def save_precomputed_data(self, file_path, chunk_size=1000):
+        data_len = len(self.saved_data)
         with open(file_path, 'wb') as file:
-            pickle.dump(self.saved_data, file)
+            for i in range(0, data_len, chunk_size):
+                chunk = self.saved_data[i:i + chunk_size]
+                pickle.dump(chunk, file)
 
-    def load_precomputed_data(self, file_path):
-        with open(file_path, 'rb') as file:
-            self.saved_data = pickle.load(file)
     
+    def load_precomputed_data(self, file_path):
+        self.saved_data = []
+        with open(file_path, 'rb') as file:
+            while True:
+                try:
+                    chunk = pickle.load(file)
+                    self.saved_data.extend(chunk)
+                except EOFError:
+                    break
+                
     def __len__(self):
         return len(self.saved_data)
     
