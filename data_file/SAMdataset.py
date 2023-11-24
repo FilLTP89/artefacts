@@ -111,11 +111,12 @@ class SAMDataset(Dataset):
     def save_precomputed_data(self, file_path):
         with open(file_path, 'wb') as file:
             pickle.dump(self.saved_data, file)
-
+        print("Pickled data saved!")
     def load_precomputed_data(self, file_path):
         with open(file_path, 'rb') as file:
             self.saved_data = pickle.load(file)
-    
+        print("Pickled data loaded!") 
+
     def __len__(self):
         return len(self.saved_data)
     
@@ -140,23 +141,23 @@ class SAMModule:
     def __init__(self, path = "data/segmentation",
                  precached_data_path = "data/segmentation/precomputed_data.pkl", 
                  model_name="facebook/sam-vit-base",
-                batch_size = 3 ) -> None:
+                batch_size = 1):
 
         ds = SAMDataset(precomputed_data_path=precached_data_path, processor=model_name)
         self.train_loader = DataLoader(ds, 
                                        batch_size=batch_size,
-                                         shuffle=False,num_workers=8, collate_fn= self.collate_fn)
+                                         shuffle=False,num_workers=8)
     
+    """
     def collate_fn(self,batch):
     # Initialize a dictionary to hold the collated batch
         collated_batch = {}
-
         # Iterate over all keys in the dictionary returned by __getitem__
         for key in batch[0]:
             # Collate each tensor in the list using torch.stack or similar method
             collated_batch[key] = torch.stack([item[key] for item in batch])
         return collated_batch
-    
+    """
 
 if __name__ == "__main__":
     print("Generating dataset...")
