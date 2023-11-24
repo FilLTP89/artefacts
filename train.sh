@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=artefacts
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:3
-#SBATCH --mem=80GB
-#SBATCH --output=log/output.txt
-#SBATCH --error=log/error.txt
+#SBATCH --gres=gpu:1
+#SBATCH --mem=40GB
+#SBATCH --output=log/sam_output.txt
+#SBATCH --error=log/sam_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
@@ -17,6 +17,7 @@ module purge
 source $WORKDIR/launch_script.sh
 #cd $WORKDIR/artefacts
 
+python3 train_sam.py
 
 #python3 train.py --model MedGAN --epochs 200 --batch_size 6 --wandb --saving_path "model/saved_models/MedGAN/" --big_endian --no-dicom --learning_rate 3e-5 --pretrained_MedGAN
 #python3 train.py --model VGG19 --epochs 20 --batch_size 32 --wandb --saving_path "model/saved_models/VGG19/" --dicom --learning_rate 1.5e-4 --save_weights
@@ -25,5 +26,5 @@ source $WORKDIR/launch_script.sh
 #python3 train.py --model MedGAN --epochs 5 --batch_size 1 --dicom  --one_batch_training --learning_rate 2e-6 --saving_path "model/saved_models/MedGAN/" --save_weights
 #python3 train.py --model DeepMAR --epochs 5 --batch_size 1 --dicom 
 
-python3 train.py --model smResunet --epochs 100 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --segmentation --learning_rate 3e-4 
+#python3 train.py --model smResunet --epochs 100 --batch_size 8 --wandb --saving_path "model/saved_models/ResUnet/" --segmentation --learning_rate 3e-4 
 #python3 train.py --model AttentionMedGAN --epochs 200 --batch_size 6 --wandb --saving_path "model/saved_models/MedGAN/" --big_endian --no-dicom --learning_rate 2e-6 --save_weights --fit_one_batch

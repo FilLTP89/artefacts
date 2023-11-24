@@ -13,7 +13,7 @@ from transformers import SamProcessor
 from scipy.ndimage import label
 from torch.utils.data import DataLoader
 import pickle
-import torchvision.transforms as T
+
 np.random.seed = 42
 
 def plot_mask_with_bboxes(img,ground_truth_map, bounding_boxes):
@@ -97,7 +97,7 @@ class SAMDataset(Dataset):
             self.precompute_data(self.dataset)
             if precomputed_data_path:
                 self.save_precomputed_data(precomputed_data_path)
-        self.resize = T.Resize((256,256))
+
     def precompute_data(self, dataset):
         for item in dataset:
             ground_truth_mask = np.array(tifffile.imread(item["label"])[:, :, 0])
@@ -108,24 +108,14 @@ class SAMDataset(Dataset):
                 # Store only the file paths and bounding box coordinates
                 self.saved_data.append((item["image"], item["label"], bbox.tolist()))
 
-    def save_precomputed_data(self, file_path, chunk_size=1000):
-        data_len = len(self.saved_data)
+    def save_precomputed_data(self, file_path):
         with open(file_path, 'wb') as file:
-            for i in range(0, data_len, chunk_size):
-                chunk = self.saved_data[i:i + chunk_size]
-                pickle.dump(chunk, file)
+            pickle.dump(self.saved_data, file)
 
-    
     def load_precomputed_data(self, file_path):
-        self.saved_data = []
         with open(file_path, 'rb') as file:
-            while True:
-                try:
-                    chunk = pickle.load(file)
-                    self.saved_data.extend(chunk)
-                except EOFError:
-                    break
-                
+            self.saved_data = pickle.load(file)
+    
     def __len__(self):
         return len(self.saved_data)
     
@@ -143,7 +133,7 @@ class SAMDataset(Dataset):
         prompt = [[float(num) for num in bbox]]
         inputs = self.processor(image, input_boxes=[prompt], return_tensors="pt")
         inputs = {k: v.squeeze(0) for k, v in inputs.items()}
-        inputs["ground_truth_mask"] = self.resize(torch.tensor(ground_truth_mask))
+        inputs["ground_truth_mask"] = torch.tensor(ground_truth_mask)
         return inputs
 
 class SAMModule:
@@ -155,7 +145,7 @@ class SAMModule:
         ds = SAMDataset(precomputed_data_path=precached_data_path, processor=model_name)
         self.train_loader = DataLoader(ds, 
                                        batch_size=batch_size,
-                                         shuffle=False,num_workers=0, collate_fn= self.collate_fn)
+                                         shuffle=False,num_workers=8, collate_fn= self.collate_fn)
     
     def collate_fn(self,batch):
     # Initialize a dictionary to hold the collated batch
