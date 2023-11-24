@@ -15,8 +15,7 @@
 
 module purge
 source $WORKDIR/launch_script.sh
-#cd $WORKDIR/artefacts
-
+cd $WORKDIR/artefacts
 python3 train_sam.py
 
 #python3 train.py --model MedGAN --epochs 200 --batch_size 6 --wandb --saving_path "model/saved_models/MedGAN/" --big_endian --no-dicom --learning_rate 3e-5 --pretrained_MedGAN

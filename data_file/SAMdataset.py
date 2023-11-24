@@ -10,7 +10,6 @@ import random
 import tifffile
 import matplotlib.pyplot as plt
 from transformers import SamProcessor
-from scipy.ndimage import label
 from torch.utils.data import DataLoader
 import pickle
 import torchvision.transforms as T
@@ -62,11 +61,10 @@ def has_more_zeros(binary_image):
 
 
 def get_bounding_boxes(ground_truth_map):
+    from scipy.ndimage import label
     # Find connected components
     labeled, num_features = label(ground_truth_map > 0)
-
     bounding_boxes = []
-
     for feature in range(1, num_features + 1):
         y_indices, x_indices = np.where(labeled == feature)
         x_min, x_max = np.min(x_indices), np.max(x_indices)
@@ -113,7 +111,7 @@ class SAMDataset(Dataset):
         with open(file_path, 'wb') as file:
             pickle.dump(self.saved_data, file)
         print("Pickled data saved!")
-        
+
     def load_precomputed_data(self, file_path):
         with open(file_path, 'rb') as file:
             self.saved_data = pickle.load(file)
