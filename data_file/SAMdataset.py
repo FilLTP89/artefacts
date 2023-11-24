@@ -163,7 +163,7 @@ if __name__ == "__main__":
     dataset = load_image_and_mask("../data/segmentation")
     processor = "facebook/sam-vit-base"
     print("Dataset generated!")
-    n = 0
+    n = 1
     for _ in range(n):
         img_num = random.randint(0, len(dataset)-1)
         example_image = dataset[img_num]["image"]

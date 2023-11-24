@@ -13,8 +13,6 @@
 #SBATCH --account=xvy@a100
 
 
-
-
 module load anaconda-py3/2022.10
 module load cuda/11.7.1
 export LD_LIBRARY_PATH=/linkhome/rech/genuqo01/upz57sx/.conda/envs/artefacts/lib
