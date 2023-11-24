@@ -146,7 +146,7 @@ class SAMModule:
         ds = SAMDataset(precomputed_data_path=precached_data_path, processor=model_name)
         self.train_loader = DataLoader(ds, 
                                        batch_size=batch_size,
-                                         shuffle=False,num_workers=num_workers)
+                                         shuffle=True,num_workers=num_workers)
     """
     def collate_fn(self,batch):
     # Initialize a dictionary to hold the collated batch
