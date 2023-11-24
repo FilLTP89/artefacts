@@ -22,4 +22,4 @@ export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/linkhome/rech/genuqo01/upz57sx/.cond
 source activate artefacts
 cd /gpfswork/rech/tui/upz57sx/dossier_hugo/artefacts
 export PYTHONPATH="./"
-python3 train_sam
+python3 train_sam.py
