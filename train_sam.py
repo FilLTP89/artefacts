@@ -46,5 +46,5 @@ if __name__ == "__main__":
     model = SamModel.from_pretrained("facebook/sam-vit-base")
     optimizer = Adam(model.mask_decoder.parameters(), lr=1e-5, weight_decay=0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    module = SAMModule(batch_size= 1)
+    module = SAMModule(batch_size= 1, num_workers=0)
     train(model, 10, device, module.train_loader, optimizer)

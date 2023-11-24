@@ -13,7 +13,7 @@ from transformers import SamProcessor
 from scipy.ndimage import label
 from torch.utils.data import DataLoader
 import pickle
-
+import torchvision.transforms as T
 np.random.seed = 42
 
 def plot_mask_with_bboxes(img,ground_truth_map, bounding_boxes):
@@ -90,6 +90,7 @@ class SAMDataset(Dataset):
     def __init__(self, dataset = "data/segmentation" , processor = "facebook/sam-vit-base", precomputed_data_path="data/segmentation/precomputed_data.pkl"):
         self.processor = SamProcessor.from_pretrained(processor)
         self.dataset = load_image_and_mask(dataset)
+        self.resize = T.Resize((256,256))
         if precomputed_data_path and os.path.exists(precomputed_data_path):
             self.load_precomputed_data(precomputed_data_path)
         else:
@@ -112,6 +113,7 @@ class SAMDataset(Dataset):
         with open(file_path, 'wb') as file:
             pickle.dump(self.saved_data, file)
         print("Pickled data saved!")
+        
     def load_precomputed_data(self, file_path):
         with open(file_path, 'rb') as file:
             self.saved_data = pickle.load(file)
@@ -124,7 +126,6 @@ class SAMDataset(Dataset):
         if isinstance(idx, list):
             # This is unexpected; we should only receive individual indices
             raise ValueError("Received a list of indices, expected a single index")
-        
         image_path, label_path, bbox = self.saved_data[idx]
         image = np.array(tifffile.imread(image_path))
         ground_truth_mask = np.array(tifffile.imread(label_path)[:, :, 0])
@@ -134,20 +135,20 @@ class SAMDataset(Dataset):
         prompt = [[float(num) for num in bbox]]
         inputs = self.processor(image, input_boxes=[prompt], return_tensors="pt")
         inputs = {k: v.squeeze(0) for k, v in inputs.items()}
-        inputs["ground_truth_mask"] = torch.tensor(ground_truth_mask)
+        inputs["ground_truth_mask"] = self.resize(torch.tensor(ground_truth_mask))
         return inputs
 
 class SAMModule:
     def __init__(self, path = "data/segmentation",
                  precached_data_path = "data/segmentation/precomputed_data.pkl", 
                  model_name="facebook/sam-vit-base",
-                batch_size = 1):
+                batch_size = 1,
+                num_workers = 0 ):
 
         ds = SAMDataset(precomputed_data_path=precached_data_path, processor=model_name)
         self.train_loader = DataLoader(ds, 
                                        batch_size=batch_size,
-                                         shuffle=False,num_workers=8)
-    
+                                         shuffle=False,num_workers=num_workers)
     """
     def collate_fn(self,batch):
     # Initialize a dictionary to hold the collated batch
