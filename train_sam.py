@@ -49,7 +49,6 @@ def train(model, num_epochs, device, train_dataloader, optimizer):
 if __name__ == "__main__":
     parse_args()
     model = SamModel.from_pretrained("facebook/sam-vit-base")
-    torchsummary.summary(model, [(2,3, 1024, 1024),(2,1, 4)])
     optimizer = Adam(model.mask_decoder.parameters(), lr=1e-5, weight_decay=0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     module = SAMModule(batch_size= 2, num_workers=0)
