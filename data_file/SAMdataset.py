@@ -13,6 +13,9 @@ from transformers import SamProcessor
 from torch.utils.data import DataLoader
 import pickle
 import torchvision.transforms as T
+import torch.nn.functional as F
+from typing import Tuple
+
 np.random.seed = 42
 
 def plot_mask_with_bboxes(img,ground_truth_map, bounding_boxes):
@@ -158,6 +161,33 @@ class SAMModule:
         return collated_batch
     """
 
+def postprocess_masks(masks: torch.Tensor, input_size: Tuple[int, ...], original_size: Tuple[int, ...], image_size=1024) -> torch.Tensor:
+    """
+    Remove padding and upscale masks to the original image size.
+
+    Args:
+      masks (torch.Tensor):
+        Batched masks from the mask_decoder, in BxCxHxW format.
+      input_size (tuple(int, int)):
+        The size of the image input to the model, in (H, W) format. Used to remove padding.
+      original_size (tuple(int, int)):
+        The original size of the image before resizing for input to the model, in (H, W) format.
+
+    Returns:
+      (torch.Tensor): Batched masks in BxCxHxW format, where (H, W)
+        is given by original_size.
+    """
+    masks = F.interpolate(
+        masks,
+        (image_size, image_size),
+        mode="bilinear",
+        align_corners=False,
+    )
+    masks = masks[..., : input_size[0], : input_size[1]]
+    masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+    return masks
+     
+
 if __name__ == "__main__":
     print("Generating dataset...")
     dataset = load_image_and_mask("../data/segmentation")
@@ -197,3 +227,4 @@ if __name__ == "__main__":
     """
     outputs = model(**ds[10])
     """
+    

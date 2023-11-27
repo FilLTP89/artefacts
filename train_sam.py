@@ -56,4 +56,4 @@ if __name__ == "__main__":
     optimizer = Adam(model.mask_decoder.parameters(), lr=1e-5, weight_decay=0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     module = SAMModule(batch_size= 16, num_workers=0)
-    train(model, 10, device, module.train_loader, optimizer)
+    train(model, 100, device, module.train_loader, optimizer)
