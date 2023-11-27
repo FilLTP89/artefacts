@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Difftraining
+#SBATCH --job-name=Artefacts
 #SBATCH --output=jeanzay_log/output.txt
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
