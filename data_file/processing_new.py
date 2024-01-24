@@ -9,18 +9,45 @@ from CBCT_preprocess import read_raw
 from visualize import visualize_from_dataset
 import h5py
 from sklearn.utils import shuffle
-"""
-We know that corresponding image from the different folder 
-have the same name and that the input are in folder 2 & 4 while the the 
-label are in folder 1.
-So we will create couple 
-(X = file_from_folder_2 or 4, Y = file_from_folder_1) 
-We will exploit that in order to create the training and test couples.
+
+
 """
 
+In each folder you will find 8 different acquisitions : 1.control, 2. control metal, 3.fibra(fiberglass), 
+4.fibra metal, 5.gutta, 6.gutta metal, 7.cocr and 8.cocr metal
+
+The acquisitions 1 and 3 can bem considered as the good images - with ideal resolution*
+
+the acquisitions 2, 4, 5, 6, 7 and 8 are images with high-density materials - and you can consider 
+the increase of metallic materials considering 5<2<4<7<8
+
+The folders with root fracture you can consider in the same way as already described. I think that the key here is 
+for the neural network does not consider the real frature as an artifact 
+
+1C, 2C, 3C, 4C and 5C are folders of teeth without root fracture 
+1F, 2F, 3F, 4F and 5F are folder of teeth with root fracture    
+"""
 
 # Try to save to use the save function to save the dataset in folder -> Actually took too much times
 # See how much volume they take, and how long we take to load them
+
+
+dict = {
+    1 :"control",
+    2 : "control metal", 
+    3 : "fibra(fiberglass",
+    4 : "fibra metal", 
+    5 : "gutta", 
+    6 : "gutta metal",
+    7 : "cocr",
+    8 : "cocr metal"
+}
+
+
+good_folder_name = ["Control_High","Fibra_High"]
+
+bad_folder_name = ["Cocr_high","Cocr_low","Control_high","Control_low_metal","Fibra_high_metal","Fibra_low_metal","Gutta_high_metal","Gutta_low_metal"
+"Cocr_high_metal", "Cocr_low_metal","Control_high_metal","Fibra_high","Fibra_low","Gutta_high","Gutta_low"]
 
 
 class Dataset:
@@ -85,6 +112,10 @@ class Dataset:
             )
             for i in range(1,6)
         ]
+
+        good_folder = []
+
+        bad_folder = []
 
         return control_folders, fracture_folder
 

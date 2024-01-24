@@ -25,6 +25,7 @@ def plot_mask_with_bboxes(img,ground_truth_map, bounding_boxes):
 
     for bbox in bounding_boxes:
         x_min, y_min, x_max, y_max = bbox
+        ax[0].add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=False, edgecolor='red', linewidth=2))
         ax[1].add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=False, edgecolor='red', linewidth=2))
 
     plt.show()
@@ -62,7 +63,6 @@ def has_more_zeros(binary_image):
     return num_ones < total_pixels / 2
 
 
-
 def get_bounding_boxes(ground_truth_map):
     from scipy.ndimage import label
     # Find connected components
@@ -73,16 +73,16 @@ def get_bounding_boxes(ground_truth_map):
         x_min, x_max = np.min(x_indices), np.max(x_indices)
         y_min, y_max = np.min(y_indices), np.max(y_indices)
 
-        # add perturbation to bounding box coordinates
         H, W = ground_truth_map.shape
         x_min = max(0, x_min)
         x_max = min(W, x_max)
         y_min = max(0, y_min)
         y_max = min(H, y_max)
         bbox = [x_min, y_min, x_max, y_max]
-
-        bounding_boxes.append(np.array(bbox))
-
+        bbox_size = (x_max - x_min) * (y_max - y_min) # width * height
+        if bbox_size > 100: # filter out small boxes 
+            bounding_boxes.append(np.array(bbox))
+    
     return np.array(bounding_boxes)
 
 
@@ -128,7 +128,7 @@ class SAMDataset(Dataset):
             # This is unexpected; we should only receive individual indices
             raise ValueError("Received a list of indices, expected a single index")
         image_path, label_path, bbox = self.saved_data[idx]
-        image = np.array(tifffile.imread(image_path))
+        image = np.array(tifffile.imread(image_path)) / 255.0
         ground_truth_mask = np.array(tifffile.imread(label_path)[:, :, 0])
         ground_truth_mask = ground_truth_mask / 255.0
         ground_truth_mask = np.where(ground_truth_mask > 0.5, 1, 0)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     dataset = load_image_and_mask("../data/segmentation")
     processor = "facebook/sam-vit-base"
     print("Dataset generated!")
-    n = 1
+    n = 5
     for _ in range(n):
         img_num = random.randint(0, len(dataset)-1)
         example_image = dataset[img_num]["image"]
@@ -204,17 +204,15 @@ if __name__ == "__main__":
         mask_t = np.where(mask_t > 0.5, 1, 0)
         bboxs = get_bounding_boxes(mask_t)
         bboxs = [[float(item) for item in sublist] for sublist in bboxs]
-        if len(bboxs) >2:
-            print(len(bboxs))
-            plot_mask_with_bboxes(img,mask_t, bboxs)    
-    from transformers import SamModel
+        plot_mask_with_bboxes(img,mask_t, bboxs)    
+    """  from transformers import SamModel
     model = SamModel.from_pretrained("facebook/sam-vit-base")
     module = SAMModule(precached_data_path="../data/segmentation/precomputed_data.pkl", batch_size= 1)
     train_loader = module.train_loader
     for idx,batch in enumerate(train_loader):
         outputs = model(**batch)
         print(outputs.keys())
-        break
+        break """
 
     """
     Issue :  there is a differents number of boxes for each images
