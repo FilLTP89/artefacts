@@ -79,12 +79,13 @@ def write_raw(array,
     
     # Write to file
     # Write raw file
+    """
     with open(file_name + '.raw', 'wb') as f:
         if big_endian:
             f.write(array.astype('>u2').tobytes())
         else:
             f.write(array.astype('<u2').tobytes())
-    
+    """
     
     # Convert numpy array to sitk image
     img = sitk.GetImageFromArray(array)
