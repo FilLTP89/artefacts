@@ -110,14 +110,15 @@ def test_single_acquistion(dicom = False,acquisition_number = 1,batch_size = 32,
     d = 0
     """ while os.path.exists(f"generated_images/big_endian/experiment_{d}"):
         d += 1 """
-    low_name = "metal_low" if metal_low else "metal_high"
-    os.makedirs(f"generated_images/acquisition_{acquisition_number}/{low_name}")
+    metal = "metal_low" if metal_low else "metal_high"
+    if not os.path.exists(f"generated_images/acquisition_{acquisition_number}/{metal}"):
+        os.makedirs(f"generated_images/acquisition_{acquisition_number}/{metal}")
     file = 0
     for _, (x, y) in enumerate(acquisition):
         preds = model(x)
         for i in range(batch_size):
             save_to_raw(
-                x[i], preds[i], y[i], name=f"acqusition_{acquisition_number}/{low_name}/{file}",
+                x[i], preds[i], y[i], name=f"acqusition_{acquisition_number}/{metal}/{file}",
                 big_endian=big_endian
                 )
             file +=1
