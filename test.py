@@ -118,7 +118,7 @@ def test_single_acquistion(dicom = False,acquisition_number = 1,batch_size = 32,
         preds = model(x)
         for i in range(batch_size):
             save_to_raw(
-                x[i], preds[i], y[i], name=f"acqusition_{acquisition_number}/{metal}/{file}",
+                x[i], preds[i], y[i], name=f"acquisition_{acquisition_number}/{metal}/{file}",
                 big_endian=big_endian
                 )
             file +=1
