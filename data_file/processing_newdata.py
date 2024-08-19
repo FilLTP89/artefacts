@@ -8,8 +8,11 @@ import numpy as np
 from glob import glob
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt 
-
-
+from torchvision import transforms
+import torch.nn as nn
+from torch.nn.functional import interpolate
+from util import normalize_ct_image, CTImageAugmentation
+import pytorch_lightning as pl  
 
 def create_dataset(
         path = "datav2/protocole_1/",
@@ -105,9 +108,16 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
 
 class Datav2Dataset(Dataset):
     def __init__(self,
-                 folder = "datav2/protocole_1/",):
+                 folder = "datav2/protocole_1/",
+                 transform = transforms.Compose([
+                    transforms.Resize((512, 512)),
+                    ])
+            ):
         
         self.folder = gptcreate_dataset(folder)
+        self.transform = transform
+        self.augmentation = CTImageAugmentation()
+
 
     def __len__(self):
         return len(self.folder)
@@ -117,6 +127,13 @@ class Datav2Dataset(Dataset):
 
         input = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
         target = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        input = normalize_ct_image(input)
+        target = normalize_ct_image(target)
+        input = torch.tensor(input).unsqueeze(0)
+        target = torch.tensor(target).unsqueeze(0)
+        if self.transform:
+            input = self.transform(input)
+            target = self.transform(target)
         return input, target
 
     def visualize_random(self):
@@ -125,7 +142,8 @@ class Datav2Dataset(Dataset):
         input_name = input_name.split("/")[-2] + "/" + input_name.split("/")[-1]
         target_name = target_name.split("/")[-2] + "/" + target_name.split("/")[-1]
         input, target = self[idx]
-        print(f"Input shape: {input.shape}, Target shape: {target.shape}")
+        input = input.permute(1, 2, 0).squeeze().numpy()
+        target = target.permute(1, 2, 0).squeeze().numpy()
         fig, axs = plt.subplots(1, 2)
         axs[0].imshow(input, cmap="gray")
         axs[0].set_title(input_name)
@@ -133,7 +151,68 @@ class Datav2Dataset(Dataset):
         axs[1].set_title(target_name)
         plt.show()
 
+class Datav2Module(pl.LightningDataModule):
+    def __init__(self,
+                 folder = "datav2/protocole_1/",
+                 train_bs = 1,
+                 test_bs = 1,
+                 train_ratio = 0.8,
+                 img_size = 512,
+                 *args, **kwargs):
+        
+        self.folder = folder
+        self.train_bs = train_bs
+        self.test_bs = test_bs
+        self.train_ratio = train_ratio
+        self.valid_ratio = (1 - train_ratio)/2
+        self.test_ration = self.valid_ratio
+
+    def setup(self):
+        self.dataset = Datav2Dataset(self.folder)
+        total = len(self.dataset)
+        train_size = int(self.train_ratio * total)
+        valid_size = int(self.valid_ratio * total)
+        test_size = total - train_size - valid_size
+        self.train_ds, self.valid_ds, self.test_ds = torch.utils.data.random_split(self.dataset, [train_size, valid_size, test_size])
+
+    def train_dataloader(self):
+        return DataLoader(self.train_ds, 
+                          batch_size=self.train_bs, 
+                          shuffle=True)
+    
+    def val_dataloader(self):
+        return DataLoader(self.valid_ds, 
+                          batch_size=self.test_bs, 
+                          shuffle=False)
+    
+    def test_dataloader(self):
+        return DataLoader(self.test_ds, 
+                          batch_size=self.test_bs, 
+                          shuffle=False)
+    
+    def combined_dataloader(self):
+        return DataLoader(self.dataset, 
+                          batch_size=self.train_bs, 
+                          shuffle=True)
+
 
 if __name__ == "__main__":
+    """
     ds = Datav2Dataset()
+    x,y = ds[0]
+    z = x.squeeze()
+    for i in z:
+        for j in i:
+            if j != 0:
+                print(j)
     ds.visualize_random()
+    """
+    module = Datav2Module(train_bs=5)
+    module.setup()
+    train_ds = module.train_dataloader()
+    print(len(module.dataset))
+    for idx, (input, target) in enumerate(train_ds):
+        print(input.shape, target.shape)
+        x0,y0 = input[0], target[0]
+        print(x0.max(), x0.min(), y0.max(), y0.min())   
+        break
