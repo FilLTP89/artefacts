@@ -207,7 +207,7 @@ if __name__ == "__main__":
                 print(j)
     ds.visualize_random()
     """
-    module = Datav2Module(train_bs=5)
+    module = Datav2Module(train_bs=1)
     module.setup()
     train_ds = module.train_dataloader()
     print(len(module.dataset))
