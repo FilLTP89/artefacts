@@ -318,5 +318,6 @@ class MEDGAN(tf.keras.Model):
 
 if __name__ == "__main__":
     model = MEDGAN()
-    model(tf.random.normal((1, 512, 512, 1)))
+    y = model(tf.random.normal((1, 512, 512, 1)))
+    print(y.shape)
     model.summary()
