@@ -9,16 +9,13 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-TRAIN_BS = 16
-TEST_BS = 16
-MAX_EPOCHS = 100
-
 def init_args():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--train_bs", type=int, default=16)
     parser.add_argument("--test_bs", type=int, default=16)
     parser.add_argument("--max_epochs", type=int, default=100)
+    parser.add_argument("--lr", type=float, default=1e-4)
     args = parser.parse_args()
     return args
 
@@ -38,9 +35,8 @@ def init_repo(wandb_name):
     return path
 
 
-def load_module():
-    module = Datav2Module(train_bs=TRAIN_BS,
-                          test_bs=TEST_BS)
+def load_module(*args, **kwargs):
+    module = Datav2Module(*args, **kwargs)
     module.setup()
     return module
 
