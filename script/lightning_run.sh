@@ -25,11 +25,9 @@ export PYTHONPATH="./"
 export WANDB__SERVICE_WAIT=1000
 
 python3 pl_training.py \
-    --batch_size 2 \
-    --num_workers 4 \
-    --lr 0.0001 \
-    --precision 16 \
-    --max_epochs 500 \
+    --max_epochs 100 \
+    --train_bs 16 \
+    --test_bs 16 \
 
 
 
