@@ -40,8 +40,8 @@ def load_module(*args, **kwargs):
     module.setup()
     return module
 
-def load_model():
-    model = AttentionMEDGAN()
+def load_model(*args, **kwargs):
+    model = AttentionMEDGAN(*args, **kwargs)
     return model
 
 def main():
@@ -56,7 +56,9 @@ def main():
         test_bs = args.test_bs
     )
 
-    model = load_model()
+    model = load_model(
+        learning_rate = args.lr
+        )
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,

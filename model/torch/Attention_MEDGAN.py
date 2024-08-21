@@ -268,7 +268,7 @@ class VGG19(nn.Module):
         
         return [x1, x2, x3, x4, x5, x6, x7, x8]
 
-class AttentionMEDGAN(nn.Module):
+class AttentionMEDGAN(pl.LightningModule):
     def __init__(
         self,
         input_shape=(1, 512, 512),
@@ -278,9 +278,9 @@ class AttentionMEDGAN(nn.Module):
         learning_rate=3e-5,
         N_g=3,
         vgg_whole_arc=False,
-        cosine_decay=False,
+        cosine_decay=True,
     ):
-        super(AttentionMEDGAN, self).__init__()
+        super().__init__()
         self.shape = input_shape
         self.N_g = N_g
         self.lambda_1 = 20
@@ -300,6 +300,18 @@ class AttentionMEDGAN(nn.Module):
         if cosine_decay:
             self.g_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.g_optimizer, T_max=1000, eta_min=0)
             self.d_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.d_optimizer, T_max=1000, eta_min=0)
+
+    def configure_optimizers(self):
+        g_opt = torch.optim.Adam(self.generator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
+        d_opt = torch.optim.Adam(self.discriminator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
+        
+        if self.cosine_decay:
+            g_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(g_opt, T_max=1000, eta_min=0)
+            d_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(d_opt, T_max=1000, eta_min=0)
+            return [g_opt, d_opt], [g_scheduler, d_scheduler]
+        else:
+            return [g_opt, d_opt]
+
 
     def forward(self, x):
         return self.generator(x)
@@ -364,17 +376,6 @@ class AttentionMEDGAN(nn.Module):
         d_loss = self.discriminator_loss(real_output, fake_output)
 
         return {'g_loss': g_loss, 'd_loss': d_loss}
-
-    def configure_optimizers(self):
-        g_opt = torch.optim.Adam(self.generator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
-        d_opt = torch.optim.Adam(self.discriminator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
-        
-        if self.cosine_decay:
-            g_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(g_opt, T_max=1000, eta_min=0)
-            d_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(d_opt, T_max=1000, eta_min=0)
-            return [g_opt, d_opt], [g_scheduler, d_scheduler]
-        else:
-            return [g_opt, d_opt]
 
     def on_train_epoch_end(self):
         # Step the learning rate schedulers if they exist
