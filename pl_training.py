@@ -11,6 +11,16 @@ logger.setLevel(logging.INFO)
 
 TRAIN_BS = 16
 TEST_BS = 16
+MAX_EPOCHS = 100
+
+def init_args():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train_bs", type=int, default=16)
+    parser.add_argument("--test_bs", type=int, default=16)
+    parser.add_argument("--max_epochs", type=int, default=100)
+    args = parser.parse_args()
+    return args
 
 
 
@@ -39,6 +49,7 @@ def load_model():
     return model
 
 def main():
+    args = init_args()
     logger.info(f"cuda is available:{torch.cuda.is_available()} ")
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
@@ -49,10 +60,12 @@ def main():
     model = load_model()
     trainer = pl.Trainer(
         logger=wandb_logger,
-        gpus=1,
-        max_epochs=100,
+        max_epochs=MAX_EPOCHS,
         progress_bar_refresh_rate=20,
-        default_root_dir= run_name
+        default_root_dir= repo_path,
+        accelerator="auto", 
+        devices="auto", 
+        strategy="auto"
     )
     trainer.fit(model, module)
 
