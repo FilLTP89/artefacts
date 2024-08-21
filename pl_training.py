@@ -74,7 +74,10 @@ def main():
         devices="auto", 
         strategy="auto"
     )
-    trainer.fit(model, module)
+    trainer.fit(model, 
+                train_dataloaders = module.train_dataloader(),
+                val_dataloaders = module.val_dataloader()
+                )
 
 
 if __name__ == "__main__":
