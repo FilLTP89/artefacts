@@ -377,6 +377,26 @@ class AttentionMEDGAN(pl.LightningModule):
 
         return {'g_loss': g_loss, 'd_loss': d_loss}
 
+    def validation_step(self, batch, batch_idx):
+        real_x, real_y = batch
+        for _ in range(self.N_g):
+            fake_y = self.generator(real_x)
+            fake_features, fake_output = self.discriminator(fake_y)
+            real_features, _ = self.discriminator(real_y)
+
+            fake_vgg_features = self.feature_extractor(fake_y)
+            real_vgg_features = self.feature_extractor(real_y)
+
+            g_loss = self.generator_loss(fake_output, real_features, fake_features, real_vgg_features, fake_vgg_features, real_y, fake_y)
+
+        # Train Discriminator
+        fake_y = self.generator(real_x)  # Generate new fakes for discriminator training
+        _, real_output = self.discriminator(real_y)
+        _, fake_output = self.discriminator(fake_y.detach())
+        d_loss = self.discriminator_loss(real_output, fake_output)
+
+        return {'g_loss': g_loss, 'd_loss': d_loss}
+
     def on_train_epoch_end(self):
         # Step the learning rate schedulers if they exist
         if self.cosine_decay:

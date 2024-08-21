@@ -16,6 +16,7 @@ def init_args():
     parser.add_argument("--test_bs", type=int, default=16)
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--use_generator", type=bool, default=True)   
     args = parser.parse_args()
     return args
 
@@ -44,6 +45,10 @@ def load_model(*args, **kwargs):
     model = AttentionMEDGAN(*args, **kwargs)
     return model
 
+def load_generator(*args, **kwargs):
+    model = AttentionMEDGAN(*args, **kwargs)
+    return model
+
 def main():
     args = init_args()
     logger.info(f"cuda is available:{torch.cuda.is_available()} ")
@@ -56,6 +61,8 @@ def main():
         test_bs = args.test_bs
     )
 
+    if args.use_generator:
+        generator = load_generator()
     model = load_model(
         learning_rate = args.lr
         )
