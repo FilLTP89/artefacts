@@ -41,6 +41,7 @@ class AttentionGate(tf.keras.layers.Layer):
         phi = kl.Activation("relu")(phi)
         phi = self.phi(phi)
         phi = kl.Activation("sigmoid")(phi)
+        print(phi.shape)
         phi = self.attention([phi, phi])
         return x * phi
 
@@ -408,8 +409,11 @@ class AttentionMEDGAN(tf.keras.Model):
 
 
 if __name__ == "__main__":
+    import torch
     model = AttentionMEDGAN()
     #model = U_block().build_model()
+    x = torch.randn(2, 512, 512, 1)
     y = model(tf.random.normal((2, 512, 512, 1)))
+    y = model(x)
     print(y.shape)
     model.summary()

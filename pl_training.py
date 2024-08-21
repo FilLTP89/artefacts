@@ -2,7 +2,8 @@ import os
 import torch
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module
-
+from model.torch.Attention_MEDGAN import AttentionMEDGAN
+import pytorch_lightning as pl
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -33,15 +34,27 @@ def load_module():
     module.setup()
     return module
 
-
+def load_model():
+    model = AttentionMEDGAN()
+    return model
 
 def main():
     logger.info(f"cuda is available:{torch.cuda.is_available()} ")
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
-    print(run_name)
+    logger.info(run_name)
     repo_path = init_repo(run_name)
     module = load_module()
+
+    model = load_model()
+    trainer = pl.Trainer(
+        logger=wandb_logger,
+        gpus=1,
+        max_epochs=100,
+        progress_bar_refresh_rate=20,
+        default_root_dir= run_name
+    )
+    trainer.fit(model, module)
 
 
 if __name__ == "__main__":
