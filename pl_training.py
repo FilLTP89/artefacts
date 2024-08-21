@@ -55,13 +55,15 @@ def main():
     run_name = wandb_logger.experiment.name
     logger.info(run_name)
     repo_path = init_repo(run_name)
-    module = load_module()
+    module = load_module(
+        train_bs = args.train_bs,
+        test_bs = args.test_bs
+    )
 
     model = load_model()
     trainer = pl.Trainer(
         logger=wandb_logger,
-        max_epochs=MAX_EPOCHS,
-        progress_bar_refresh_rate=20,
+        max_epochs=args.max_epochs,
         default_root_dir= repo_path,
         accelerator="auto", 
         devices="auto", 
