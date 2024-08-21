@@ -288,7 +288,7 @@ class AttentionMEDGAN(pl.LightningModule):
         self.lambda_3 = 1
         self.lambda_4 = 1
         self.automatic_optimization = False  # This is crucial for manual optimization
-
+        self.learning_rate = learning_rate  
 
         self.generator = generator or ConsNet(3, self.shape)
         self.discriminator = discriminator or PatchGAN(self.shape)
