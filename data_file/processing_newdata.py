@@ -134,6 +134,8 @@ class Datav2Dataset(Dataset):
         if self.transform:
             input = self.transform(input)
             target = self.transform(target)
+        if self.augmentation:
+            input, target = self.augmentation(input, target)
         return input, target
 
     def visualize_random(self):
@@ -158,7 +160,7 @@ class Datav2Module(pl.LightningDataModule):
                  test_bs = 1,
                  train_ratio = 0.8,
                  img_size = 512,
-                 num_workers=7,
+                 num_workers=0,
                  *args, **kwargs):
         
         self.folder = folder
@@ -169,7 +171,7 @@ class Datav2Module(pl.LightningDataModule):
         self.test_ration = self.valid_ratio
         self.num_workers = num_workers
 
-    def setup(self):
+    def setup(self, stage = None):
         self.dataset = Datav2Dataset(self.folder)
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)

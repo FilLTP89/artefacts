@@ -1,13 +1,25 @@
 import os
 import torch
+import random 
+import numpy as np
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import logging
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 def init_args():
     import argparse
@@ -50,6 +62,7 @@ def load_generator(*args, **kwargs):
     return model
 
 def main():
+    set_seed(42)
     args = init_args()
     logger.info(f"cuda is available:{torch.cuda.is_available()} ")
     wandb_logger = init_wandb()
@@ -81,4 +94,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
