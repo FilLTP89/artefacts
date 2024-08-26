@@ -116,7 +116,8 @@ class Datav2Dataset(Dataset):
         
         self.folder = gptcreate_dataset(folder)
         self.transform = transform
-        self.augmentation = CTImageAugmentation()
+        self.augmentation = None
+        #self.augmentation = CTImageAugmentation()
 
 
     def __len__(self):
