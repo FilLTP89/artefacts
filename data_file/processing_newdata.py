@@ -158,6 +158,7 @@ class Datav2Module(pl.LightningDataModule):
                  test_bs = 1,
                  train_ratio = 0.8,
                  img_size = 512,
+                 num_workers=7,
                  *args, **kwargs):
         
         self.folder = folder
@@ -166,6 +167,7 @@ class Datav2Module(pl.LightningDataModule):
         self.train_ratio = train_ratio
         self.valid_ratio = (1 - train_ratio)/2
         self.test_ration = self.valid_ratio
+        self.num_workers = num_workers
 
     def setup(self):
         self.dataset = Datav2Dataset(self.folder)
@@ -178,21 +180,25 @@ class Datav2Module(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(self.train_ds, 
                           batch_size=self.train_bs, 
+                          num_workers=self.num_workers,
                           shuffle=True)
     
     def val_dataloader(self):
         return DataLoader(self.valid_ds, 
                           batch_size=self.test_bs, 
+                          num_workers=self.num_workers,
                           shuffle=False)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, 
                           batch_size=self.test_bs, 
+                          num_workers=self.num_workers,
                           shuffle=False)
     
     def combined_dataloader(self):
         return DataLoader(self.dataset, 
                           batch_size=self.train_bs, 
+                          num_workers=self.num_workers,
                           shuffle=True)
 
 

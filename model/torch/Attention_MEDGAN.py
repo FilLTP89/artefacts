@@ -376,7 +376,15 @@ class AttentionMEDGAN(pl.LightningModule):
         _, fake_output = self.discriminator(fake_y.detach())
         d_loss = self.discriminator_loss(real_output, fake_output)
 
-        return {'g_loss': g_loss, 'd_loss': d_loss}
+        return {'g_loss': g_loss,
+                'd_loss': d_loss,
+                'perceptual_loss': self.perceptual_loss,
+                'style_loss': self.style_loss,
+                'content_loss': self.content_loss,
+                'mse_loss': self.mse_loss,
+                'real_loss': self.real_loss,
+                'fake_loss': self.fake_loss}
+    
 
     def validation_step(self, batch, batch_idx):
         real_x, real_y = batch
@@ -396,7 +404,15 @@ class AttentionMEDGAN(pl.LightningModule):
         _, fake_output = self.discriminator(fake_y.detach())
         d_loss = self.discriminator_loss(real_output, fake_output)
 
-        return {'g_loss': g_loss, 'd_loss': d_loss}
+        return {'g_loss': g_loss, 
+                'd_loss': d_loss, 
+                'perceptual_loss': self.perceptual_loss,
+                'style_loss': self.style_loss,
+                'content_loss': self.content_loss,
+                'mse_loss': self.mse_loss,
+                'real_loss': self.real_loss,
+                'fake_loss': self.fake_loss
+                }
 
     def on_train_epoch_end(self):
         # Step the learning rate schedulers if they exist
@@ -413,11 +429,17 @@ class AttentionMEDGAN(pl.LightningModule):
         content_loss = self.compute_content_loss(fake_vgg_features, real_vgg_features)
         mse_loss = nn.MSELoss()(fake_y, real_y)
 
+        self.perceptual_loss = perceptual_loss
+        self.style_loss = style_loss
+        self.content_loss = content_loss
+        self.mse_loss = mse_loss
+
         return (gan_loss + 
                 self.lambda_1 * perceptual_loss + 
                 self.lambda_2 * style_loss + 
                 self.lambda_3 * content_loss + 
                 self.lambda_4 * mse_loss)
+    
     def compute_content_loss(self, fake_features, real_features):
         content_loss = 0
         for fake_feat, real_feat in zip(fake_features, real_features):
@@ -427,6 +449,10 @@ class AttentionMEDGAN(pl.LightningModule):
     def discriminator_loss(self, real_output, fake_output):
         real_loss = nn.BCEWithLogitsLoss()(real_output, torch.ones_like(real_output))
         fake_loss = nn.BCEWithLogitsLoss()(fake_output, torch.zeros_like(fake_output))
+
+        self.real_loss = real_loss
+        self.fake_loss = fake_loss
+
         return (real_loss + fake_loss) / 2
 
     
