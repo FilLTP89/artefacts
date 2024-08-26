@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=artefact
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:3
+#SBATCH --gres=gpu:2
 #SBATCH --mem=40GB
 #SBATCH --output=ruche_log/output.txt
 #SBATCH --error=ruche_log/error.txt
