@@ -13,6 +13,7 @@ import torch.nn as nn
 from torch.nn.functional import interpolate
 from util import normalize_ct_image, CTImageAugmentation
 import pytorch_lightning as pl  
+import multiprocessing
 
 def create_dataset(
         path = "datav2/protocole_1/",
@@ -161,7 +162,7 @@ class Datav2Module(pl.LightningDataModule):
                  test_bs = 1,
                  train_ratio = 0.8,
                  img_size = 512,
-                 num_workers=0,
+                 num_workers= multiprocessing.cpu_count(),
                  *args, **kwargs):
         
         self.folder = folder
@@ -170,8 +171,16 @@ class Datav2Module(pl.LightningDataModule):
         self.train_ratio = train_ratio
         self.valid_ratio = (1 - train_ratio)/2
         self.test_ration = self.valid_ratio
-        self.num_workers = num_workers
+        self.num_workers = self.get_optimal_num_workers()
 
+    def get_optimal_num_workers(self):
+        num_cpus = os.cpu_count()
+        num_gpus = torch.cuda.device_count()
+        if num_gpus > 0:
+            return min(num_cpus, 4 * num_gpus)
+        else:
+            return min(num_cpus, 8)  # Cap at 8 for CPU-only machines
+        
     def setup(self, stage = None):
         self.dataset = Datav2Dataset(self.folder)
         total = len(self.dataset)
