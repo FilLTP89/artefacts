@@ -20,7 +20,7 @@ export NCCL_P2P_DISABLE=1
 export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/pc/lib
 export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/pc/lib/"
 source activate artefact
-cd $WORKDIR/artefact/
+cd $WORKDIR/artefacts/
 export PYTHONPATH="./"
 export WANDB__SERVICE_WAIT=1000
 

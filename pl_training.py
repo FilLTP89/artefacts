@@ -31,7 +31,7 @@ def init_wandb():
 
 
 def init_repo(wandb_name):
-    path = f"model/saved_model/New_data/{wandb_name}"
+    path = f"model/saved_models/torch/{wandb_name}"
     os.makedirs(path, exist_ok=True)
     return path
 
