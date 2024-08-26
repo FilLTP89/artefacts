@@ -12,11 +12,11 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def set_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
+def set_seed(seeds):
+    torch.manual_seed(seeds)
+    torch.cuda.manual_seed_all(seeds)
+    np.random.seed(seeds)
+    random.seed(seeds)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 

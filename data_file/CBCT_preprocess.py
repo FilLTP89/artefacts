@@ -6,8 +6,6 @@ import SimpleITK as sitk
 import tempfile
 import os
 
-seed = 42
-np.random.seed = seed
 
 
 def open_raw(
