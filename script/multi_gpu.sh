@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --mem=40GB
-#SBATCH --output=ruche_log/output.txt
-#SBATCH --error=ruche_log/error.txt
+#SBATCH --output=ruche_log/multigpu_output.txt
+#SBATCH --error=ruche_log/multigpu_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=1
