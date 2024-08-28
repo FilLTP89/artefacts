@@ -347,14 +347,14 @@ class AttentionMEDGAN(pl.LightningModule):
         d_opt.step()
 
         # Log losses
-        self.log('g_loss', g_loss, prog_bar=True)
-        self.log('d_loss', d_loss, prog_bar=True)
-        self.log('perceptual_loss', self.perceptual_loss, prog_bar=True)
-        self.log('style_loss', self.style_loss, prog_bar=True)
-        self.log('content_loss', self.content_loss, prog_bar=True)
-        self.log('mse_loss', self.mse_loss, prog_bar=True)
-        self.log('real_loss', self.real_loss, prog_bar=True)
-        self.log('fake_loss', self.fake_loss, prog_bar=True)
+        self.log('g_loss', g_loss, prog_bar=True,  sync_dist=True)
+        self.log('d_loss', d_loss, prog_bar=True,  sync_dist=True)
+        self.log('perceptual_loss', self.perceptual_loss, prog_bar=True,  sync_dist=True)
+        self.log('style_loss', self.style_loss, prog_bar=True,  sync_dist=True)
+        self.log('content_loss', self.content_loss, prog_bar=True,  sync_dist=True)
+        self.log('mse_loss', self.mse_loss, prog_bar=True,  sync_dist=True)
+        self.log('real_loss', self.real_loss, prog_bar=True, sync_dist=True)
+        self.log('fake_loss', self.fake_loss, prog_bar=True, sync_dist=True)
         
         return {'g_loss': g_loss,
                 'd_loss': d_loss,
