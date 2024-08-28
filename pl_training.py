@@ -32,6 +32,7 @@ def init_args():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--use_generator", action=argparse.BooleanOptionalAction,type=bool, default=True)   
     parser.add_argument("--one_batch",action=argparse.BooleanOptionalAction, type=bool, default=False)    
+    parser.add_argument("--mix_precision", action=argparse.BooleanOptionalAction, type=bool, default=False)
     args = parser.parse_args()
     return args
 
@@ -75,10 +76,14 @@ def main():
         train_bs = args.train_bs,
         test_bs = args.test_bs
     )
-    rank_zero_info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
-    rank_zero_info(f" Run name {run_name}")
-    rank_zero_info(f" Run path {repo_path}")
+
     
+    rank_zero_info("\n \n \n ")
+    rank_zero_info(f"Cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
+    rank_zero_info(f"Run name {run_name}")
+    rank_zero_info(f"Run path {repo_path}")
+    rank_zero_info(f"Use mix precision : {args.mix_precision}")
+    rank_zero_info("\n \n \n ")
 
     if args.use_generator:
         generator = load_generator()
@@ -100,7 +105,8 @@ def main():
         strategy="ddp_find_unused_parameters_true",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
-        callbacks=callback
+        callbacks=callback,
+        precision=16 if args.mix_precision else 32
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),

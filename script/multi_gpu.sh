@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=3
 #SBATCH --mail-type=FAIL
-#SBATCH --partition=gpua100
+#SBATCH --partition=gpu
 #SBATCH --export=ALL
 #SBATCH --exclude=ruche-gpu16,ruche-gpu13
 
@@ -52,6 +52,7 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
+    --mixed_precision \
 
 echo "Job script completed"
 
