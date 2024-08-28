@@ -22,9 +22,11 @@ module load cuda/11.8.0/gcc-11.2.0
 echo "Loaded modules:"
 module list
 
+# Debugging flags
+#export NCCL_DEBUG=INFO
+#export PYTHONFAULTHANDLER=1
+
 export NCCL_P2P_DISABLE=1
-export NCCL_DEBUG=INFO
-export PYTHONFAULTHANDLER=1
 export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
 
