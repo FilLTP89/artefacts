@@ -349,8 +349,22 @@ class AttentionMEDGAN(pl.LightningModule):
         # Log losses
         self.log('g_loss', g_loss, prog_bar=True)
         self.log('d_loss', d_loss, prog_bar=True)
+        self.log('perceptual_loss', self.perceptual_loss, prog_bar=True)
+        self.log('style_loss', self.style_loss, prog_bar=True)
+        self.log('content_loss', self.content_loss, prog_bar=True)
+        self.log('mse_loss', self.mse_loss, prog_bar=True)
+        self.log('real_loss', self.real_loss, prog_bar=True)
+        self.log('fake_loss', self.fake_loss, prog_bar=True)
+        
+        return {'g_loss': g_loss,
+                'd_loss': d_loss,
+                'perceptual_loss': self.perceptual_loss,
+                'style_loss': self.style_loss,
+                'content_loss': self.content_loss,
+                'mse_loss': self.mse_loss,
+                'real_loss': self.real_loss,
+                'fake_loss': self.fake_loss}
 
-        return {'g_loss': g_loss, 'd_loss': d_loss}
     
     def test_training_step(self, batch, batch_idx):
         real_x, real_y = batch
@@ -403,6 +417,16 @@ class AttentionMEDGAN(pl.LightningModule):
         _, real_output = self.discriminator(real_y)
         _, fake_output = self.discriminator(fake_y.detach())
         d_loss = self.discriminator_loss(real_output, fake_output)
+
+        self.log('test_g_loss', g_loss, prog_bar=True)
+        self.log('test_d_loss', d_loss, prog_bar=True)
+        self.log('test_perceptual_loss', self.perceptual_loss, prog_bar=True)
+        self.log('test_style_loss', self.style_loss, prog_bar=True)
+        self.log('test_content_loss', self.content_loss, prog_bar=True)
+        self.log('test_mse_loss', self.mse_loss, prog_bar=True)
+        self.log('test_real_loss', self.real_loss, prog_bar=True)
+        self.log('test_fake_loss', self.fake_loss, prog_bar=True)
+
 
         return {'g_loss': g_loss, 
                 'd_loss': d_loss, 

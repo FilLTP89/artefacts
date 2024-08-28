@@ -64,7 +64,7 @@ def load_generator(*args, **kwargs):
 def main():
     set_seed(42)
     args = init_args()
-    logger.info(f"cuda is available:{torch.cuda.is_available()} ")
+    logger.info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {torch.cuda.device_count()}")
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
     logger.info(run_name)
