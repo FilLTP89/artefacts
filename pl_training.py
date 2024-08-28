@@ -3,6 +3,7 @@ import torch
 import random 
 import numpy as np
 from pytorch_lightning.utilities import rank_zero_info
+from pytorch_lightning.callbacks import ModelCheckpoint
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
@@ -78,20 +79,28 @@ def main():
     rank_zero_info(f" Run name {run_name}")
     rank_zero_info(f" Run path {repo_path}")
     
+
     if args.use_generator:
         generator = load_generator()
     model = load_model(
         learning_rate = args.lr
         )
+    callback = [ModelCheckpoint(
+        dirpath= repo_path,
+        filename= "best_model",
+        save_top_k=1,
+        monitor="test_mse_loss",
+        mode="min"
+    )]
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,
-        default_root_dir= repo_path,
         accelerator="gpu", 
         devices=device_count, 
         strategy="ddp_find_unused_parameters_true",
         overfit_batches= 1 if args.one_batch else 0,
-        num_nodes=1
+        num_nodes=1,
+        callbacks=callback
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
