@@ -7,7 +7,7 @@
 #SBATCH --error=ruche_log/multigpu_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=2
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
 #SBATCH --export=NONE
@@ -18,7 +18,7 @@ module load gcc/11.2.0/gcc-4.8.5
 module cuda/11.8.0/gcc-11.2.0
 export NCCL_P2P_DISABLE=1
 export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
-export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/artefact/pc/lib/"
+export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
 source activate artefact
 cd $WORKDIR/artefacts/
 export PYTHONPATH="./"
