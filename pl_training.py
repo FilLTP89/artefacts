@@ -2,6 +2,7 @@ import os
 import torch
 import random 
 import numpy as np
+from pytorch_lightning.utilities import rank_zero_info
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
@@ -63,19 +64,20 @@ def load_generator(*args, **kwargs):
     return model
 
 def main():
-    device_count = torch.cuda.device_count()
     set_seed(42)
+    device_count = torch.cuda.device_count()
     args = init_args()
-    logger.info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
-    logger.info(run_name)
     repo_path = init_repo(run_name)
     module = load_module(
         train_bs = args.train_bs,
         test_bs = args.test_bs
     )
-
+    rank_zero_info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
+    rank_zero_info(f" Run name {run_name}")
+    rank_zero_info(f" Run path {repo_path}")
+    
     if args.use_generator:
         generator = load_generator()
     model = load_model(
