@@ -29,7 +29,7 @@ export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
 
 echo "Activating conda environment"
-source /gpfs/users/gabrielihu/.conda/envs/artefact/bin/activate
+source activate artefact
 conda info --envs
 
 cd $WORKDIR/artefacts/

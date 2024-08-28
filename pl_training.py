@@ -87,7 +87,7 @@ def main():
         default_root_dir= repo_path,
         accelerator="gpu", 
         devices=device_count, 
-        strategy="ddp",
+        strategy="ddp_find_unused_parameters_true",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1
     )
