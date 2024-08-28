@@ -63,9 +63,10 @@ def load_generator(*args, **kwargs):
     return model
 
 def main():
+    device_count = torch.cuda.device_count()
     set_seed(42)
     args = init_args()
-    logger.info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {torch.cuda.device_count()}")
+    logger.info(f"cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
     logger.info(run_name)
@@ -85,9 +86,10 @@ def main():
         max_epochs=args.max_epochs,
         default_root_dir= repo_path,
         accelerator="gpu", 
-        devices=-1, 
+        devices=device_count, 
         strategy="ddp",
-        overfit_batches= 1 if args.one_batch else 0
+        overfit_batches= 1 if args.one_batch else 0,
+        num_nodes=1
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),

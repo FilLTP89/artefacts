@@ -106,6 +106,8 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
     return dataset
 
 
+def stacked_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm=True):
+    pass
 
 class Datav2Dataset(Dataset):
     def __init__(self,
