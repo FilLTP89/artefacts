@@ -28,7 +28,8 @@ def init_args():
     parser.add_argument("--test_bs", type=int, default=16)
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--use_generator", type=bool, default=True)   
+    parser.add_argument("--use_generator", action=argparse.BooleanOptionalAction,type=bool, default=True)   
+    parser.add_argument("--one_batch",action=argparse.BooleanOptionalAction, type=bool, default=False)    
     args = parser.parse_args()
     return args
 
@@ -83,9 +84,10 @@ def main():
         logger=wandb_logger,
         max_epochs=args.max_epochs,
         default_root_dir= repo_path,
-        accelerator="auto", 
-        devices="auto", 
-        strategy="auto"
+        accelerator="gpu", 
+        devices=-1, 
+        strategy="ddp",
+        overfit_batches= 1 if args.one_batch else 0
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
@@ -94,5 +96,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
