@@ -1,15 +1,15 @@
 #!/bin/bash
 #SBATCH --job-name=artefact
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:3
+#SBATCH --gres=gpu:4
 #SBATCH --mem=40GB
 #SBATCH --output=ruche_log/multigpu_output.txt
 #SBATCH --error=ruche_log/multigpu_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=3
+#SBATCH --ntasks-per-node=4
 #SBATCH --mail-type=FAIL
-#SBATCH --partition=gpu
+#SBATCH --partition=gpua100
 #SBATCH --export=ALL
 #SBATCH --exclude=ruche-gpu16,ruche-gpu13
 
