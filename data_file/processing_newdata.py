@@ -105,9 +105,11 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
             dataset.extend(paired_files)
     return dataset
 
+def load_one_acquisition(path, control=True, nb_folder=5, dcm=True):
+    dataset = gptcreate_dataset(path, control, nb_folder, dcm)
+    print(dataset[:5])
 
-def stacked_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm=True):
-    pass
+
 
 class Datav2Dataset(Dataset):
     def __init__(self,
@@ -156,6 +158,9 @@ class Datav2Dataset(Dataset):
         axs[1].imshow(target, cmap="gray")
         axs[1].set_title(target_name)
         plt.show()
+    
+    def load_one_acquisition(self, idx): 
+        pass
 
 class Datav2Module(pl.LightningDataModule):
     def __init__(self,
@@ -217,6 +222,7 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
+    load_one_acquisition()
     """
     ds = Datav2Dataset()
     x,y = ds[0]
@@ -226,7 +232,6 @@ if __name__ == "__main__":
             if j != 0:
                 print(j)
     ds.visualize_random()
-    """
     module = Datav2Module(train_bs=1)
     module.setup()
     train_ds = module.train_dataloader()
@@ -236,3 +241,4 @@ if __name__ == "__main__":
         x0,y0 = input[0], target[0]
         print(x0.max(), x0.min(), y0.max(), y0.min())   
         break
+    """
