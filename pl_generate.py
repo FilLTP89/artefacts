@@ -8,7 +8,8 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 
 
-
+RUN_PATH = ""
+CPKT_NAME = "model/saved_models/torch/"
 
 
 
@@ -19,3 +20,15 @@ def load_model(checkpoint_path, *args, **kwargs):
     model.load_state_dict(torch.load(checkpoint_path, map_location = device))
     model.eval()
     return model
+
+
+def load_module(*args, **kwargs):
+    module = Datav2Module(*args, **kwargs)
+    module.setup()
+    return module
+
+
+def main(
+        saving_patch = "generated_images/",):
+    model = load_model("model/saved_models/torch/")
+    module = load_module()
