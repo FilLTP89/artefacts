@@ -8,7 +8,6 @@ from data_file.processing_newdata import Datav2Module
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import logging
-from pytorch_lighning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
