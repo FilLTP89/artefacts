@@ -8,8 +8,7 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-RUN_PATH = ""
-CPKT_NAME = "model/saved_models/torch/"
+CPKT_PATH = "/gpfs/users/gabrielihu/saved_model/blooming-rain-42"
 
 
 def save_image(
@@ -74,10 +73,15 @@ def generate_images(model,
         
         
 def main():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "/gpfs/workdir/gabrielihu/artefacts/generated_images/torch/"
     run_name = None
     acquisition_number = 2
-    model = load_model("model/saved_models/torch/")
+    model = load_model(
+        checkpoint_path=CPKT_PATH,
+    )
+    model = model.to(device)
+    print("Model loaded")
     module = load_module()
     acquisition = module.get_acquisition(acquisition_number)
     generate_images(model = model, 
@@ -87,3 +91,5 @@ def main():
                     )
     print("Images generated")
 
+if __name__ == "__main__":
+    main()
