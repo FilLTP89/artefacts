@@ -8,7 +8,7 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-CPKT_PATH = "/gpfs/users/gabrielihu/saved_model/blooming-rain-42"
+CPKT_PATH = "/gpfs/users/gabrielihu/saved_model/blooming-rain-42/best_model.ckpt"
 
 
 def save_image(
