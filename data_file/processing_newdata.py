@@ -69,17 +69,8 @@ def classification_dataset(
     dcm = "dcm" if dcm else "raw"    
 
 
-    input_name = [path + f"{control}/{i}/{dcm}/" + "Input/" for i in range(1, nb_folder + 1)]
-    target_name = [path + f"{control}/{i}/{dcm}/" + "Target/" for i in range(1, nb_folder + 1)]
-    entire_dataset = input_name + target_name
-
-    categories = os.listdir(target_name[0])
-    entire_folders = []
-    for i in range(nb_folder):
-        entire_folders.append([target_name[i] + categories + "/"  ])
-
-    entire_folders = [item for sublist in entire_folders for item in sublist]
-    return entire_folders
+    ds = create_dataset(path, control, nb_folder, dcm)
+    return ds
 
 def sort_key(filename):
     """ Helper function to generate sorting key for filenames with numbers. """
