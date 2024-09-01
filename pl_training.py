@@ -3,7 +3,7 @@ import torch
 import random 
 import numpy as np
 from pytorch_lightning.utilities import rank_zero_info
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
@@ -49,7 +49,7 @@ def init_wandb():
 def init_repo(wandb_name):
     path = f"/gpfs/users/gabrielihu/saved_model/{wandb_name}"
     if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
+        os.makedirs(path)
     return path
 
 
@@ -91,13 +91,16 @@ def main():
     model = load_model(
         learning_rate = args.lr
         )
-    callback = [ModelCheckpoint(
-        dirpath= repo_path,
-        filename= "best_model",
-        save_top_k=1,
-        monitor="test_mse_loss",
-        mode="min"
-    )]
+    callbacks = [
+            ModelCheckpoint(
+        dirpath = repo_path,
+        filename = "best_model",
+        save_top_k =1,
+        verbose = True,   
+        monitor = "test_mse_loss",
+        mode = "min",
+        save_weights_only = True,),
+        LearningRateMonitor(logging_interval='step')]
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,
@@ -106,8 +109,9 @@ def main():
         strategy="ddp_find_unused_parameters_true",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
-        callbacks=callback,
-        precision=16 if args.mix_precision else 32
+        callbacks=callbacks,
+        precision=16 if args.mix_precision else 32,
+        log_every_n_steps=1,
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
