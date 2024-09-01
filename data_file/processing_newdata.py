@@ -142,7 +142,7 @@ class ClassificationDataset(Dataset):
     
     def __getitem__(self, idx):
         x = self.folder[idx]
-        target_or_input = x.split("/")[-2]
+        target_or_input = x.split("/")[-3]
         target = self.class_dict[target_or_input]
         x = dicom.dcmread(x).pixel_array
         x = normalize_ct_image(x)
