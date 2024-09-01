@@ -40,6 +40,9 @@ def save_image(
 
 
 def load_model(checkpoint_path, *args, **kwargs):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    cpkt = torch.load(checkpoint_path)["state_dict"]
+    model.load_state_dict(torch.load(cpkt, map_location = device))
     model = AttentionMEDGAN(*args, **kwargs).load_from_checkpoint(checkpoint_path)
     model.eval()
     return model
