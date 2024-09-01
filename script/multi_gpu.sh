@@ -52,7 +52,7 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
-    --mixed_precision \
+    --mix_precision \
 
 echo "Job script completed"
 
