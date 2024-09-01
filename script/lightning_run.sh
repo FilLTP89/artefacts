@@ -29,7 +29,6 @@ python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
-    --mix_precision \
 
 
 
