@@ -48,7 +48,8 @@ def init_wandb():
 
 def init_repo(wandb_name):
     path = f"/gpfs/workdir/shared/minerve/artefact/saved_model/{wandb_name}"
-    os.makedirs(path, exist_ok=True)
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
     return path
 
 
