@@ -4,9 +4,9 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks=4
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=3
+#SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --qos=qos_gpu-t3
 #SBATCH --hint=nomultithread
