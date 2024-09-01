@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=Generate
-#SBATCH --output=jeanzay_log/jz_output.txt
-#SBATCH --error=jeanzay_log/jz_error.txt
+#SBATCH --output=jeanzay_log/output.txt
+#SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -24,7 +24,7 @@ source activate sismic
 cd /lustre/fswork/projects/rech/xvy/upz57sx/artefact
 export PYTHONPATH="./"
 
-srun pl_training.py \
+python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
