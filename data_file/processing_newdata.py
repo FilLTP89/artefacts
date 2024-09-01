@@ -72,8 +72,14 @@ def classification_dataset(
     input_name = [path + f"{control}/{i}/{dcm}/" + "Input/" for i in range(1, nb_folder + 1)]
     target_name = [path + f"{control}/{i}/{dcm}/" + "Target/" for i in range(1, nb_folder + 1)]
     entire_dataset = input_name + target_name
-    return entire_dataset
-    
+
+    categories = os.listdir(target_name[0])
+    entire_folders = []
+    for i in range(nb_folder):
+        entire_folders.append([target_name[i] + categories + "/"  ])
+
+    entire_folders = [item for sublist in entire_folders for item in sublist]
+    return entire_folders
 
 def sort_key(filename):
     """ Helper function to generate sorting key for filenames with numbers. """
@@ -239,7 +245,7 @@ class Datav2Module(pl.LightningDataModule):
 if __name__ == "__main__":
     ds = classification_dataset()
     print(ds[:5])   
-    
+
 
     """
      load_one_acquisition(
