@@ -222,7 +222,12 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    load_one_acquisition()
+    load_one_acquisition(
+        path = "datav2/protocole_1/",
+        control = True,
+        nb_folder = 5,
+        dcm = True
+    )
     """
     ds = Datav2Dataset()
     x,y = ds[0]
