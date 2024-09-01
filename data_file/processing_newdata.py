@@ -3,7 +3,6 @@ import re
 import pydicom as dicom
 import random
 import torch
-from torch.utils.data import Dataset
 import numpy as np
 from glob import glob
 from torch.utils.data import Dataset, DataLoader
@@ -129,7 +128,6 @@ class ClassificationDataset(Dataset):
                     transforms.Resize((512, 512)),
                     ])
             ):
-        
         self.folder = classification_dataset(folder)
         self.transform = transform
         self.augmentation = None
@@ -139,21 +137,21 @@ class ClassificationDataset(Dataset):
         }
         #self.augmentation = CTImageAugmentation()
 
-        def __len__(self):
-            return len(self.folder)
-        
-        def __getitem__(self, idx):
-            x = self.folder[idx]
-            target_or_input = x.split("/")[-2]
-            target = self.class_dict[target_or_input]
-            x = dicom.dcmread(x).pixel_array
-            x = normalize_ct_image(x)
-            x = torch.tensor(x).unsqueeze(0)
-            if self.transform:
-                x = self.transform(x)
-            if self.augmentation:
-                x = self.augmentation(x)
-            return x, target
+    def __len__(self):
+        return len(self.folder)
+    
+    def __getitem__(self, idx):
+        x = self.folder[idx]
+        target_or_input = x.split("/")[-2]
+        target = self.class_dict[target_or_input]
+        x = dicom.dcmread(x).pixel_array
+        x = normalize_ct_image(x)
+        x = torch.tensor(x).unsqueeze(0)
+        if self.transform:
+            x = self.transform(x)
+        if self.augmentation:
+            x = self.augmentation(x)
+        return x, target
 
 class Datav2Dataset(Dataset):
     def __init__(self,
