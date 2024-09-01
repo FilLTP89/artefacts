@@ -17,10 +17,10 @@ module load cuda/11.8.0
 module load gcc/11.3.0
 
 
-WANDB__SERVICE_WAIT=1000
+export WANDB_MODE=offline
 export LD_LIBRARY_PATH=/linkhome/rech/tui/upz57sx/.conda/envs/sismic/lib
-export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/linkhome/rech/tui/upz57sx/.conda/envs/sismic/lib"
-source activate sismic
+export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/linkhome/rech/genuqo01/upz57sx/.conda/envs/artefact/lib"
+source activate artefact
 cd /lustre/fswork/projects/rech/xvy/upz57sx/artefact
 export PYTHONPATH="./"
 
