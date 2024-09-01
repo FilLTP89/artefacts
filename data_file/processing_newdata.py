@@ -268,6 +268,8 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
+    ds = ClassificationDataset()
+    print(len(ClassificationDataset))
     module = Datav2Module(train_bs=1,
                           dataset_type=ClassificationDataset)
     module.setup()
