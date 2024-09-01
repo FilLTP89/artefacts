@@ -122,7 +122,38 @@ def load_one_acquisition(path, control=True, nb_folder=5, dcm=True):
     print(dataset[:5])
 
     
+class ClassificationDataset(Dataset):
+    def __init__(self,
+                 folder = "datav2/protocole_1/",
+                 transform = transforms.Compose([
+                    transforms.Resize((512, 512)),
+                    ])
+            ):
+        
+        self.folder = classification_dataset(folder)
+        self.transform = transform
+        self.augmentation = None
+        self.class_dict = {
+            "Input":0,
+            "Target":1,
+        }
+        #self.augmentation = CTImageAugmentation()
 
+        def __len__(self):
+            return len(self.folder)
+        
+        def __getitem__(self, idx):
+            x = self.folder[idx]
+            target_or_input = x.split("/")[-2]
+            target = self.class_dict[target_or_input]
+            x = dicom.dcmread(x).pixel_array
+            x = normalize_ct_image(x)
+            x = torch.tensor(x).unsqueeze(0)
+            if self.transform:
+                x = self.transform(x)
+            if self.augmentation:
+                x = self.augmentation(x)
+            return x, target
 
 class Datav2Dataset(Dataset):
     def __init__(self,
@@ -235,8 +266,11 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    ds = classification_dataset()
-    print(ds[:5])   
+    ds = ClassificationDataset()
+    for idx, (input, target) in enumerate(ds):
+        print(input.shape, target)
+        if idx == 10:
+            break
 
 
     """
