@@ -60,6 +60,20 @@ def create_dataset(
     unsqueezed_ds = [item for sublist in ds for item in sublist for item in item]
     return unsqueezed_ds
 
+def classification_dataset(
+        path = "datav2/protocole_1/",
+        control = True,
+        nb_folder = 5,
+        dcm = True):
+    control = "control" if control else "fracture"
+    dcm = "dcm" if dcm else "raw"    
+
+
+    input_name = [path + f"{control}/{i}/{dcm}/" + "Input/" for i in range(1, nb_folder + 1)]
+    target_name = [path + f"{control}/{i}/{dcm}/" + "Target/" for i in range(1, nb_folder + 1)]
+    entire_dataset = input_name + target_name
+    return entire_dataset
+    
 
 def sort_key(filename):
     """ Helper function to generate sorting key for filenames with numbers. """
@@ -109,6 +123,7 @@ def load_one_acquisition(path, control=True, nb_folder=5, dcm=True):
     dataset = gptcreate_dataset(path, control, nb_folder, dcm)
     print(dataset[:5])
 
+    
 
 
 class Datav2Dataset(Dataset):
@@ -222,13 +237,18 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    load_one_acquisition(
+    ds = classification_dataset()
+    print(ds[:5])   
+    
+
+    """
+     load_one_acquisition(
         path = "datav2/protocole_1/",
         control = True,
         nb_folder = 5,
         dcm = True
     )
-    """
+   
     ds = Datav2Dataset()
     x,y = ds[0]
     z = x.squeeze()
