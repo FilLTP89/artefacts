@@ -12,7 +12,7 @@
 #SBATCH --hint=nomultithread
 #SBATCH --account=xvy@a100
 
-module load anaconda-py3/2022.10
+module load anaconda-py3/2023.09
 module load cuda/11.8.0
 module load gcc/11.3.0
 
