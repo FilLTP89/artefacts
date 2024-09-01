@@ -70,7 +70,8 @@ def classification_dataset(
 
 
     ds = create_dataset(path, control, nb_folder, dcm)
-    return ds
+    transformed_list = [item for tuple_item in ds for item in tuple_item]
+    return transformed_list
 
 def sort_key(filename):
     """ Helper function to generate sorting key for filenames with numbers. """
