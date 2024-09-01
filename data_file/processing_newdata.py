@@ -209,6 +209,7 @@ class Datav2Dataset(Dataset):
 class Datav2Module(pl.LightningDataModule):
     def __init__(self,
                  folder = "datav2/protocole_1/",
+                 dataset_type = Datav2Dataset,
                  train_bs = 1,
                  test_bs = 1,
                  train_ratio = 0.8,
@@ -223,6 +224,7 @@ class Datav2Module(pl.LightningDataModule):
         self.valid_ratio = (1 - train_ratio)/2
         self.test_ration = self.valid_ratio
         self.num_workers = self.get_optimal_num_workers()
+        self.dataset_type = dataset_type
 
     def get_optimal_num_workers(self):
         num_cpus = os.cpu_count()
@@ -233,7 +235,7 @@ class Datav2Module(pl.LightningDataModule):
             return min(num_cpus, 8)  # Cap at 8 for CPU-only machines
         
     def setup(self, stage = None):
-        self.dataset = Datav2Dataset(self.folder)
+        self.dataset = self.dataset_type(self.folder)
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)
         valid_size = int(self.valid_ratio * total)
@@ -266,11 +268,17 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    ds = ClassificationDataset()
-    for idx, (input, target) in enumerate(ds):
-        print(input.shape, target)
-        if idx == 10:
-            break
+    module = Datav2Module(train_bs=1,
+                          dataset_type=ClassificationDataset)
+    module.setup()
+    train_ds = module.train_dataloader()
+    print(len(train_ds))
+    for idx, (input, target) in enumerate(train_ds):
+        print(input.shape, target.shape)
+        x0,y0 = input[0], target[0]
+        print(x0)
+        print(y0)
+        break
 
 
     """
