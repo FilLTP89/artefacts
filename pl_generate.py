@@ -110,8 +110,6 @@ def main():
     # Count only the files (not directories)
     file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
     ds = LoadOneAcquisition(
-        path = "datav2/protocole_1/",
-        control=True,
         categorie = categorie,
         acquisition = acquisition_number,
     )

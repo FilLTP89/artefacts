@@ -117,14 +117,14 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
             dataset.extend(paired_files)
     return dataset
 
-def load_one_acquisition(path, 
+def load_one_acquisition(path = "datav2/protocole_1/", 
                          control=True, 
                          dcm=True,
                          categorie = "cocrhigh",
                          acquisition = 1):
-    dataset = gptcreate_dataset(path, control, 5, dcm)
+    dataset = gptcreate_dataset(path)
+    print(len(dataset))
     acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
-    print(acquisition[0])
     return acquisition
     
 class ClassificationDataset(Dataset):
