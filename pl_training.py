@@ -58,7 +58,7 @@ def init_repo(wandb_name, ruche = False):
         path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"/gpfs/users/gabrielihu/saved_model/{wandb_name}"
+        path = f"/gpfs/workdir/shared/minerve/artefact/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     return path
 
@@ -77,6 +77,10 @@ def load_model(task ="GAN",
                *args, **kwargs):
     if task == "GAN":
         model = AttentionMEDGAN(*args, **kwargs)
+    else:
+        model = VGG19(classifier_training= True,
+                      n_class=2, 
+                      *args, **kwargs)
     return model
 
 def load_generator(*args, **kwargs):
@@ -97,6 +101,7 @@ def main():
 
     
     rank_zero_info("\n \n \n ")
+    rank_zero_info(f"Task : {args.task}")
     rank_zero_info(f"Cuda is available:{torch.cuda.is_available()}, gpu available: {device_count}")
     rank_zero_info(f"Run name {run_name}")
     rank_zero_info(f"Run path {repo_path}")
