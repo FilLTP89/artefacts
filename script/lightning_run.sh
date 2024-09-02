@@ -30,6 +30,7 @@ python3 pl_training.py \
     --train_bs 16 \
     --test_bs 16 \
     --one_batch \
+    --ruche \
 
 
 

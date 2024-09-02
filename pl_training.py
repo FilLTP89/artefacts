@@ -33,6 +33,7 @@ def init_args():
     parser.add_argument("--use_generator", action=argparse.BooleanOptionalAction,type=bool, default=True)   
     parser.add_argument("--one_batch",action=argparse.BooleanOptionalAction, type=bool, default=False)    
     parser.add_argument("--mix_precision", action=argparse.BooleanOptionalAction, type=bool, default=False)
+    parser.add_argument("--ruche", action=argparse.BooleanOptionalAction, type=bool, default=False)
     args = parser.parse_args()
     return args
 
@@ -46,8 +47,11 @@ def init_wandb():
     return wandb_logger
 
 
-def init_repo(wandb_name):
-    path = f"model/saved_model/{wandb_name}"
+def init_repo(wandb_name, ruche = False):
+    if not ruche:
+        path = f"model/saved_model/{wandb_name}"
+    else:
+        path = f"/gpfs/users/gabrielihu/saved_model/{wandb_name}"
     if not os.path.exists(path):
         os.makedirs(path)
     return path
@@ -72,7 +76,7 @@ def main():
     args = init_args()
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
-    repo_path = init_repo(run_name)
+    repo_path = init_repo(run_name, args.ruche)
     module = load_module(
         train_bs = args.train_bs,
         test_bs = args.test_bs
@@ -94,12 +98,12 @@ def main():
     callbacks = [
             ModelCheckpoint(
         dirpath = repo_path,
-        filename = "best_model",
+        filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}",
         save_top_k =1,
         verbose = True,   
         monitor = "test_mse_loss",
         mode = "min",
-        save_weights_only = True,),
+        ),
         LearningRateMonitor(logging_interval='step')]
     trainer = pl.Trainer(
         logger=wandb_logger,
