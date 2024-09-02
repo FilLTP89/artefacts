@@ -87,7 +87,7 @@ class U_block(nn.Module):
     def __init__(self, shape=(1, 512, 512)):
         super(U_block, self).__init__()
         self.shape = shape
-        self.filters = [8,16,32, 64,128,256,512]
+        self.filters = [8,16,32, 64,128,256,512,1024]
         
 
         self.original_conv = nn.Conv2d(self.shape[0], self.filters[0], 1, 1, padding=0)
