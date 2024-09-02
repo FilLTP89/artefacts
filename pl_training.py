@@ -50,10 +50,9 @@ def init_wandb():
 def init_repo(wandb_name, ruche = False):
     if not ruche:
         path = f"model/saved_model/{wandb_name}"
+        os.makedirs(path)
     else:
         path = f"/gpfs/users/gabrielihu/saved_model/{wandb_name}"
-    if not os.path.exists(path):
-        os.makedirs(path)
     return path
 
 
