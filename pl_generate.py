@@ -12,9 +12,13 @@ CPKT_PATH = "/lustre/fswork/projects/rech/xvy/upz57sx/artefact/model/saved_model
 
 
 def save_image(
-        x, preds,y, path, idx
+        x, 
+        preds,
+        y, 
+        path, 
+        idx
     ):
-
+    print(path)
     x = x.squeeze(0)
     preds = preds.squeeze(0)
     y = y.squeeze(0)
@@ -59,7 +63,7 @@ def generate_images(model,
                     dataloader, 
                     saving_path,
                     device = "cpu",
-                    run_name = "run_name"
+                    run_name = "run_name",
                     ):
     print(f"Saving in folder {saving_path + run_name}")
     for idx_, batch in enumerate(dataloader):
@@ -69,11 +73,10 @@ def generate_images(model,
         with torch.no_grad():
             generated = model(x)
         for i in range(generated.size(0)):
-            print(idx_ + i)
             save_image(
                 x[i], generated[i], y[i], 
                 path = saving_path + run_name,
-                idx = idx_ + i
+                idx = idx_*generated.size(0) + i
             )
 
         
@@ -81,7 +84,7 @@ def generate_images(model,
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
-    run_name = "test_1"
+    run_name = "test_1/"
 
     if not os.path.exists(saving_path + run_name):
         os.makedirs(saving_path + run_name)
