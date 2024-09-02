@@ -84,8 +84,8 @@ def generate_images(model,
         
 def main():
     i = 0
-    acquisition_number = 2
-    categorie = "fibralowmetal"
+    acquisition_number = 1
+    categorie = "huttalowmetal"
     folder_path = f"datav2/protocole_1/control/{acquisition_number}/dcm/Input/{categorie}/"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
