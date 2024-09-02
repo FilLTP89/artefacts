@@ -14,6 +14,10 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
+
+SAVE_WEIGHTS_ONLY = False
+
 def set_seed(seeds):
     torch.manual_seed(seeds)
     torch.cuda.manual_seed_all(seeds)
@@ -49,10 +53,11 @@ def init_wandb():
 
 def init_repo(wandb_name, ruche = False):
     if not ruche:
-        path = f"model/saved_model/{wandb_name}"
+        path = f"model/saved_model"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"/gpfs/users/gabrielihu/saved_model/{wandb_name}"
+        path = f"model/saved_model/{wandb_name}"
+        os.makedirs(path, exist_ok=True)
     return path
 
 
@@ -87,6 +92,8 @@ def main():
     rank_zero_info(f"Run name {run_name}")
     rank_zero_info(f"Run path {repo_path}")
     rank_zero_info(f"Use mix precision : {args.mix_precision}")
+    rank_zero_info(f"Use one batch : {args.one_batch}")
+    rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
     rank_zero_info("\n \n \n ")
 
     if args.use_generator:
@@ -102,7 +109,7 @@ def main():
         verbose = True,   
         monitor = "test_mse_loss",
         mode = "min",
-        save_weights_only=True
+        save_weights_only=SAVE_WEIGHTS_ONLY
         ),
         LearningRateMonitor(logging_interval='step')]
     trainer = pl.Trainer(
