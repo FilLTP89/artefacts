@@ -24,9 +24,9 @@ export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/ar
 source activate artefact
 cd $WORKDIR/artefacts/
 export PYTHONPATH="./"
-#export WANDB__SERVICE_WAIT=1000
+export WANDB__SERVICE_WAIT=1000
 
-strace -f python3 pl_training.py \
+python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
