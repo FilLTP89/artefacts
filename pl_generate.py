@@ -18,6 +18,7 @@ def save_image(
     x = x.cpu().numpy()
     preds = preds.cpu().numpy()
     y = y.cpu().numpy()
+    print(x.shape, preds.shape, y.shape)
     plt.imsave(
         path + f"{idx}_original_image" + ".png",
         x,
