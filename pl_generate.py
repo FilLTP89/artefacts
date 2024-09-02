@@ -77,7 +77,7 @@ def main():
         os.makedirs(saving_path)
     run_name = None
     acquisition_number = 2
-    categorie = "fibralow_metal"
+    categorie = "fibralow"
     model = load_model(
         checkpoint_path=CPKT_PATH,
     )
