@@ -56,6 +56,7 @@ def generate_images(model,
                     ):
     for idx, batch in enumerate(dataloader):
         x,y = batch
+        print(x.shape, y.shape)
         x = x.to(device)
         y = y.to(device)
         with torch.no_grad():
@@ -71,7 +72,7 @@ def generate_images(model,
         
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    saving_path = "/gpfs/workdir/gabrielihu/artefacts/generated_images/torch/"
+    saving_path = "new_generated"
     run_name = None
     acquisition_number = 2
     categorie = "cocrhigh"
@@ -83,6 +84,7 @@ def main():
         acquisition = acquisition_number,
         categorie = categorie,
     )
+    print(len(ds))
     dataloader = torch.utils.data.DataLoader(
         ds,
         batch_size = 16,
