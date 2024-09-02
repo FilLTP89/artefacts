@@ -103,6 +103,7 @@ def main():
         verbose = True,   
         monitor = "test_mse_loss",
         mode = "min",
+        save_weights_only=True
         ),
         LearningRateMonitor(logging_interval='step')]
     trainer = pl.Trainer(

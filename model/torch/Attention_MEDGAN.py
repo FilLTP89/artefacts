@@ -291,6 +291,7 @@ class AttentionMEDGAN(pl.LightningModule):
         filters =  [8,16,32, 64,128,256,512,1024]
     ):
         super().__init__()
+        self.save_hyperparameters()
         self.shape = input_shape
         self.N_g = N_g
         self.lambda_1 = 20
