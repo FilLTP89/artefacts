@@ -36,8 +36,7 @@ def save_image(
 
     
 
-def load_model(checkpoint_path, *args, **kwargs):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+def load_model(checkpoint_path, device, *args, **kwargs):
     model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512,1024])
     model = model.to(device)
     model.eval()
@@ -80,6 +79,7 @@ def main():
     categorie = "fibralowmetal"
     model = load_model(
         checkpoint_path=CPKT_PATH,
+        device = device,
     )
     model = model.to(device)
     ds = LoadOneAcquisition(
@@ -98,7 +98,8 @@ def main():
     generate_images(model = model, 
                     dataloader = dataloader, 
                     saving_path = saving_path,
-                     run_name = run_name,
+                    run_name = run_name,
+                    device = device
                     )
     print("Images generated")
 
