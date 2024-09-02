@@ -53,6 +53,7 @@ def init_wandb():
 
 
 def init_repo(wandb_name, ruche = False):
+    print(ruche)
     if not ruche:
         path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
