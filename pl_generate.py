@@ -14,10 +14,17 @@ CPKT_PATH = "/lustre/fswork/projects/rech/xvy/upz57sx/artefact/model/saved_model
 def save_image(
         x, preds,y, path, idx
     ):
+
+    x = x.unsqueeze(0)
+    preds = preds.unsqueeze(0)
+    y = y.unsqueeze(0)
+    
     cmap = plt.cm.gray
     x = x.cpu().numpy()
     preds = preds.cpu().numpy()
     y = y.cpu().numpy()
+
+
     print(x.shape, preds.shape, y.shape)
     plt.imsave(
         path + f"{idx}_original_image" + ".png",
