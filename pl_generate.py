@@ -72,17 +72,21 @@ def generate_images(model,
         
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    saving_path = "new_generated"
+    saving_path = "new_generated/"
+    if not os.path.exists(saving_path):
+        os.makedirs(saving_path)
     run_name = None
     acquisition_number = 2
-    categorie = "cocrhigh"
+    categorie = "fibralow_metal"
     model = load_model(
         checkpoint_path=CPKT_PATH,
     )
     model = model.to(device)
     ds = LoadOneAcquisition(
-        acquisition = acquisition_number,
+        path = "datav2/protocole_1",
+        control=True,
         categorie = categorie,
+        acquisition = acquisition_number,
     )
     print(len(ds))
     dataloader = torch.utils.data.DataLoader(
