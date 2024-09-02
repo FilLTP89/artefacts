@@ -200,15 +200,17 @@ class PatchGAN(nn.Module):
             features.append(x)
         return features[:-1], x  # Return features and last layer output
 
-class VGG19(nn.Module):
+class VGG19(pl.LightningModule):
     def __init__(
         self,
         shape=(512, 512, 1),
         classifier_training=False,
         load_whole_architecture=False,
+        n_class = 1
     ):
         super().__init__()
         self.shape = shape
+        self.n_class = n_class
         self.classifier_training = classifier_training
         self.load_whole_architecture = load_whole_architecture
         
@@ -249,8 +251,12 @@ class VGG19(nn.Module):
             self.dense1 = nn.Linear(512 * 16 * 16, 4096)  # Adjust input size based on your needs
             self.dense2 = nn.Linear(4096, 4096)
             self.dense3 = nn.Linear(4096, 4096)
-            self.classifier = nn.Linear(4096, 3)
-            self.softmax = nn.Softmax(dim=1)
+            self.classifier = nn.Linear(4096, n_class)
+            if n_class <= 2:
+                self.softmax = nn.Sigmoid(dim=1)
+            else:
+                self.softmax = nn.Softmax(dim=1)
+            
 
     def forward(self, x):
         x1 = self.relu1(self.conv1(x))
@@ -276,6 +282,20 @@ class VGG19(nn.Module):
             return x
         
         return [x1, x2, x3, x4, x5, x6, x7, x8]
+    
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self(x)
+        loss = F.cross_entropy(y_hat, y)
+        self.log('train_loss', loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self(x)
+        loss = F.cross_entropy(y_hat, y)
+        self.log('val_loss', loss)
+        return loss
 
 class AttentionMEDGAN(pl.LightningModule):
     def __init__(

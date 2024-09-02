@@ -5,8 +5,8 @@ import numpy as np
 from pytorch_lightning.utilities import rank_zero_info
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
-from data_file.processing_newdata import Datav2Module
-from model.torch.Attention_MEDGAN import AttentionMEDGAN
+from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
+from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
 import pytorch_lightning as pl
 import logging
 
@@ -66,7 +66,9 @@ def load_module(
         task = "GAN",
         *args, **kwargs):
     if task == "GAN":
-        module = Datav2Module(*args, **kwargs)
+        module = Datav2Module(dataset_type= Datav2Dataset,*args, **kwargs)
+    else:
+        module = Datav2Module(dataset_type= ClassificationDataset,*args, **kwargs)
     module.setup()
     return module
 
