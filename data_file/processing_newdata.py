@@ -123,7 +123,7 @@ def load_one_acquisition(path,
                          categorie = "cocrhigh",
                          acquisition = 1):
     dataset = gptcreate_dataset(path, control, 5, dcm)
-    acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}/" in item[0]]
+    acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
     return acquisition
     
 class ClassificationDataset(Dataset):
