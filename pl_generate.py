@@ -3,7 +3,7 @@ import torch
 import random 
 import numpy as np
 import pytorch_lightning as pl  
-from data_file.processing_newdata import Datav2Module
+from data_file.processing_newdata import Datav2Module, load_one_acquisition, LoadOneAcquisition
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
@@ -12,24 +12,24 @@ CPKT_PATH = "/lustre/fswork/projects/rech/xvy/upz57sx/artefact/model/saved_model
 
 
 def save_image(
-        x, preds,y, path,
+        x, preds,y, path, idx
     ):
     cmap = plt.cm.gray
     x = x.cpu().numpy()
     preds = preds.cpu().numpy()
     y = y.cpu().numpy()
     plt.imsave(
-        path + "_original_image" + ".png",
+        path + f"{idx}_original_image" + ".png",
         x,
         cmap=cmap,
     )
     plt.imsave(
-        path  + "_predicted_image" + ".png",
+        path  + f"{idx}_predicted_image" + ".png",
         preds,
         cmap=cmap,
     )
     plt.imsave(
-        path + "_ground_truth_image" + ".png",
+        path + f"{idx}_ground_truth_image" + ".png",
         y,
         cmap=cmap,
     )
@@ -63,7 +63,8 @@ def generate_images(model,
         for i in range(generated.size(0)):
             save_image(
                 x[i], generated[i], y[i], 
-                path = saving_path + {run_name}
+                path = saving_path + {run_name},
+                idx = idx + i
             )
 
         
@@ -77,13 +78,19 @@ def main():
         checkpoint_path=CPKT_PATH,
     )
     model = model.to(device)
+    ds = LoadOneAcquisition(
+        acquisition_number = acquisition_number
+    )
+    dataloader = torch.utils.data.DataLoader(
+        ds,
+        batch_size = 16,
+        shuffle = False
+    ) 
     print("Model loaded")
-    module = load_module()
-    acquisition = module.get_acquisition(acquisition_number)
     generate_images(model = model, 
-                    dataloader = acquisition, 
+                    dataloader = dataloader, 
                     saving_path = saving_path,
-                     run_name = run_name
+                     run_name = run_name,
                     )
     print("Images generated")
 

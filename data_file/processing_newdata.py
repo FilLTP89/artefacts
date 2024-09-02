@@ -13,6 +13,7 @@ from torch.nn.functional import interpolate
 from util import normalize_ct_image, CTImageAugmentation
 import pytorch_lightning as pl  
 import multiprocessing
+import torch
 
 def create_dataset(
         path = "datav2/protocole_1/",
@@ -208,6 +209,51 @@ class Datav2Dataset(Dataset):
     def load_one_acquisition(self, idx): 
         pass
 
+
+
+class LoadOneAcquisition(Dataset):
+    def __init__(self,
+                 path = "datav2/protocole_1/",
+                 control = True,
+                 categorie = "cocrhigh",
+                 acquisition = 1,
+                 transform = transforms.Compose([
+                    transforms.Resize((512, 512)),
+                    ]),
+                 augmentation = None
+                 ) -> None:
+        super().__init__()
+        self.folder = load_one_acquisition(
+            path = path,
+            control = control,
+            categorie = categorie,
+            acquisition = acquisition
+        )
+        self.control = control
+        self.transform = transform
+        self.augmentation = augmentation
+
+    def __len__(self):
+        return len(self.folder)
+    
+    def __getitem__(self, idx):
+        input_path, target_path = self.folder[idx]
+
+        input = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
+        target = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        input = normalize_ct_image(input)
+        target = normalize_ct_image(target)
+        input = torch.tensor(input).unsqueeze(0)
+        target = torch.tensor(target).unsqueeze(0)
+        if self.transform:
+            input = self.transform(input)
+            target = self.transform(target)
+        if self.augmentation:
+            input, target = self.augmentation(input, target)
+        return input, target
+
+
+
 class Datav2Module(pl.LightningDataModule):
     def __init__(self,
                  folder = "datav2/protocole_1/",
@@ -267,6 +313,8 @@ class Datav2Module(pl.LightningDataModule):
                           batch_size=self.train_bs, 
                           num_workers=self.num_workers,
                           shuffle=True)
+
+
 
 
 if __name__ == "__main__":
