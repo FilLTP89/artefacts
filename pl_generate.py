@@ -72,9 +72,11 @@ def generate_images(model,
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
-    if not os.path.exists(saving_path):
-        os.makedirs(saving_path)
-    run_name = None
+    run_name = "test_1"
+
+    if not os.path.exists(saving_path + run_name):
+        os.makedirs(saving_path + run_name)
+    
     acquisition_number = 3
     categorie = "fibralowmetal"
     model = load_model(
