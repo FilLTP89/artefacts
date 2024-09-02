@@ -8,7 +8,7 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-CPKT_PATH = "/gpfs/users/gabrielihu/saved_model/blooming-rain-42/best_model.ckpt"
+CPKT_PATH = "/lustre/fswork/projects/rech/xvy/upz57sx/artefact/model/saved_model/best_model-epoch=10-test_mse_loss=0.23.ckpt"
 
 
 def save_image(
@@ -36,12 +36,9 @@ def save_image(
 
     
 
-
-
-
 def load_model(checkpoint_path, *args, **kwargs):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512])
+    model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512,1024])
     model.eval()
     return model
 
