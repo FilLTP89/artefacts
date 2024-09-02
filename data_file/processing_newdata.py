@@ -271,12 +271,13 @@ class Datav2Module(pl.LightningDataModule):
 
 if __name__ == "__main__":
 
-    load_one_acquisition(
+    acq = load_one_acquisition(
         path = "datav2/protocole_1/",
         control = True,
         categorie="fibralowmetal",
         acquisition=3
     ) 
+    print(acq)
     
     """ ds = ClassificationDataset()
     print(len(ds))
