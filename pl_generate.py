@@ -25,7 +25,6 @@ def save_image(
     y = y.cpu().numpy()
 
 
-    print(x.shape, preds.shape, y.shape)
     plt.imsave(
         path + f"{idx}_original_image" + ".png",
         x,
@@ -98,7 +97,6 @@ def main():
         categorie = categorie,
         acquisition = acquisition_number,
     )
-    print(len(ds))
     dataloader = torch.utils.data.DataLoader(
         ds,
         batch_size = 16,
