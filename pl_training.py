@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 
 
 
-SAVE_WEIGHTS_ONLY = False
+SAVE_WEIGHTS_ONLY = True
 
 def set_seed(seeds):
     torch.manual_seed(seeds)
