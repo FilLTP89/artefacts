@@ -86,7 +86,7 @@ def main():
     i = 0
     acquisition_number = 2
     categorie = "fibralowmetal"
-    folder_path = "datav2/protocole_1/{acquisition_number}/dcm/Input/{categorie}"
+    folder_path = f"datav2/protocole_1/{acquisition_number}/dcm/Input/{categorie}"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
