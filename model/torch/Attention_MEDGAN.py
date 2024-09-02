@@ -84,10 +84,13 @@ class AttentionGate(nn.Module):
         return x * phi
 
 class U_block(nn.Module):
-    def __init__(self, shape=(1, 512, 512)):
+    def __init__(self, 
+                 shape=(1, 512, 512),
+                 filters = [8,16,32, 64,128,256,512,1024]
+                 ):
         super(U_block, self).__init__()
         self.shape = shape
-        self.filters = [8,16,32, 64,128,256,512,1024]
+        self.filters = filters
         
 
         self.original_conv = nn.Conv2d(self.shape[0], self.filters[0], 1, 1, padding=0)
@@ -152,9 +155,15 @@ class U_block(nn.Module):
         return x
 
 class ConsNet(nn.Module):
-    def __init__(self, n_block=6, input_shape=(1, 512, 512)):
+    def __init__(self, 
+                 n_block=6, 
+                 input_shape=(1, 512, 512),
+                 filters = [8,16,32, 64,128,256,512,1024]
+
+                 ):
         super(ConsNet, self).__init__()
         self.shape = input_shape
+        self.filters = filters
         self.Ublock = nn.ModuleList([U_block(self.shape) for _ in range(n_block)])
 
     def forward(self, x):
@@ -279,6 +288,7 @@ class AttentionMEDGAN(pl.LightningModule):
         N_g=3,
         vgg_whole_arc=False,
         cosine_decay=True,
+        filters =  [8,16,32, 64,128,256,512,1024]
     ):
         super().__init__()
         self.shape = input_shape
@@ -291,7 +301,7 @@ class AttentionMEDGAN(pl.LightningModule):
         self.learning_rate = learning_rate  
         self.cosine_decay = cosine_decay
 
-        self.generator = generator or ConsNet(3, self.shape)
+        self.generator = generator or ConsNet(3, self.shape, filters=filters)
         self.discriminator = discriminator or PatchGAN(self.shape)
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
 
