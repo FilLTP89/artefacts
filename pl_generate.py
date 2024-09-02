@@ -91,6 +91,7 @@ def main():
     
     if os.path.exists(saving_path + run_name):
         i = i+1
+        run_name = f"test_{i}/"
     os.makedirs(saving_path + run_name)
     
     acquisition_number = 2
