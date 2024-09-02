@@ -101,14 +101,9 @@ def main():
         device = device,
     )
     model = model.to(device)
-    print(f"Looking for data in : {folder_path}")
-    items = os.listdir(folder_path)
-    file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
-    print(f"Found {file_count} files")
 
 
     # Count only the files (not directories)
-    file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
     ds = LoadOneAcquisition(
         categorie = categorie,
         acquisition = acquisition_number,

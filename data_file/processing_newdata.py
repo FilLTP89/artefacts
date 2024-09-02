@@ -126,7 +126,7 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     total_path = f"{path}{'control' if control else 'fracture'}/{acquisition}/dcm/Input/{categorie}/" 
     print(f"Looking for data in : {total_path}")
     items = os.listdir(total_path)
-    file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
+    file_count = sum(1 for item in items if os.path.isfile(os.path.join(total_path, item)))
     print(f"Found {file_count} ")
 
     acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
