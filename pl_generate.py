@@ -115,6 +115,7 @@ def main():
         categorie = categorie,
         acquisition = acquisition_number,
     )
+    print("Dataset size : ", len(ds))
     dataloader = torch.utils.data.DataLoader(
         ds,
         batch_size = 16,
