@@ -83,7 +83,7 @@ def main():
     )
     model = model.to(device)
     ds = LoadOneAcquisition(
-        path = "datav2/protocole_1",
+        path = "datav2/protocole_1/",
         control=True,
         categorie = categorie,
         acquisition = acquisition_number,
