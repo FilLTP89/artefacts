@@ -39,6 +39,7 @@ def save_image(
 def load_model(checkpoint_path, *args, **kwargs):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512,1024])
+    model = model.to(device)
     model.eval()
     return model
 
@@ -56,7 +57,6 @@ def generate_images(model,
                     ):
     for idx, batch in enumerate(dataloader):
         x,y = batch
-        print(x.shape, y.shape)
         x = x.to(device)
         y = y.to(device)
         with torch.no_grad():
