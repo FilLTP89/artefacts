@@ -61,17 +61,19 @@ def generate_images(model,
                     device = "cpu",
                     run_name = "run_name"
                     ):
-    for idx, batch in enumerate(dataloader):
+    print(f"Saving in folder {saving_path + run_name}")
+    for idx_, batch in enumerate(dataloader):
         x,y = batch
         x = x.to(device)
         y = y.to(device)
         with torch.no_grad():
             generated = model(x)
         for i in range(generated.size(0)):
+            print(idx_ + i)
             save_image(
                 x[i], generated[i], y[i], 
                 path = saving_path + run_name,
-                idx = idx + i
+                idx = idx_ + i
             )
 
         
