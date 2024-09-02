@@ -74,12 +74,14 @@ def main():
     saving_path = "/gpfs/workdir/gabrielihu/artefacts/generated_images/torch/"
     run_name = None
     acquisition_number = 2
+    categorie = "cocrhigh"
     model = load_model(
         checkpoint_path=CPKT_PATH,
     )
     model = model.to(device)
     ds = LoadOneAcquisition(
-        acquisition_number = acquisition_number
+        acquisition = acquisition_number,
+        categorie = categorie,
     )
     dataloader = torch.utils.data.DataLoader(
         ds,
