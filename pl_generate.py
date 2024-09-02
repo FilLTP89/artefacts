@@ -63,7 +63,7 @@ def generate_images(model,
         for i in range(generated.size(0)):
             save_image(
                 x[i], generated[i], y[i], 
-                path = saving_path + {run_name},
+                path = saving_path + run_name,
                 idx = idx + i
             )
 
