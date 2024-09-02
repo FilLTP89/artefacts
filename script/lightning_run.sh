@@ -16,6 +16,7 @@
 module load anaconda3/2022.10/gcc-11.2.0 
 module load gcc/11.2.0/gcc-4.8.5
 module load cuda/11.8.0/gcc-11.2.0
+module load strace/5.2/gcc-9.2.0
 
 export NCCL_P2P_DISABLE=1
 export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
