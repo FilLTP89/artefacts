@@ -84,23 +84,31 @@ def generate_images(model,
         
 def main():
     i = 0
- 
+    acquisition_number = 2
+    categorie = "fibralowmetal"
+    folder_path = "datav2/protocole_1/{acquisition_number}/dcm/Input/{categorie}"
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
     run_name = f"test_{i}/"
-    
-    if os.path.exists(saving_path + run_name):
+    while os.path.exists(saving_path + run_name):
         i = i+1
         run_name = f"test_{i}/"
     os.makedirs(saving_path + run_name)
     
-    acquisition_number = 2
-    categorie = "fibralowmetal"
     model = load_model(
         checkpoint_path=CPKT_PATH,
         device = device,
     )
     model = model.to(device)
+    print(f"Looking for data in : {folder_path}")
+    items = os.listdir(folder_path)
+    file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
+    print(f"Found {file_count} files")
+
+
+    # Count only the files (not directories)
+    file_count = sum(1 for item in items if os.path.isfile(os.path.join(folder_path, item)))
     ds = LoadOneAcquisition(
         path = "datav2/protocole_1/",
         control=True,
