@@ -49,7 +49,7 @@ def save_image(
     
 
 def load_model(checkpoint_path, device, *args, **kwargs):
-    model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512,1024])
+    model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512])
     model = model.to(device)
     model.eval()
     return model
