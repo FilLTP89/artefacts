@@ -18,7 +18,6 @@ def save_image(
         path, 
         idx
     ):
-    print(path)
     x = x.squeeze(0)
     preds = preds.squeeze(0)
     y = y.squeeze(0)
@@ -28,7 +27,9 @@ def save_image(
     preds = preds.cpu().numpy()
     y = y.cpu().numpy()
 
-
+    mse = np.mean((preds - y)**2)
+    print(f"MSE: {mse}")
+    
     plt.imsave(
         path + f"{idx}_original_image" + ".png",
         x,
@@ -82,14 +83,17 @@ def generate_images(model,
         
         
 def main():
+    i = 0
+ 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
-    run_name = "test_1/"
-
-    if not os.path.exists(saving_path + run_name):
-        os.makedirs(saving_path + run_name)
+    run_name = f"test_{i}/"
     
-    acquisition_number = 3
+    if os.path.exists(saving_path + run_name):
+        i = i+1
+    os.makedirs(saving_path + run_name)
+    
+    acquisition_number = 2
     categorie = "fibralowmetal"
     model = load_model(
         checkpoint_path=CPKT_PATH,
