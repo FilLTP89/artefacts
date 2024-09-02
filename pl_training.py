@@ -38,6 +38,7 @@ def init_args():
     parser.add_argument("--one_batch",action=argparse.BooleanOptionalAction, type=bool, default=False)    
     parser.add_argument("--mix_precision", action=argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--ruche", action=argparse.BooleanOptionalAction, type=bool, default=False)
+    parser.add_argument("--task", type=str, default="GAN")
     args = parser.parse_args()
     return args
 
@@ -61,13 +62,18 @@ def init_repo(wandb_name, ruche = False):
     return path
 
 
-def load_module(*args, **kwargs):
-    module = Datav2Module(*args, **kwargs)
+def load_module(
+        task = "GAN",
+        *args, **kwargs):
+    if task == "GAN":
+        module = Datav2Module(*args, **kwargs)
     module.setup()
     return module
 
-def load_model(*args, **kwargs):
-    model = AttentionMEDGAN(*args, **kwargs)
+def load_model(task ="GAN",
+               *args, **kwargs):
+    if task == "GAN":
+        model = AttentionMEDGAN(*args, **kwargs)
     return model
 
 def load_generator(*args, **kwargs):

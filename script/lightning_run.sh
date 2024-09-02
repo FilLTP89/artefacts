@@ -11,7 +11,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
 #SBATCH --export=NONE
-#SBATCH --exclude=ruche-gpu16,ruche-gpu13
+#SBATCH --exclude=ruche-gpu16,ruche-gpu13,ruche-gpu11
 
 module load anaconda3/2022.10/gcc-11.2.0 
 module load gcc/11.2.0/gcc-4.8.5
