@@ -76,8 +76,8 @@ def main():
     if not os.path.exists(saving_path):
         os.makedirs(saving_path)
     run_name = None
-    acquisition_number = 2
-    categorie = "fibralow"
+    acquisition_number = 3
+    categorie = "fibralowmetal"
     model = load_model(
         checkpoint_path=CPKT_PATH,
     )
