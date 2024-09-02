@@ -26,6 +26,8 @@ cd $WORKDIR/artefacts/
 export PYTHONPATH="./"
 export WANDB__SERVICE_WAIT=1000
 
+chmod +x pl_training.py
+
 python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \

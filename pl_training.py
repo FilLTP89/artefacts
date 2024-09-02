@@ -58,7 +58,7 @@ def init_repo(wandb_name, ruche = False):
         path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"/gpfs/workdir/shared/minerve/artefact/saved_model/{wandb_name}"
+        path = f"model/saved_model/{wandb_name}/"
         os.makedirs(path, exist_ok=True)
     return path
 
