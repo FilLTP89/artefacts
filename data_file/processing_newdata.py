@@ -116,10 +116,14 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
             dataset.extend(paired_files)
     return dataset
 
-def load_one_acquisition(path, control=True, nb_folder=5, dcm=True):
-    dataset = gptcreate_dataset(path, control, nb_folder, dcm)
-    print(dataset[:5])
-
+def load_one_acquisition(path, 
+                         control=True, 
+                         dcm=True,
+                         categorie = "cocrhigh",
+                         acquisition = 1):
+    dataset = gptcreate_dataset(path, control, 5, dcm)
+    acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}/" in item[0]]
+    return acquisition
     
 class ClassificationDataset(Dataset):
     def __init__(self,
@@ -266,7 +270,15 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    ds = ClassificationDataset()
+
+    load_one_acquisition(
+        path = "datav2/protocole_1/",
+        control = True,
+        categorie="fibralowmetal",
+        acquisition=3
+    ) 
+    
+    """ ds = ClassificationDataset()
     print(len(ds))
     module = Datav2Module(train_bs=3,
                           dataset_type=ClassificationDataset)
@@ -279,7 +291,7 @@ if __name__ == "__main__":
         print(x0)
         print(y0)
         break
-
+    """
 
     """
      load_one_acquisition(
