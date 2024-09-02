@@ -325,7 +325,14 @@ if __name__ == "__main__":
         categorie="fibralowmetal",
         acquisition=3
     ) 
-    print(acq)
+    print(acq[:5])
+    ds = LoadOneAcquisition(
+        path = "datav2/protocole_1/",
+        control = True,
+        categorie="fibralowmetal",
+        acquisition=3
+    )
+    print(len(ds))
     
     """ ds = ClassificationDataset()
     print(len(ds))
