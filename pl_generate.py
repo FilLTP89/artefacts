@@ -8,7 +8,7 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-CPKT_PATH = "model/saved_model/best_model-epoch\=00-test_mse_loss\=0.01.ckpt"
+CPKT_PATH = "model/saved_model/best_model-epoch=00-test_mse_loss=0.01.ckpt"
 
 
 def save_image(
