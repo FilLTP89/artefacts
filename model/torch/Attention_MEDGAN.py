@@ -143,6 +143,8 @@ class U_block(nn.Module):
         for layer in self.encoder:
             x = layer(x)
             encoder_outputs.append(x)
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
         
 
         x = self.bottleneck(encoder_outputs[-1])
@@ -207,10 +209,13 @@ class VGG19(pl.LightningModule):
         shape=(512, 512, 1),
         classifier_training=False,
         load_whole_architecture=False,
-        n_class = 1
+        n_class = 1,
+        learning_rate=1e-3,
+        *args, **kwargs
     ):
         super().__init__()
         self.shape = shape
+        self.learning_rate = learning_rate  
         self.n_class = n_class
         self.classifier_training = classifier_training
         self.load_whole_architecture = load_whole_architecture
@@ -231,6 +236,8 @@ class VGG19(pl.LightningModule):
         self.conv4 = nn.Conv2d(256, 256, kernel_size=3, padding=1)
         self.relu4 = nn.ReLU(inplace=True)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
         
         # block 4
         self.conv5 = nn.Conv2d(256, 512, kernel_size=3, padding=1)
@@ -302,6 +309,10 @@ class VGG19(pl.LightningModule):
         acc = self.accuracy(pred, y)
         self.log('val_acc', acc)
         return acc
+    
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        return [optimizer]
 
 class AttentionMEDGAN(pl.LightningModule):
     def __init__(
