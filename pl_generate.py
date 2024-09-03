@@ -3,12 +3,12 @@ import torch
 import random 
 import numpy as np
 import pytorch_lightning as pl  
-from data_file.processing_newdata import Datav2Module, LoadOneAcquisition
+from data_file.processing_newdata import Datav2Module, load_one_acquisition, LoadOneAcquisition
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
-CPKT_PATH = "/model/saved_model/best_model-epoch=00-test_mse_loss=0.01.ckpt"
+CPKT_PATH = "model/saved_model/best_model-epoch\=00-test_mse_loss\=0.01.ckpt"
 
 
 def save_image(
