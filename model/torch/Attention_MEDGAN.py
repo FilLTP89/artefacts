@@ -260,9 +260,9 @@ class VGG19(pl.LightningModule):
             self.dense3 = nn.Linear(4096, 4096)
             self.classifier = nn.Linear(4096, n_class)
             if n_class <= 2:
-                self.softmax = nn.Sigmoid(dim=1)
+                self.softmax = nn.Sigmoid()
             else:
-                self.softmax = nn.Softmax(dim=1)
+                self.softmax = nn.Softmax()
             
         self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
     def forward(self, x):
