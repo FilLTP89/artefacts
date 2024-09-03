@@ -110,9 +110,10 @@ def main():
     rank_zero_info(f"Use one batch : {args.one_batch}")
     rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
     rank_zero_info("\n \n \n ")
-
+    """
     if args.use_generator:
         generator = load_generator()
+    """
     model = load_model(
         learning_rate = args.lr,
         task= args.task,
