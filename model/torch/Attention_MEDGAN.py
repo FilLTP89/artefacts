@@ -1,4 +1,5 @@
 import torch
+import torchmetrics
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
@@ -257,7 +258,7 @@ class VGG19(pl.LightningModule):
             else:
                 self.softmax = nn.Softmax(dim=1)
             
-
+        self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
     def forward(self, x):
         x1 = self.relu1(self.conv1(x))
         x2 = self.maxpool1(x1)
@@ -288,14 +289,19 @@ class VGG19(pl.LightningModule):
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
         self.log('train_loss', loss)
+
+        pred = torch.argmax(y_hat, dim=1)
+        acc = self.accuracy(pred, y)
+        self.log('train_acc', acc)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)
-        self.log('val_loss', loss)
-        return loss
+        pred = torch.argmax(y_hat, dim=1)
+        acc = self.accuracy(pred, y)
+        self.log('val_acc', acc)
+        return acc
 
 class AttentionMEDGAN(pl.LightningModule):
     def __init__(
