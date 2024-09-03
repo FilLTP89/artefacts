@@ -154,13 +154,14 @@ class ClassificationDataset(Dataset):
         x = self.folder[idx]
         target_or_input = x.split("/")[-3]
         target = self.class_dict[target_or_input]
-        x = dicom.dcmread(x).pixel_array
+        x = np.array(dicom.dcmread(x).pixel_array, dtype=np.float32)
         x = normalize_ct_image(x)
         x = torch.tensor(x).unsqueeze(0)
         if self.transform:
             x = self.transform(x)
         if self.augmentation:
             x = self.augmentation(x)
+        
         return x, target
 
 class Datav2Dataset(Dataset):
