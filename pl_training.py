@@ -96,7 +96,8 @@ def main():
     repo_path = init_repo(run_name, args.ruche)
     module = load_module(
         train_bs = args.train_bs,
-        test_bs = args.test_bs
+        test_bs = args.test_bs,
+        task= args.task,
     )
 
     
@@ -113,7 +114,8 @@ def main():
     if args.use_generator:
         generator = load_generator()
     model = load_model(
-        learning_rate = args.lr
+        learning_rate = args.lr,
+        task= args.task,
         )
     callbacks = [
             ModelCheckpoint(
