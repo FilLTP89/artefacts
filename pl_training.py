@@ -14,7 +14,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-
+torch.set_float32_matmul_precision("medium")
 
 SAVE_WEIGHTS_ONLY = False
 
