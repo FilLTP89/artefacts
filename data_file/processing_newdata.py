@@ -162,7 +162,7 @@ class ClassificationDataset(Dataset):
         if self.augmentation:
             x = self.augmentation(x)
         
-        return x, target
+        return x, torch.tensor(target)
 
 class Datav2Dataset(Dataset):
     def __init__(self,

@@ -556,5 +556,8 @@ if __name__ == "__main__":
 
     """
     vgg = VGG19(classifier_training=True, n_class=2).to("cuda")
-    summary(vgg, (1, 512, 512))
-    
+    x = torch.randn((2,1,512,512)).to("cuda")
+    y = torch.tensor([1,1]).to("cuda")
+    pred = vgg(x)
+    loss = F.cross_entropy(pred, y)
+    print(loss)
