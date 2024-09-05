@@ -142,10 +142,28 @@ class ClassificationDataset(Dataset):
         self.folder = classification_dataset(folder)
         self.transform = transform
         self.augmentation = None
-        self.class_dict = {
-            "Input":0,
-            "Target":1,
+        self.input_dict = {
+            "input":0,
+            "target":1,
         }
+        self.category_dict = {
+           "cocrhigh"  : 0,
+           "cocrhighmetal" : 1, 
+           "cocrlow" : 2,
+           "cocrlowmetal" : 3,  
+           "controlhighmetal" : 4,
+           "controllowmetal" : 5,
+           "fibrahighmetal" : 6,
+           "fibralow"  : 7,
+           "fibralowmetal" : 8, 
+           "guttahigh" : 9,
+           "guttahighmetal" : 10,  
+           "guttalow" : 11,
+           "huttalowmetal" : 12,
+           "controlhigh" : 13,
+           "fibrahigh" : 14
+        }
+        self.n_class = len(self.category_dict)
         #self.augmentation = CTImageAugmentation()
 
     def __len__(self):
@@ -153,8 +171,8 @@ class ClassificationDataset(Dataset):
     
     def __getitem__(self, idx):
         x = self.folder[idx]
-        target_or_input = x.split("/")[-3]
-        target = self.class_dict[target_or_input]
+        target_or_input = x.split("/")[-2].lower()
+        target = self.category_dict[target_or_input]
         x = np.array(dicom.dcmread(x).pixel_array, dtype=np.float32)
         x = normalize_ct_image(x)
         x = torch.tensor(x).unsqueeze(0)
@@ -176,6 +194,7 @@ class Datav2Dataset(Dataset):
         self.folder = gptcreate_dataset(folder)
         self.transform = transform
         self.augmentation = None
+        self.n_class = None
         #self.augmentation = CTImageAugmentation()
 
 

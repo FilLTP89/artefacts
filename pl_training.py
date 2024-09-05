@@ -74,12 +74,13 @@ def load_module(
     return module
 
 def load_model(task ="GAN",
+               n_class = None,
                *args, **kwargs):
     if task == "GAN":
         model = AttentionMEDGAN(*args, **kwargs)
     else:
         model = VGG19(classifier_training= True,
-                      n_class=2, 
+                      n_class=n_class, 
                       *args, **kwargs)
     return model
 
@@ -117,6 +118,7 @@ def main():
     model = load_model(
         learning_rate = args.lr,
         task= args.task,
+        n_class = module.n_class
         )
     callbacks = [
             ModelCheckpoint(
