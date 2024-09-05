@@ -3,6 +3,7 @@ import re
 import pydicom as dicom
 import random
 import torch
+import torch.nn.functional as F
 import numpy as np
 from glob import glob
 from torch.utils.data import Dataset, DataLoader
@@ -184,8 +185,8 @@ class Datav2Dataset(Dataset):
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
 
-        input = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
-        target = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
         input = normalize_ct_image(input, normalization_type='minmax')
         target = normalize_ct_image(target, normalization_type='minmax')
         input = torch.tensor(input).unsqueeze(0)
@@ -245,8 +246,8 @@ class LoadOneAcquisition(Dataset):
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
 
-        input = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
-        target = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
         input = normalize_ct_image(input)
         target = normalize_ct_image(target)
         input = torch.tensor(input).unsqueeze(0)
@@ -324,7 +325,7 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-
+    """
     acq = load_one_acquisition(
         path = "datav2/protocole_1/",
         control = True,
@@ -340,20 +341,20 @@ if __name__ == "__main__":
     )
     print(len(ds))
     
-    """ ds = ClassificationDataset()
-    print(len(ds))
+    """ 
+    from model.torch.Attention_MEDGAN import VGG19
+    model = VGG19(classifier_training=True, n_class=2)
+    ds = ClassificationDataset()
     module = Datav2Module(train_bs=3,
                           dataset_type=ClassificationDataset)
     module.setup()
     train_ds = module.train_dataloader()
-    print(len(train_ds))
     for idx, (input, target) in enumerate(train_ds):
-        print(input.shape, target.shape)
-        x0,y0 = input[0], target[0]
-        print(x0)
-        print(y0)
+        pred = model(input)
+        print(pred.shape)
+        loss = F.cross_entropy(pred,target)
+        print(loss)
         break
-    """
 
     """
      load_one_acquisition(
@@ -362,22 +363,14 @@ if __name__ == "__main__":
         nb_folder = 5,
         dcm = True
     )
-   
-    ds = Datav2Dataset()
-    x,y = ds[0]
-    z = x.squeeze()
-    for i in z:
-        for j in i:
-            if j != 0:
-                print(j)
-    ds.visualize_random()
+    """
+    """
     module = Datav2Module(train_bs=1)
     module.setup()
     train_ds = module.train_dataloader()
     print(len(module.dataset))
     for idx, (input, target) in enumerate(train_ds):
         print(input.shape, target.shape)
-        x0,y0 = input[0], target[0]
-        print(x0.max(), x0.min(), y0.max(), y0.min())   
+        print(input.dtype, target.dtype)
         break
     """
