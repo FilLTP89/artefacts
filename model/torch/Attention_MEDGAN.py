@@ -561,3 +561,4 @@ if __name__ == "__main__":
     pred = vgg(x)
     loss = F.cross_entropy(pred, y)
     print(loss)
+    print(type(vgg).__name__)

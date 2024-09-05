@@ -120,13 +120,14 @@ def main():
         task= args.task,
         n_class = module.n_class
         )
+    model_name = type(model).__name__
     callbacks = [
             ModelCheckpoint(
         dirpath = repo_path,
         filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}",
         save_top_k =1,
         verbose = True,   
-        monitor = "test_mse_loss",
+        monitor = "test_mse_loss" if model_name == "AttentionMEDGAN" else "val_acc",
         mode = "min",
         save_weights_only=SAVE_WEIGHTS_ONLY
         ),
