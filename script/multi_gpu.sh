@@ -12,7 +12,7 @@
 #SBATCH --partition=gpua100
 #SBATCH --export=ALL
 #SBATCH --exclude=ruche-gpu16,ruche-gpu13
-#SBATCH -A sym@a100
+#SBATCH -A xvy@a100
 echo "Starting job script"
 
 module load anaconda3/2022.10/gcc-11.2.0 
