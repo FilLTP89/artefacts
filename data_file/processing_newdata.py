@@ -310,6 +310,7 @@ class Datav2Module(pl.LightningDataModule):
         
     def setup(self, stage = None):
         self.dataset = self.dataset_type(self.folder)
+        self.n_class = self.dataset.n_class
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)
         valid_size = int(self.valid_ratio * total)
