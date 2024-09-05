@@ -124,7 +124,7 @@ def main():
     callbacks = [
             ModelCheckpoint(
         dirpath = repo_path,
-        filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}",
+        filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}" if model_name == "AttentionMEDGAN" else "best_model-{epoch:02d}-{val_acc:.2f}",
         save_top_k =1,
         verbose = True,   
         monitor = "test_mse_loss" if model_name == "AttentionMEDGAN" else "val_acc",
