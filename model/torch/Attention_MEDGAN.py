@@ -255,10 +255,9 @@ class VGG19(pl.LightningModule):
         if self.classifier_training or self.load_whole_architecture:
             self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
             self.flat = nn.Flatten()
-            self.dense1 = nn.Linear(512 * 16 * 16, 4096)  # Adjust input size based on your needs
-            self.dense2 = nn.Linear(4096, 4096)
-            self.dense3 = nn.Linear(4096, 4096)
-            self.classifier = nn.Linear(4096, n_class)
+            self.dense1 = nn.Linear(512 * 16 * 16, 1024)  # Adjust input size based on your needs
+            self.dense2 = nn.Linear(1024, 1024)
+            self.classifier = nn.Linear(1024, n_class)
             if n_class <= 2:
                 self.softmax = nn.Sigmoid()
             else:
@@ -284,7 +283,6 @@ class VGG19(pl.LightningModule):
             x = self.flat(x)
             x = torch.relu(self.dense1(x))
             x = torch.relu(self.dense2(x))
-            x = torch.relu(self.dense3(x))
             x = self.softmax(self.classifier(x))
             return x
         
@@ -294,11 +292,12 @@ class VGG19(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)
-        self.log('train_loss', loss)
 
         pred = torch.argmax(y_hat, dim=1)
         acc = self.accuracy(pred, y)
-        self.log('train_acc', acc)
+
+        self.log('train_loss', loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
+        self.log('train_acc', acc, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -306,7 +305,7 @@ class VGG19(pl.LightningModule):
         y_hat = self(x)
         pred = torch.argmax(y_hat, dim=1)
         acc = self.accuracy(pred, y)
-        self.log('val_acc', acc)
+        self.log('val_acc', acc, prog_bar=True, on_epoch=True)
         return acc
     
     def configure_optimizers(self):
@@ -543,6 +542,7 @@ class AttentionMEDGAN(pl.LightningModule):
 
 
 if __name__ == "__main__":
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AttentionMEDGAN(
         input_shape=(1, 512, 512)
@@ -554,3 +554,7 @@ if __name__ == "__main__":
     print(loss)
     summary(model, (1, 512, 512))
 
+    """
+    vgg = VGG19(classifier_training=True, n_class=2).to("cuda")
+    summary(vgg, (1, 512, 512))
+    
