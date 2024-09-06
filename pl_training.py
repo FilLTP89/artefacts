@@ -128,7 +128,7 @@ def main():
         save_top_k =1,
         verbose = True,   
         monitor = "test_mse_loss" if model_name == "AttentionMEDGAN" else "val_acc",
-        mode = "min",
+        mode = "min" if model_name == "AttentionMEDGAN" else "max",
         save_weights_only=SAVE_WEIGHTS_ONLY
         ),
         LearningRateMonitor(logging_interval='step')]

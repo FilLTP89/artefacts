@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=artefact
-#SBATCH --output=jeanzay_log/output.txt
-#SBATCH --error=jeanzay_log/error.txt
+#SBATCH --output=jeanzay_log/vgg_output.txt
+#SBATCH --error=jeanzay_log/vgg_error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
