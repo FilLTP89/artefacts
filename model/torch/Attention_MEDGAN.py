@@ -301,7 +301,7 @@ class VGG19(pl.LightningModule):
         y_hat = self(x)
         pred = torch.argmax(y_hat, dim=1)
         acc = self.accuracy(pred, y)
-        self.log('val_acc', acc, prog_bar=True, on_epoch=True)
+        self.log('val_acc', acc, prog_bar=True, on_epoch=True,sync_dist=True)
         return acc
     
     def configure_optimizers(self):
@@ -335,7 +335,13 @@ class AttentionMEDGAN(pl.LightningModule):
 
         self.generator = generator or ConsNet(3, self.shape, filters=filters)
         self.discriminator = discriminator or PatchGAN(self.shape)
-        self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
+        if feature_extractor :
+            self.feature_extractor = feature_extractor 
+            feature_extractor.eval()
+            for param in feature_extractor.parameters():
+                param.requires_grad = False
+        else :
+            VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
 
         self.g_optimizer = optim.Adam(self.generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
         self.d_optimizer = optim.Adam(self.discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))

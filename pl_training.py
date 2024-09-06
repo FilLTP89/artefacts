@@ -17,6 +17,7 @@ logger.setLevel(logging.INFO)
 torch.set_float32_matmul_precision("medium")
 
 SAVE_WEIGHTS_ONLY = False
+VGG_CPKT = "model/saved_model/best_model-epoch=15-val_acc=0.93.ckpt"
 
 def set_seed(seeds):
     torch.manual_seed(seeds)
@@ -34,7 +35,7 @@ def init_args():
     parser.add_argument("--test_bs", type=int, default=16)
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--use_generator", action=argparse.BooleanOptionalAction,type=bool, default=True)   
+    parser.add_argument("--use_feature_extractor", action=argparse.BooleanOptionalAction,type=bool, default=True)   
     parser.add_argument("--one_batch",action=argparse.BooleanOptionalAction, type=bool, default=False)    
     parser.add_argument("--mix_precision", action=argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--ruche", action=argparse.BooleanOptionalAction, type=bool, default=False)
@@ -67,9 +68,9 @@ def load_module(
         task = "GAN",
         *args, **kwargs):
     if task == "GAN":
-        module = Datav2Module(dataset_type= Datav2Dataset,*args, **kwargs)
+        module = Datav2Module(dataset_type = Datav2Dataset,*args, **kwargs)
     else:
-        module = Datav2Module(dataset_type= ClassificationDataset,*args, **kwargs)
+        module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
     module.setup()
     return module
 
@@ -84,8 +85,8 @@ def load_model(task ="GAN",
                       *args, **kwargs)
     return model
 
-def load_generator(*args, **kwargs):
-    model = AttentionMEDGAN(*args, **kwargs)
+def load_feature_extractor(*args, **kwargs):
+    model = VGG19.load_from_checkpoint(VGG_CPKT, classifier_training=False)
     return model
 
 def main():
@@ -100,7 +101,10 @@ def main():
         test_bs = args.test_bs,
         task= args.task,
     )
-
+    if args.use_feature_extractor:
+        feature_extractor = load_feature_extractor()
+    else :
+        feature_extractor = None
     
     rank_zero_info("\n \n \n ")
     rank_zero_info(f"Task : {args.task}")
@@ -111,14 +115,12 @@ def main():
     rank_zero_info(f"Use one batch : {args.one_batch}")
     rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
     rank_zero_info("\n \n \n ")
-    """
-    if args.use_generator:
-        generator = load_generator()
-    """
+    
     model = load_model(
         learning_rate = args.lr,
         task= args.task,
-        n_class = module.n_class
+        n_class = module.n_class,
+        feature_extractor = feature_extractor,
         )
     model_name = type(model).__name__
     callbacks = [
