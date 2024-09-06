@@ -143,9 +143,6 @@ class U_block(nn.Module):
         for layer in self.encoder:
             x = layer(x)
             encoder_outputs.append(x)
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
-        
 
         x = self.bottleneck(encoder_outputs[-1])
         for i, (layer) in enumerate(self.decoder):
@@ -236,7 +233,6 @@ class VGG19(pl.LightningModule):
         self.conv4 = nn.Conv2d(256, 256, kernel_size=3, padding=1)
         self.relu4 = nn.ReLU(inplace=True)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         
         # block 4
         self.conv5 = nn.Conv2d(256, 512, kernel_size=3, padding=1)
