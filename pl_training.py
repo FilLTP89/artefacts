@@ -54,7 +54,6 @@ def init_wandb():
 
 
 def init_repo(wandb_name, ruche = False):
-    print(ruche)
     if not ruche:
         path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
@@ -87,8 +86,9 @@ def load_model(task ="GAN",
 
 def load_feature_extractor(*args, **kwargs):
     model = VGG19.load_from_checkpoint(VGG_CPKT, 
-                                       strict=False,
-                                       classifier_training=False)
+                                       load_whole_architecture = True,
+                                       classifier_training=False,
+                                       n_class = 15)
     return model
 
 def main():
