@@ -194,7 +194,7 @@ class Datav2Dataset(Dataset):
         self.folder = gptcreate_dataset(folder)
         self.transform = transform
         self.augmentation = None
-        self.n_class = None
+        self.n_class = 14
         #self.augmentation = CTImageAugmentation()
 
 
