@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 torch.set_float32_matmul_precision("medium")
 
 SAVE_WEIGHTS_ONLY = False
-VGG_CPKT = "model/saved_model/best_model-epoch=15-val_acc=0.93.ckpt"
+VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
 
 def set_seed(seeds):
     torch.manual_seed(seeds)
