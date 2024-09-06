@@ -86,7 +86,9 @@ def load_model(task ="GAN",
     return model
 
 def load_feature_extractor(*args, **kwargs):
-    model = VGG19.load_from_checkpoint(VGG_CPKT, classifier_training=False)
+    model = VGG19.load_from_checkpoint(VGG_CPKT, 
+                                       strict=False,
+                                       classifier_training=False)
     return model
 
 def main():
