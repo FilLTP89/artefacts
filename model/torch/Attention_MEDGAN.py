@@ -262,8 +262,7 @@ class VGG19(pl.LightningModule):
                 self.softmax = nn.Sigmoid()
             else:
                 self.softmax = nn.Softmax()
-            
-        self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
+            self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
     def forward(self, x):
         x1 = self.relu1(self.conv1(x))
         x2 = self.maxpool1(x1)
