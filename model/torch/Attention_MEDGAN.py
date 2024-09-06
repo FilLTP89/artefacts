@@ -258,10 +258,7 @@ class VGG19(pl.LightningModule):
             self.dense1 = nn.Linear(512 * 16 * 16, 1024)  # Adjust input size based on your needs
             self.dense2 = nn.Linear(1024, 1024)
             self.classifier = nn.Linear(1024, n_class)
-            if n_class <= 2:
-                self.softmax = nn.Sigmoid()
-            else:
-                self.softmax = nn.Softmax()
+            self.loss = nn.CrossEntropyLoss()
             self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
     def forward(self, x):
         x1 = self.relu1(self.conv1(x))
@@ -282,7 +279,7 @@ class VGG19(pl.LightningModule):
             x = self.flat(x)
             x = torch.relu(self.dense1(x))
             x = torch.relu(self.dense2(x))
-            x = self.softmax(self.classifier(x))
+            x = self.classifier(x)
             return x
         
         return [x1, x2, x3, x4, x5, x6, x7, x8]
@@ -290,7 +287,7 @@ class VGG19(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)
+        loss = self.loss(y_hat, y)
 
         pred = torch.argmax(y_hat, dim=1)
         acc = self.accuracy(pred, y)
@@ -554,10 +551,11 @@ if __name__ == "__main__":
     summary(model, (1, 512, 512))
 
     """
-    vgg = VGG19(classifier_training=True, n_class=2).to("cuda")
+    vgg = VGG19(classifier_training=True, n_class=14).to("cuda")
     x = torch.randn((2,1,512,512)).to("cuda")
-    y = torch.tensor([1,1]).to("cuda")
+    y = torch.ones([2]).type(torch.LongTensor).to("cuda")
+    print(y.shape)
     pred = vgg(x)
-    loss = F.cross_entropy(pred, y)
-    print(loss)
-    print(type(vgg).__name__)
+    loss = nn.CrossEntropyLoss()
+    v_loss = loss(pred,y)
+    print(v_loss)
