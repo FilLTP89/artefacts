@@ -123,11 +123,15 @@ def main():
         task= args.task,
         n_class = module.n_class,
         feature_extractor = feature_extractor,
-        )
+    )
+    
     model_name = type(model).__name__
+    saving_path = f"repo_path/{model_name}"
+    os.makedirs(saving_path , exist_ok=True)
+    
     callbacks = [
             ModelCheckpoint(
-        dirpath = repo_path,
+        dirpath = saving_path,
         filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}" if model_name == "AttentionMEDGAN" else "best_model-{epoch:02d}-{val_acc:.2f}",
         save_top_k =1,
         verbose = True,   
@@ -136,6 +140,7 @@ def main():
         save_weights_only=SAVE_WEIGHTS_ONLY
         ),
         LearningRateMonitor(logging_interval='step')]
+    
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,

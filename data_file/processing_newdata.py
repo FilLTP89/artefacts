@@ -59,8 +59,8 @@ def create_dataset(
                 pass
         ds.append(input)
     unsqueezed_ds = [item for sublist in ds for item in sublist for item in item]
-    return unsqueezed_ds
 
+    return unsqueezed_ds
 def classification_dataset(
         path = "datav2/protocole_1/",
         control = True,
@@ -131,7 +131,26 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     print(f"Found {file_count} files")
     acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
     return acquisition
-    
+
+def load_all_acquisition(path = "datav2/protocole_1/",
+                            control=True,
+                            dcm=True,
+    ):
+    dataset = gptcreate_dataset(path)
+    total_path = f"{path}{'control' if control else 'fracture'}/"
+    print(total_path)
+    categories = os.listdir(total_path) 
+    print(categories)
+    items = os.listdir(total_path)
+    all_acquisition = []
+    for categorie in categories:
+        acquisition = [item for item in dataset if f"{categorie}" in item[0]]
+        all_acquisition.append(acquisition)
+    return all_acquisition
+
+
+
+
 class ClassificationDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
@@ -232,8 +251,19 @@ class Datav2Dataset(Dataset):
         axs[1].set_title(target_name)
         plt.show()
     
-    def load_one_acquisition(self, idx): 
-        pass
+class Stacked3DDataset(Dataset):
+    def __init__(self,
+                 folder = "datav2/protocole_1/",
+                 transform = transforms.Compose([
+                    transforms.Resize((512, 512)),
+                    ])
+            ):
+        self.folder = gptcreate_dataset(folder)
+        self.transform = transform
+        self.augmentation = None
+        self.n_class = None
+        #self.augmentation = CTImageAugmentation()
+
 
 
 
@@ -263,21 +293,7 @@ class LoadOneAcquisition(Dataset):
         return len(self.folder)
     
     def __getitem__(self, idx):
-        input_path, target_path = self.folder[idx]
-
-        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
-        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
-        input = normalize_ct_image(input)
-        target = normalize_ct_image(target)
-        input = torch.tensor(input).unsqueeze(0)
-        target = torch.tensor(target).unsqueeze(0)
-        if self.transform:
-            input = self.transform(input)
-            target = self.transform(target)
-        if self.augmentation:
-            input, target = self.augmentation(input, target)
-        return input, target
-
+        pass
 
 
 class Datav2Module(pl.LightningDataModule):
@@ -361,6 +377,8 @@ if __name__ == "__main__":
     )
     print(len(ds))
     
+    """
+
     """ 
     from model.torch.Attention_MEDGAN import VGG19
     model = VGG19(classifier_training=True, n_class=2)
@@ -375,7 +393,7 @@ if __name__ == "__main__":
         loss = F.cross_entropy(pred,target)
         print(loss)
         break
-
+    """
     """
      load_one_acquisition(
         path = "datav2/protocole_1/",
@@ -394,3 +412,5 @@ if __name__ == "__main__":
         print(input.dtype, target.dtype)
         break
     """
+    all_acquisition = load_all_acquisition()
+    print(all_acquisition)

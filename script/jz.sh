@@ -7,7 +7,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --gres=gpu:4
 #SBATCH --cpus-per-task=8
-#SBATCH --time=20:00:00
+#SBATCH --time=48:00:00
 #SBATCH --qos=qos_gpu-t3
 #SBATCH --hint=nomultithread
 #SBATCH --account=xvy@a100
