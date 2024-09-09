@@ -125,6 +125,8 @@ def main():
     rank_zero_info(f"Use mix precision : {args.mix_precision}")
     rank_zero_info(f"Use one batch : {args.one_batch}")
     rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
+    if args.resume_from_cpkt:
+        rank_zero_info(f"Resume from checkpoint : {args.resume_from_cpkt}, checkpoint path : {ATTENTION_MEDGAN_CPKT}")
     rank_zero_info("\n \n \n ")
     
     model = load_model(
