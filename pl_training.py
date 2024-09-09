@@ -158,11 +158,11 @@ def main():
         callbacks=callbacks,
         precision=16 if args.mix_precision else 32,
         log_every_n_steps=1,
-        ckpt_path = None if not args.resume_from_cpkt else ATTENTION_MEDGAN_CPKT
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
-                val_dataloaders = module.val_dataloader()
+                val_dataloaders = module.val_dataloader(),
+                ckpt_path= None if not args.resume_from_cpkt else ATTENTION_MEDGAN_CPKT
                 )
 
 
