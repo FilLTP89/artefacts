@@ -83,7 +83,7 @@ def load_model(task ="GAN",
     if task == "GAN":
         if resume_from_cpkt:
             vgg = VGG19(classifier_training= True, n_class=14)
-            model = AttentionMEDGAN(feature_extractor = vgg,*args, **kwargs)
+            model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
             model = AttentionMEDGAN(*args, **kwargs)
     else:
