@@ -27,3 +27,4 @@ model/saved_model/
 my_files/
 
 new_generated/*
+notebooks/*

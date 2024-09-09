@@ -138,7 +138,7 @@ def main():
     )
     
     model_name = type(model).__name__
-    saving_path = f"repo_path/{model_name}"
+    saving_path = f"{repo_path}/{model_name}"
     os.makedirs(saving_path , exist_ok=True)
     
     callbacks = [
