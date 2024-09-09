@@ -18,6 +18,8 @@ torch.set_float32_matmul_precision("medium")
 
 SAVE_WEIGHTS_ONLY = False
 VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
+ATTENTION_MEDGAN_CPKT = "model/saved_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
+
 
 def set_seed(seeds):
     torch.manual_seed(seeds)
@@ -40,6 +42,7 @@ def init_args():
     parser.add_argument("--mix_precision", action=argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--ruche", action=argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--task", type=str, default="GAN")
+    parser.add_argument("--resume_from_cpkt", action = argparse.BooleanOptionalAction, type=bool, default=False)
     args = parser.parse_args()
     return args
 
@@ -75,9 +78,14 @@ def load_module(
 
 def load_model(task ="GAN",
                n_class = None,
+               resume_from_cpkt = False,
                *args, **kwargs):
     if task == "GAN":
-        model = AttentionMEDGAN(*args, **kwargs)
+        if resume_from_cpkt:
+            model = AttentionMEDGAN.load_from_checkpoint(ATTENTION_MEDGAN_CPKT, 
+                                                         *args, **kwargs)
+        else:
+            model = AttentionMEDGAN(*args, **kwargs)
     else:
         model = VGG19(classifier_training= True,
                       n_class=n_class, 
@@ -107,6 +115,7 @@ def main():
         feature_extractor = load_feature_extractor()
     else :
         feature_extractor = None
+
     
     rank_zero_info("\n \n \n ")
     rank_zero_info(f"Task : {args.task}")
@@ -123,6 +132,7 @@ def main():
         task= args.task,
         n_class = module.n_class,
         feature_extractor = feature_extractor,
+        resume_from_cpkt = args.resume_from_cpkt    
     )
     
     model_name = type(model).__name__
