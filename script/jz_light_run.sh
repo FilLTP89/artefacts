@@ -27,6 +27,9 @@ WANDB_MODE=offline python3 /lustre/fswork/projects/rech/xvy/upz57sx/artefact/pl_
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
+    --no-use_feature_extractor \
+    --task="GAN" \
+    --resume_from_cpkt \
 
 
 
