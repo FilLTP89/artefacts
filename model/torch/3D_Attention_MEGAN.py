@@ -16,9 +16,9 @@ class ImageSelfAttention(nn.Module):
         self.kernel_size = kernel_size
 
         # Define the convolution layers for query, key, and value
-        self.query_conv = nn.Conv2d(in_channels, in_channels, kernel_size=kernel_size, padding=kernel_size//2)
-        self.key_conv = nn.Conv2d(in_channels, in_channels, kernel_size=kernel_size, padding=kernel_size//2)
-        self.value_conv = nn.Conv2d(in_channels, self.out_channels, kernel_size=kernel_size, padding=kernel_size//2)
+        self.query_conv = nn.Conv3d(in_channels, in_channels, kernel_size=kernel_size, padding=kernel_size//2)
+        self.key_conv = nn.Conv3d(in_channels, in_channels, kernel_size=kernel_size, padding=kernel_size//2)
+        self.value_conv = nn.Conv3d(in_channels, self.out_channels, kernel_size=kernel_size, padding=kernel_size//2)
 
         # Initialize weights
         nn.init.xavier_uniform_(self.query_conv.weight)

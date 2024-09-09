@@ -287,7 +287,7 @@ class Stacked3DDataset(Dataset):
             stacked_target.append(target)
         stacked_input = torch.stack(stacked_input)
         stacked_target = torch.stack(stacked_target)
-        return stacked_input, stacked_target
+        return stacked_input.permute(1,0,2,3), stacked_target.permute(1,0,2,3)
 
 
 

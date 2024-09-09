@@ -39,6 +39,7 @@ echo "Current working directory: $(pwd)"
 export PYTHONPATH="./"
 export WANDB__SERVICE_WAIT=1000
 export PATH="/gpfs/users/gabrielihu/.conda/envs/artefact/bin:$PATH"
+export CUDA_LAUNCH_BLOCKING=1
 
 echo "Python location:"
 which python3

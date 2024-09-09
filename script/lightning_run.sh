@@ -32,8 +32,10 @@ python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
-    --one_batch \
     --ruche \
+    --no-use_feature_extractor \
+    --task="GAN" \
+    --resume_from_cpkt \
 
 
 
