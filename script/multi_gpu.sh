@@ -52,6 +52,9 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --train_bs 16 \
     --test_bs 16 \
     --ruche \
+    --no-use_feature_extractor \
+    --task="GAN" \
+    --resume_from_cpkt \
 
 echo "Job script completed"
 
