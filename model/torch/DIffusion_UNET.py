@@ -74,7 +74,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.log("train_loss",loss, on_step=True, on_epoch=True, prog_bar=True,rank_zero_only=True,sync_dist=True)
         return loss
 
-    @torch.amp.autocast("cuda") 
+    #@torch.amp.autocast("cuda") 
     def sample(self,x):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
