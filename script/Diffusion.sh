@@ -33,7 +33,6 @@ python3 pl_training.py \
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \
-    --resume_from_cpkt \
 
 
 
