@@ -18,7 +18,7 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
 
 class Diffusion_UNET(pl.LightningModule):
     def __init__(self,
-                in_channels: int = 2,
+                in_channels: int = 1,
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
@@ -53,8 +53,9 @@ class Diffusion_UNET(pl.LightningModule):
 
         noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
 
-
-        predicted_noise = self.model(noisy_sample,x,timesteps).sample
+        predicted_noise = self(noisy_sample =noisy_sample,
+                                     x = x,
+                                     t = timesteps)
 
         if self.prediction_type == "epsilon":
             loss = F.mse_loss(predicted_noise,noise)
@@ -71,8 +72,7 @@ class Diffusion_UNET(pl.LightningModule):
         return loss
 
 
-    def sample(self, batch, batch_idx):
-        x,y = batch
+    def sample(self,x,y):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
         timesteps = torch.linspace(0,self.num_steps, self.num_steps)
@@ -86,7 +86,10 @@ class Diffusion_UNET(pl.LightningModule):
             steps = range(self.num_steps-1,-1,-1)
         for step in steps:
             with torch.no_grad():
-                model_output = self.model(xt,x,timesteps[step],x)
+                print(xt.shape)
+                print(timesteps[step].shape)
+                print(x.shape)
+                model_output = self.model(xt,x,timesteps[step])
                 # 2. compute previous image: x_t -> x_t-1
                 xt = self.noise_scheduler.step(
                                         model_output= model_output,
@@ -100,12 +103,17 @@ class Diffusion_UNET(pl.LightningModule):
         return {
             "MSE": F.mse_loss(y,xt),
         }
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        return [optimizer]
 
 
 if __name__ == "__main__":
-    model = UNet2DModel(in_channels=1, out_channels=1).to("cuda")
-    x = torch.randn(1, 1, 512, 512).to("cuda")
-    t = torch.Tensor([1]).to("cuda")
-    out = model(x,t).sample
+    model = Diffusion_UNET(in_channels=1).to("cuda")
+    x = torch.randn(16, 1, 32, 32).to("cuda")
+    t = torch.Tensor([16]).to("cuda")
+    """
+    out = model(x,x,t)
     print(out.shape)
-    summary(model, [(1, 512, 512), (1,)])
+    """
+    model.training_step((x,x),0)
