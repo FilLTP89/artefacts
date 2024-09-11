@@ -15,8 +15,8 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
 
 class Diffusion_UNET(pl.LightningModule):
     def __init__(self,
-                in_channels: int,
-                learning_rate: float,
+                in_channels: int = 2,
+                learning_rate: float = 3e-4,
                 device = "cuda",
                 prediction_type = "epsilon",):
         super().__init__()
