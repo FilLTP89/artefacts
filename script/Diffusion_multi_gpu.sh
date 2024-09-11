@@ -41,8 +41,8 @@ export CUDA_LAUNCH_BLOCKING=1
 echo "Starting srun command"
 srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
-    --train_bs 8 \
-    --test_bs 8\
+    --train_bs 2 \
+    --test_bs 2 \
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \
