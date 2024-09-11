@@ -1,5 +1,5 @@
 import torch
-from diffusers import DDPMScheduler
+from diffusers import DDPMScheduler,DDIMScheduler
 from einops import rearrange, repeat
 import pytorch_lightning as pl
 import torch.nn.functional as F
@@ -22,7 +22,7 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 100):
+                num_steps = 20):
         super().__init__()
 
         self.model = UNet2DModel(in_channels=in_channels*2,
@@ -32,7 +32,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.training = training
         self.num_steps = num_steps
         self.n_training_steps = num_steps   
-        self.noise_scheduler = DDPMScheduler(
+        self.noise_scheduler = DDIMScheduler(
             num_train_timesteps= self.n_training_steps,
             beta_schedule="linear",
             prediction_type= self.prediction_type
@@ -47,7 +47,6 @@ class Diffusion_UNET(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x,y = batch
         batch_size, channels, height, widht = y.shape
-        #noise = torch.randn((batch_size, channels, height, widht))
         noise = torch.rand_like(y)
         timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
 
@@ -71,7 +70,7 @@ class Diffusion_UNET(pl.LightningModule):
             loss = loss.mean()
         return loss
 
-
+    @torch.cuda.amp.autocast() 
     def sample(self,x,y):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
@@ -104,7 +103,7 @@ class Diffusion_UNET(pl.LightningModule):
             "MSE": F.mse_loss(y,xt),
         }
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
         return [optimizer]
 
 
