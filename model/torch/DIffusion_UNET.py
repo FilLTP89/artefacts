@@ -2,7 +2,7 @@ import torch
 import pytorch_lightning as pl
 import torch.nn.functional as F
 from diffusers import UNet2DModel
-
+from torchsummary import summary
 
 def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
     if not isinstance(arr, torch.Tensor):
@@ -15,14 +15,14 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
 
 class Diffusion_UNET(pl.LightningModule):
     def __init__(self,
-                input_channels: int,
+                in_channels: int,
                 learning_rate: float,
                 device = "cuda",
                 prediction_type = "epsilon",):
         super().__init__()
 
-        self.model = UNet2DModel(in_channels=input_channels*2,
-                                 out_channels=input_channels)
+        self.model = UNet2DModel(in_channels=in_channels*2,
+                                 out_channels=in_channels)
         self.learning_rate = learning_rate
         self.device = device
         self.prediction_type = prediction_type
@@ -63,7 +63,8 @@ class Diffusion_UNET(pl.LightningModule):
 
 if __name__ == "__main__":
     model = UNet2DModel(in_channels=1, out_channels=1).to("cuda")
-    x = torch.randn(1, 1, 64, 64).to("cuda")
+    x = torch.randn(1, 1, 512, 512).to("cuda")
     t = torch.Tensor([1]).to("cuda")
     out = model(x,t).sample
     print(out.shape)
+    summary(model,[(1,512,512),(1,1)])  

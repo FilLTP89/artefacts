@@ -7,6 +7,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
 from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
+from model.torch.DIffusion_UNET import Diffusion_UNET
 import pytorch_lightning as pl
 import logging
 
@@ -69,7 +70,7 @@ def init_repo(wandb_name, ruche = False):
 def load_module(
         task = "GAN",
         *args, **kwargs):
-    if task == "GAN":
+    if (task == "GAN") or (task == "Diffusion"):
         module = Datav2Module(dataset_type = Datav2Dataset,*args, **kwargs)
     else:
         module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
@@ -86,6 +87,8 @@ def load_model(task ="GAN",
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
             model = AttentionMEDGAN(*args, **kwargs)
+    elif task == "Diffusion":
+        model = Diffusion_UNET(in_channels=1)
     else:
         model = VGG19(classifier_training= True,
                       n_class=n_class, 
