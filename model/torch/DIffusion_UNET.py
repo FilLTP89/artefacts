@@ -29,7 +29,6 @@ class Diffusion_UNET(pl.LightningModule):
         self.model = UNet2DModel(in_channels=in_channels*2,
                                  out_channels=in_channels)
         self.learning_rate = learning_rate
-        self.device = device
         self.prediction_type = prediction_type
         self.training = training
         self.num_steps = num_steps
