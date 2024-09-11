@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --mem=40GB
-#SBATCH --output=ruche_log/output.txt
-#SBATCH --error=ruche_log/error.txt
+#SBATCH --output=ruche_log/diffusion_output.txt
+#SBATCH --error=ruche_log/diffusion_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=1
@@ -25,8 +25,6 @@ source activate artefact
 cd $WORKDIR/artefacts/
 export PYTHONPATH="./"
 export WANDB__SERVICE_WAIT=1000
-
-chmod +x pl_training.py
 
 python3 pl_training.py \
     --max_epochs 100 \
