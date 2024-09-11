@@ -21,7 +21,7 @@ class Diffusion_UNET(pl.LightningModule):
                 prediction_type = "epsilon",):
         super().__init__()
 
-        self.model = UNet2DModel(in_channels=input_channels,
+        self.model = UNet2DModel(in_channels=input_channels*2,
                                  out_channels=input_channels)
         self.learning_rate = learning_rate
         self.device = device
