@@ -70,7 +70,7 @@ def init_repo(wandb_name, ruche = False):
 def load_module(
         task = "GAN",
         *args, **kwargs):
-    if (task == "GAN") :
+    if (task == "GAN") or (task == "Diffusion"):
         module = Datav2Module(dataset_type = Datav2Dataset,*args, **kwargs)
     else:
         module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)

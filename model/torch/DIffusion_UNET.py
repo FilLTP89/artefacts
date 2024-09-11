@@ -71,7 +71,7 @@ class Diffusion_UNET(pl.LightningModule):
             loss = loss.mean()
         return loss
 
-    @torch.amp.autocast() 
+    @torch.amp.autocast("cuda") 
     def sample(self,x):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
