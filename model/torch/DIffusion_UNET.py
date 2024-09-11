@@ -75,7 +75,7 @@ class Diffusion_UNET(pl.LightningModule):
     def sample(self,x,y):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
-        timesteps = torch.linspace(0,self.num_steps, self.num_steps)
+        timesteps = torch.linspace(0,self.num_steps, self.num_steps).to(self.device)
         timesteps = repeat(timesteps, "i -> i b", b=batch_size)
         self.noise_scheduler.set_timesteps(num_inference_steps = self.num_steps)
         self.noise_scheduler.alphas = self.noise_scheduler.alphas
@@ -89,7 +89,7 @@ class Diffusion_UNET(pl.LightningModule):
                 print(xt.shape)
                 print(timesteps[step].shape)
                 print(x.shape)
-                model_output = self.model(xt,x,timesteps[step])
+                model_output = self(xt,x,timesteps[step])
                 # 2. compute previous image: x_t -> x_t-1
                 xt = self.noise_scheduler.step(
                                         model_output= model_output,
