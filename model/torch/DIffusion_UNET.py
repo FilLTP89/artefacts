@@ -26,7 +26,8 @@ class Diffusion_UNET(pl.LightningModule):
         super().__init__()
 
         self.model = UNet2DModel(in_channels=in_channels*2,
-                                 out_channels=in_channels)
+                                 out_channels=in_channels,
+                                 layers_per_block=1)
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
         self.training = training
@@ -71,7 +72,7 @@ class Diffusion_UNET(pl.LightningModule):
         return loss
 
     @torch.cuda.amp.autocast() 
-    def sample(self,x,y):
+    def sample(self,x):
         batch_size = x.shape[0]
         xt = torch.rand_like(x)
         timesteps = torch.linspace(0,self.num_steps, self.num_steps).to(self.device)
@@ -85,20 +86,17 @@ class Diffusion_UNET(pl.LightningModule):
             steps = range(self.num_steps-1,-1,-1)
         for step in steps:
             with torch.no_grad():
-                print(xt.shape)
-                print(timesteps[step].shape)
-                print(x.shape)
                 model_output = self(xt,x,timesteps[step])
                 # 2. compute previous image: x_t -> x_t-1
                 xt = self.noise_scheduler.step(
                                         model_output= model_output,
                                         timestep = step,
                                         sample= xt).prev_sample
-        return xt
+        return xt   
     
     def validation_step(self,batch, batch_idx):
         x,y = batch
-        xt = self.sample(x,y)
+        xt = self.sample(x)
         return {
             "MSE": F.mse_loss(y,xt),
         }
