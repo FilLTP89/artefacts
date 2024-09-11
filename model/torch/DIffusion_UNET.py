@@ -20,7 +20,6 @@ class Diffusion_UNET(pl.LightningModule):
     def __init__(self,
                 in_channels: int = 2,
                 learning_rate: float = 3e-4,
-                device = "cuda",
                 prediction_type = "epsilon",
                 training = True,
                 num_steps = 1000):
@@ -32,6 +31,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.prediction_type = prediction_type
         self.training = training
         self.num_steps = num_steps
+        self.n_training_steps = num_steps   
         self.noise_scheduler = DDPMScheduler(
             num_train_timesteps= self.n_training_steps,
             beta_schedule="linear",
