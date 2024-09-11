@@ -22,12 +22,14 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 20):
+                num_steps = 20,
+                layers_per_block = 2,
+                *args, **kwargs):
         super().__init__()
-
+        self.save_hyperparameters()
         self.model = UNet2DModel(in_channels=in_channels*2,
                                  out_channels=in_channels,
-                                 layers_per_block=1)
+                                 layers_per_block=layers_per_block)
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
         self.training = training
@@ -69,6 +71,7 @@ class Diffusion_UNET(pl.LightningModule):
                     predicted_noise, y, reduction="none"
                 ) 
             loss = loss.mean()
+        self.log("train_loss",loss, on_step=True, on_epoch=True, prog_bar=True,rank_zero_only=True,sync_dist=True)
         return loss
 
     @torch.amp.autocast("cuda") 
@@ -97,8 +100,10 @@ class Diffusion_UNET(pl.LightningModule):
     def validation_step(self,batch, batch_idx):
         x,y = batch
         xt = self.sample(x)
+        MSE = F.mse_loss(y,xt)
+        self.log("MSE_loss",MSE, on_step=True, on_epoch=True, prog_bar=True,rank_zero_only=True,sync_dist=True)
         return {
-            "MSE": F.mse_loss(y,xt),
+            "MSE": MSE,
         }
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
