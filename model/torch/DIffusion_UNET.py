@@ -23,7 +23,7 @@ class Diffusion_UNET(pl.LightningModule):
                 prediction_type = "epsilon",
                 training = True,
                 num_steps = 20,
-                layers_per_block = 2,
+                layers_per_block = 1,
                 *args, **kwargs):
         super().__init__()
         self.save_hyperparameters()
