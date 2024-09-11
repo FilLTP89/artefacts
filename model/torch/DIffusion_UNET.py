@@ -67,4 +67,4 @@ if __name__ == "__main__":
     t = torch.Tensor([1]).to("cuda")
     out = model(x,t).sample
     print(out.shape)
-    summary(model, [(1, 512, 512), (1, 1)])
+    summary(model, [(1, 512, 512), (1,)])
