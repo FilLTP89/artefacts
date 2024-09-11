@@ -22,7 +22,7 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 1000):
+                num_steps = 100):
         super().__init__()
 
         self.model = UNet2DModel(in_channels=in_channels*2,
@@ -67,7 +67,7 @@ class Diffusion_UNET(pl.LightningModule):
             snr_weights = alpha_t / (1 - alpha_t)
             loss = snr_weights * F.mse_loss(
                     predicted_noise, y, reduction="none"
-                )  # use SNR weighting from distillation paper
+                ) 
             loss = loss.mean()
         return loss
 

@@ -28,8 +28,8 @@ export WANDB__SERVICE_WAIT=1000
 
 python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 16 \
-    --test_bs 16 \
+    --train_bs 8 \
+    --test_bs 8\
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \
