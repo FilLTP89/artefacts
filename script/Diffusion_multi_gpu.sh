@@ -46,6 +46,7 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --no-use_feature_extractor \
     --task="Diffusion" \
     --data_folder="control" \
+    --mix_precision \
 
 
 
