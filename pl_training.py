@@ -15,7 +15,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-torch.set_float32_matmul_precision("medium")
+
+torch.backends.cuda.enable_mem_efficient_sdp(True)
+
 
 SAVE_WEIGHTS_ONLY = False
 VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
