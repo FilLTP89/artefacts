@@ -29,7 +29,7 @@ export WANDB__SERVICE_WAIT=1000
 WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 4 \
-    --test_bs 4\
+    --test_bs 4 \
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \

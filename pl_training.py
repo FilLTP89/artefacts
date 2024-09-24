@@ -71,9 +71,16 @@ def init_repo(wandb_name, ruche = False):
 def load_module(
         task = "GAN",
         data_folder = None,
+        train_bs = 1,
+        test_bs = 1,
         *args, **kwargs):
     if (task == "GAN") or (task == "Diffusion"):
-        module = Datav2Module(dataset_type = Datav2Dataset,data_folder = data_folder, *args, **kwargs)
+        module = Datav2Module(dataset_type = Datav2Dataset,
+                              data_folder = data_folder, 
+                              train_bs = train_bs,
+                              test_bs = test_bs,
+                              *args, 
+                              **kwargs)
     else:
         module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
     module.setup()
@@ -136,7 +143,6 @@ def main():
 
     if args.resume_from_cpkt:
         rank_zero_info(f"Resume from checkpoint : {args.resume_from_cpkt}, checkpoint path : {ATTENTION_MEDGAN_CPKT}")
-    rank_zero_info("\n \n \n ")
     
     model = load_model(
         learning_rate = args.lr,
@@ -147,6 +153,8 @@ def main():
     )
     
     model_name = type(model).__name__
+    rank_zero_info(f"Model name : {model_name}")
+    rank_zero_info("\n \n \n ")
     saving_path = f"{repo_path}/{model_name}"
     os.makedirs(saving_path , exist_ok=True)
     monitor_dict = {
@@ -171,11 +179,11 @@ def main():
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
-        strategy="ddp_find_unused_parameters_true",
+        strategy="ddp_find_unused_parameters_true" if model_name == "AttentionMEDGAN" else "ddp",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
         callbacks=callbacks,
-        precision=16 if args.mix_precision else 32,
+        precision="bf16-mixed" if args.mix_precision else 32,
         log_every_n_steps=1,
     )
     trainer.fit(model, 

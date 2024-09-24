@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from diffusers import DDPMScheduler,DDIMScheduler
 from einops import rearrange, repeat
 import pytorch_lightning as pl
@@ -6,6 +7,8 @@ import torch.nn.functional as F
 from diffusers import UNet2DModel
 from torchsummary import summary
 from tqdm import tqdm
+import bitsandbytes as bnb
+
 
 def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
     if not isinstance(arr, torch.Tensor):
@@ -22,14 +25,14 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 20,
+                num_steps = 5,
                 layers_per_block = 1,
                 *args, **kwargs):
         super().__init__()
         self.save_hyperparameters()
         self.model = UNet2DModel(in_channels=in_channels*2,
-                                 out_channels=in_channels,
-                                 layers_per_block=layers_per_block)
+                                out_channels=in_channels,
+                                layers_per_block=layers_per_block)
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
         self.training = training
@@ -44,7 +47,8 @@ class Diffusion_UNET(pl.LightningModule):
 
     def forward(self,noisy_sample,x,t):
         input = torch.cat([noisy_sample,x],dim=1)
-        return self.model(input,t).sample
+        sample = self.model(input,t).sample
+        return sample
 
     
     def training_step(self, batch, batch_idx):
@@ -53,7 +57,7 @@ class Diffusion_UNET(pl.LightningModule):
         noise = torch.rand_like(y)
         timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
 
-        noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
+        noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps).to(torch.float16)
 
         predicted_noise = self(noisy_sample =noisy_sample,
                                      x = x,
@@ -74,15 +78,17 @@ class Diffusion_UNET(pl.LightningModule):
         self.log("train_loss",loss, on_step=True, on_epoch=True, prog_bar=True,rank_zero_only=True,sync_dist=True)
         return loss
 
-    #@torch.amp.autocast("cuda") 
+    @torch.cuda.amp.autocast()
     def sample(self,x):
         batch_size = x.shape[0]
+        print("batch_size",batch_size)
+        print(f"Input dtype: {x.dtype}")
         xt = torch.rand_like(x)
         timesteps = torch.linspace(0,self.num_steps, self.num_steps).to(self.device)
         timesteps = repeat(timesteps, "i -> i b", b=batch_size)
         self.noise_scheduler.set_timesteps(num_inference_steps = self.num_steps)
-        self.noise_scheduler.alphas = self.noise_scheduler.alphas
-        self.noise_scheduler.alphas_cumprod = self.noise_scheduler.alphas_cumprod.to(self.device)
+        #self.noise_scheduler.alphas = self.noise_scheduler.alphas
+        #self.noise_scheduler.alphas_cumprod = self.noise_scheduler.alphas_cumprod.to(self.device)
         if not self.training :
             steps = tqdm(range(self.num_steps-1,-1,-1))
         else :
@@ -95,6 +101,7 @@ class Diffusion_UNET(pl.LightningModule):
                                         model_output= model_output,
                                         timestep = step,
                                         sample= xt).prev_sample
+                torch.cuda.empty_cache()
         return xt   
     
     def validation_step(self,batch, batch_idx):
