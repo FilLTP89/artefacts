@@ -53,12 +53,14 @@ class Diffusion_UNET(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         x,y = batch
+        x = x.to(torch.bfloat16)
+        y = y.to(torch.bfloat16)
         print(f"Input dtype: {x.dtype}")
         batch_size, channels, height, widht = y.shape
         noise = torch.rand_like(y)
-        timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
+        timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long().to(torch.bfloat16)
 
-        noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps).to(torch.float16)
+        noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
 
         predicted_noise = self(noisy_sample =noisy_sample,
                                      x = x,
@@ -82,14 +84,12 @@ class Diffusion_UNET(pl.LightningModule):
     @torch.amp.autocast("cuda")
     def sample(self,x):
         batch_size = x.shape[0]
-        print("batch_size",batch_size)
-        print(f"Input dtype: {x.dtype}")
         xt = torch.rand_like(x)
         timesteps = torch.linspace(0,self.num_steps, self.num_steps).to(self.device)
         timesteps = repeat(timesteps, "i -> i b", b=batch_size)
         self.noise_scheduler.set_timesteps(num_inference_steps = self.num_steps)
-        #self.noise_scheduler.alphas = self.noise_scheduler.alphas
-        #self.noise_scheduler.alphas_cumprod = self.noise_scheduler.alphas_cumprod.to(self.device)
+        self.noise_scheduler.alphas = self.noise_scheduler.alphas
+        self.noise_scheduler.alphas_cumprod = self.noise_scheduler.alphas_cumprod.to(self.device)
         if not self.training :
             steps = tqdm(range(self.num_steps-1,-1,-1))
         else :
