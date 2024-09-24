@@ -58,7 +58,7 @@ class Diffusion_UNET(pl.LightningModule):
         print(f"Input dtype: {x.dtype}")
         batch_size, channels, height, widht = y.shape
         noise = torch.rand_like(y)
-        timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long().to(torch.bfloat16)
+        timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
 
         noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
 
