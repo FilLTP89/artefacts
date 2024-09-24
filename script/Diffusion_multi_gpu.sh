@@ -37,16 +37,14 @@ export WANDB__SERVICE_WAIT=1000
 export PATH="/gpfs/users/gabrielihu/.conda/envs/artefact/bin:$PATH"
 export CUDA_LAUNCH_BLOCKING=1
 
-
 echo "Starting srun command"
 srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
-    --train_bs 2 \
-    --test_bs 2 \
+    --train_bs 4 \
+    --test_bs 4 \
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \
-    --mix_precision \
 
 
 

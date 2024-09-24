@@ -16,6 +16,16 @@ import pytorch_lightning as pl
 import multiprocessing
 import torch
 
+
+def create_all_dataset(
+        path = "datav2/protocole_1/",
+        nb_folder = 5,
+        dcm = True):
+    control = create_dataset(path, control = True, nb_folder = nb_folder, dcm = dcm)
+    fracture = create_dataset(path, control = False, nb_folder = nb_folder, dcm = dcm)
+    return control +  fracture
+
+
 def create_dataset(
         path = "datav2/protocole_1/",
         control = True,
@@ -77,6 +87,12 @@ def classification_dataset(
 def sort_key(filename):
     """ Helper function to generate sorting key for filenames with numbers. """
     return [int(c) if c.isdigit() else c for c in re.split(r"(\d+)", filename)]
+
+def gpt_create_all_dataset(path="datav2/protocole_1/", nb_folder=5, dcm=True):
+    control = gptcreate_dataset(path, control=True, nb_folder=nb_folder, dcm=dcm)
+    fracture = gptcreate_dataset(path, control=False, nb_folder=nb_folder, dcm=dcm)
+    return control + fracture
+
 
 def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm=True):
     """
@@ -437,6 +453,6 @@ if __name__ == "__main__":
         print(input.dtype, target.dtype)
         break
     """
-    stacked_ds = Stacked3DDataset()
-    stacked_x, stacked_y = stacked_ds[0]
-    print(stacked_x.shape, stacked_y.shape)
+    all_ds = gpt_create_all_dataset()
+    print(len(all_ds))
+   
