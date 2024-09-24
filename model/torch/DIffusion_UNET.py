@@ -32,7 +32,14 @@ class Diffusion_UNET(pl.LightningModule):
         self.save_hyperparameters()
         self.model = UNet2DModel(in_channels=in_channels*2,
                                 out_channels=in_channels,
-                                layers_per_block=layers_per_block)
+                                layers_per_block=layers_per_block,
+                                down_block_types=("DownBlock2D", "DownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D"),
+                                up_block_types=("AttnUpBlock2D", "AttnUpBlock2D", "UpBlock2D", "UpBlock2D"),
+                                add_attention=True  # Keep this True unless you're really struggling with memory)
+                                block_out_channels=(64, 128, 256, 384),
+                                attention_head_dim=4,
+                                norm_num_groups=16,
+        )
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
         self.training = training
@@ -56,7 +63,7 @@ class Diffusion_UNET(pl.LightningModule):
         with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
                      profile_memory=True, record_shapes=True) as prof:
             with record_function("data_prep"):
-                batch_size, channels, height, widht = y.shape
+                batch_size, channels, height, width = y.shape
                 noise = torch.rand_like(y)
                 timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
 
@@ -89,7 +96,6 @@ class Diffusion_UNET(pl.LightningModule):
         timesteps = torch.linspace(0,self.num_steps, self.num_steps).to(self.device)
         timesteps = repeat(timesteps, "i -> i b", b=batch_size)
         self.noise_scheduler.set_timesteps(num_inference_steps = self.num_steps)
-        self.noise_scheduler.alphas = self.noise_scheduler.alphas
         self.noise_scheduler.alphas_cumprod = self.noise_scheduler.alphas_cumprod.to(self.device)
         if not self.training :
             steps = tqdm(range(self.num_steps-1,-1,-1))
@@ -103,7 +109,6 @@ class Diffusion_UNET(pl.LightningModule):
                                         model_output= model_output,
                                         timestep = step,
                                         sample= xt).prev_sample
-                torch.cuda.empty_cache()
         return xt   
     
     def validation_step(self,batch, batch_idx):
