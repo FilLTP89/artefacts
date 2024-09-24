@@ -45,6 +45,7 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --ruche \
     --no-use_feature_extractor \
     --task="Diffusion" \
+    --data_folder="control" \
 
 
 
