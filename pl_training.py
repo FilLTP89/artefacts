@@ -143,15 +143,19 @@ def main():
     model_name = type(model).__name__
     saving_path = f"{repo_path}/{model_name}"
     os.makedirs(saving_path , exist_ok=True)
-    
+    monitor_dict = {
+        "AttentionMEDGAN": ("test_mse_loss","min"),
+        "VGG19": ("val_acc","max"),
+        "Diffusion_UNET": ("MSE_loss","min")
+    }
     callbacks = [
             ModelCheckpoint(
         dirpath = saving_path,
         filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}" if model_name == "AttentionMEDGAN" else "best_model-{epoch:02d}-{val_acc:.2f}",
         save_top_k =1,
         verbose = True,   
-        monitor = "test_mse_loss" if model_name == "AttentionMEDGAN" else "val_acc",
-        mode = "min" if model_name == "AttentionMEDGAN" else "max",
+        monitor = monitor_dict[model_name][0],
+        mode = monitor_dict[model_name][1], 
         save_weights_only=SAVE_WEIGHTS_ONLY
         ),
         LearningRateMonitor(logging_interval='step')]
