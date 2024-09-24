@@ -221,12 +221,18 @@ class ClassificationDataset(Dataset):
 class Datav2Dataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
+                 data_folder = "complete",
                  transform = transforms.Compose([
                     transforms.Resize((512, 512)),
                     ])
             ):
-        
-        self.folder = gptcreate_dataset(folder)
+        if data_folder == "complete":
+            self.folder = gpt_create_all_dataset(folder)
+        elif data_folder == "control":
+            self.folder = gptcreate_dataset(folder, control=True)
+        else:
+            self.folder = gptcreate_dataset(folder, control=False)
+
         self.transform = transform
         self.augmentation = None
         self.n_class = None
@@ -344,6 +350,7 @@ class Datav2Module(pl.LightningDataModule):
                  train_bs = 1,
                  test_bs = 1,
                  train_ratio = 0.8,
+                 data_folder = "complete",
                  img_size = 512,
                  num_workers= multiprocessing.cpu_count(),
                  *args, **kwargs):
@@ -356,6 +363,8 @@ class Datav2Module(pl.LightningDataModule):
         self.test_ration = self.valid_ratio
         self.num_workers = self.get_optimal_num_workers()
         self.dataset_type = dataset_type
+        self.data_folder = data_folder
+
 
     def get_optimal_num_workers(self):
         num_cpus = os.cpu_count()
@@ -366,7 +375,7 @@ class Datav2Module(pl.LightningDataModule):
             return min(num_cpus, 8)  # Cap at 8 for CPU-only machines
         
     def setup(self, stage = None):
-        self.dataset = self.dataset_type(self.folder)
+        self.dataset = self.dataset_type(self.folder, data_folder=self.data_folder)
         self.n_class = self.dataset.n_class
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)

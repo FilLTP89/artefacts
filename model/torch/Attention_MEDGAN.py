@@ -338,7 +338,7 @@ class AttentionMEDGAN(pl.LightningModule):
             for param in feature_extractor.parameters():
                 param.requires_grad = False
         else :
-            VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
+            self.feature_extractor = VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
 
         self.g_optimizer = optim.Adam(self.generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
         self.d_optimizer = optim.Adam(self.discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))

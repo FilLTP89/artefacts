@@ -44,6 +44,7 @@ def init_args():
     parser.add_argument("--ruche", action=argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--task", type=str, default="GAN")
     parser.add_argument("--resume_from_cpkt", action = argparse.BooleanOptionalAction, type=bool, default=False)
+    parser.add_argument("--data_folder", type=str, default="complete")
     args = parser.parse_args()
     return args
 
@@ -62,16 +63,17 @@ def init_repo(wandb_name, ruche = False):
         path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"model/saved_model/{wandb_name}/"
+        path = f"model/saved_model/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     return path
 
 
 def load_module(
         task = "GAN",
+        data_folder = None,
         *args, **kwargs):
     if (task == "GAN") or (task == "Diffusion"):
-        module = Datav2Module(dataset_type = Datav2Dataset,*args, **kwargs)
+        module = Datav2Module(dataset_type = Datav2Dataset,data_folder = data_folder, *args, **kwargs)
     else:
         module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
     module.setup()
@@ -113,6 +115,7 @@ def main():
         train_bs = args.train_bs,
         test_bs = args.test_bs,
         task= args.task,
+        data_folder = args.data_folder
     )
     if args.use_feature_extractor:
         feature_extractor = load_feature_extractor()
@@ -128,6 +131,9 @@ def main():
     rank_zero_info(f"Use mix precision : {args.mix_precision}")
     rank_zero_info(f"Use one batch : {args.one_batch}")
     rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
+    rank_zero_info(f"Data used : {args.data_folder}")
+
+
     if args.resume_from_cpkt:
         rank_zero_info(f"Resume from checkpoint : {args.resume_from_cpkt}, checkpoint path : {ATTENTION_MEDGAN_CPKT}")
     rank_zero_info("\n \n \n ")

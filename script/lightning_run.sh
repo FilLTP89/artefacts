@@ -36,6 +36,6 @@ python3 pl_training.py \
     --no-use_feature_extractor \
     --task="GAN" \
     --resume_from_cpkt \
-
+    --data_folder="control" \
 
 
