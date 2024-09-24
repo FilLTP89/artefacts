@@ -35,7 +35,7 @@ class Diffusion_UNET(pl.LightningModule):
                                 layers_per_block=layers_per_block,
                                 down_block_types=("DownBlock2D", "DownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D"),
                                 up_block_types=("AttnUpBlock2D", "AttnUpBlock2D", "UpBlock2D", "UpBlock2D"),
-                                add_attention=True  # Keep this True unless you're really struggling with memory)
+                                add_attention=True,  # Keep this True unless you're really struggling with memory)
                                 block_out_channels=(64, 128, 256, 384),
                                 attention_head_dim=4,
                                 norm_num_groups=16,
