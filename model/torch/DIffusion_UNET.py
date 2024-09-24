@@ -41,7 +41,6 @@ class Diffusion_UNET(pl.LightningModule):
             attention_head_dim=4,
             norm_num_groups=16,
         )
-        self.model.enable_gradient_checkpointing()  # Enable gradient checkpointing
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
         self.training = training
