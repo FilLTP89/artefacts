@@ -53,6 +53,7 @@ class Diffusion_UNET(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         x,y = batch
+        print(f"Input dtype: {x.dtype}")
         batch_size, channels, height, widht = y.shape
         noise = torch.rand_like(y)
         timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device = self.device).long()
@@ -78,7 +79,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.log("train_loss",loss, on_step=True, on_epoch=True, prog_bar=True,rank_zero_only=True,sync_dist=True)
         return loss
 
-    @torch.cuda.amp.autocast()
+    @torch.amp.autocast("cuda")
     def sample(self,x):
         batch_size = x.shape[0]
         print("batch_size",batch_size)
