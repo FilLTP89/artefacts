@@ -28,7 +28,7 @@ class CustomModelCheckpoint(ModelCheckpoint):
         super().__init__(*args, **kwargs)
         print("CustomModelCheckpoint initialized")
 
-    def _save_model(self, trainer, filepath):
+    def _save_checkpoint(self, trainer, filepath):
         print("\n\n----- CUSTOM CHECKPOINT INFO -----")
         print(f"Saving model to: {filepath}")
         model_size = self._get_model_size(trainer.model)
@@ -36,7 +36,7 @@ class CustomModelCheckpoint(ModelCheckpoint):
         print(f"Model size: {model_size:.2f} MB")
         print(f"Number of files to be saved: {num_files}")
         print("----- END CUSTOM CHECKPOINT INFO -----\n\n")
-        super()._save_model(trainer, filepath)
+        super()._save_checkpoint(trainer, filepath)
 
     def _get_model_size(self, model):
         param_size = 0
