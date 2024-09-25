@@ -10,11 +10,13 @@ from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
 from model.torch.DIffusion_UNET import Diffusion_UNET
 from pytorch_lightning.utilities import rank_zero_only
 import logging
-
+import tempfile
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+work_dir = "/gpfs/users/gabrielihu/tmp"  # Replace this with your actual work directory path
+tempfile.tempdir = work_dir
 
 torch.backends.cuda.enable_mem_efficient_sdp(True)
 torch.set_float32_matmul_precision('medium')
@@ -193,7 +195,6 @@ def main():
         "VGG19": ("val_acc","max"),
         "Diffusion_UNET": ("MSE_loss","min")
     }
-    metrics = monitor_dict[model_name][0]
     callbacks = [
             CustomModelCheckpoint(
         dirpath = repo_path,
