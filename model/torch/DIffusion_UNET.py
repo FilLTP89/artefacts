@@ -56,6 +56,24 @@ class Diffusion_UNET(pl.LightningModule):
         input = torch.cat([noisy_sample, x], dim=1)
         return self.model(input, t).sample
 
+    """
+    def on_save_checkpoint(self, checkpoint: torch.Dict[str, torch.Any]) -> None:
+        def _get_model_size(model):
+            param_size = 0
+            for param in model.parameters():
+                param_size += param.nelement() * param.element_size()
+            buffer_size = 0
+            for buffer in model.buffers():
+                buffer_size += buffer.nelement() * buffer.element_size()
+
+            size_all_mb = (param_size + buffer_size) / 1024**2
+            return size_all_mb
+        def _count_checkpoint_files(self, filepath):
+        # PyTorch Lightning saves the checkpoint as a single file
+            return 1
+    """
+        
+
     def training_step(self, batch, batch_idx):
         x, y = batch
         batch_size, channels, height, width = y.shape
