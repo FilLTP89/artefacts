@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 
 
 torch.backends.cuda.enable_mem_efficient_sdp(True)
-
+torch.set_float32_matmul_precision('medium')
 
 SAVE_WEIGHTS_ONLY = False
 VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
@@ -26,21 +26,17 @@ ATTENTION_MEDGAN_CPKT = "model/saved_model/best_model-epoch=19-test_mse_loss=0.0
 class CustomModelCheckpoint(ModelCheckpoint):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        print("CustomModelCheckpoint initialized")
 
     @rank_zero_only
     def _save_model(self, trainer, filepath):
-        rank_zero_info("Using custom model checkpoint")
-        # Get the size of the model
+        print("\n\n----- CUSTOM CHECKPOINT INFO -----")
+        print(f"Saving model to: {filepath}")
         model_size = self._get_model_size(trainer.model)
-
-        # Count the number of files that will be saved
         num_files = self._count_checkpoint_files(filepath)
-
-        # Print the information
-        rank_zero_info(f"Model size: {model_size:.2f} MB")
-        rank_zero_info(f"Number of files to be saved: {num_files}")
-
-        # Call the parent class method to save the model
+        print(f"Model size: {model_size:.2f} MB")
+        print(f"Number of files to be saved: {num_files}")
+        print("----- END CUSTOM CHECKPOINT INFO -----\n\n")
         super()._save_model(trainer, filepath)
 
     def _get_model_size(self, model):
