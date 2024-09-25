@@ -193,10 +193,11 @@ def main():
         "VGG19": ("val_acc","max"),
         "Diffusion_UNET": ("MSE_loss","min")
     }
+    metrics = monitor_dict[model_name][0]
     callbacks = [
             CustomModelCheckpoint(
         dirpath = repo_path,
-        filename = f"best_model-{{epoch:02d}}-{monitor_dict[model_name][0]:.2f}",
+        filename="best_model-{epoch:02d}-{" + monitor_dict[model_name][0] + ":.2f}",
         save_top_k = 1,
         verbose = True,   
         monitor = monitor_dict[model_name][0],
