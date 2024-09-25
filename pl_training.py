@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
 from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
 from model.torch.DIffusion_UNET import Diffusion_UNET
-import pytorch_lightning as pl
+from pytorch_lightning.utilities import rank_zero_only
 import logging
 
 logging.basicConfig()
@@ -23,6 +23,39 @@ SAVE_WEIGHTS_ONLY = False
 VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
 ATTENTION_MEDGAN_CPKT = "model/saved_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
 
+class CustomModelCheckpoint(ModelCheckpoint):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @rank_zero_only
+    def _save_model(self, trainer, filepath):
+        # Get the size of the model
+        model_size = self._get_model_size(trainer.model)
+
+        # Count the number of files that will be saved
+        num_files = self._count_checkpoint_files(filepath)
+
+        # Print the information
+        print(f"Model size: {model_size:.2f} MB")
+        print(f"Number of files to be saved: {num_files}")
+
+        # Call the parent class method to save the model
+        super()._save_model(trainer, filepath)
+
+    def _get_model_size(self, model):
+        param_size = 0
+        for param in model.parameters():
+            param_size += param.nelement() * param.element_size()
+        buffer_size = 0
+        for buffer in model.buffers():
+            buffer_size += buffer.nelement() * buffer.element_size()
+
+        size_all_mb = (param_size + buffer_size) / 1024**2
+        return size_all_mb
+
+    def _count_checkpoint_files(self, filepath):
+        # PyTorch Lightning saves the checkpoint as a single file
+        return 1
 
 def set_seed(seeds):
     torch.manual_seed(seeds)
@@ -165,7 +198,7 @@ def main():
         "Diffusion_UNET": ("MSE_loss","min")
     }
     callbacks = [
-            ModelCheckpoint(
+            CustomModelCheckpoint(
         dirpath = repo_path,
         filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}" if model_name == "AttentionMEDGAN" else "best_model-{epoch:02d}-{val_acc:.2f}",
         save_top_k = 1,
