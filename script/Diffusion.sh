@@ -34,6 +34,9 @@ WANDB_MODE=offline python3 pl_training.py \
     --no-use_feature_extractor \
     --task="Diffusion" \
     --mix_precision \
+    --data_folder="control" \
+    --one_batch \
+
 
 
 

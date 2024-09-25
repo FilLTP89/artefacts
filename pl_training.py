@@ -28,7 +28,6 @@ class CustomModelCheckpoint(ModelCheckpoint):
         super().__init__(*args, **kwargs)
         print("CustomModelCheckpoint initialized")
 
-    @rank_zero_only
     def _save_model(self, trainer, filepath):
         print("\n\n----- CUSTOM CHECKPOINT INFO -----")
         print(f"Saving model to: {filepath}")
