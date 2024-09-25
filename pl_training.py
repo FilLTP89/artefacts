@@ -61,12 +61,14 @@ def init_wandb():
     return wandb_logger
 
 
-def init_repo(wandb_name, ruche = False):
+def init_repo(wandb_name,
+              model_name = None, 
+              ruche = False):
     if not ruche:
-        path = f"model/saved_model/{wandb_name}"
+        path = f"model/saved_model/{model_name}/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"model/saved_model/{wandb_name}"
+        path = f"/gpfs/workdir/gabrielihu/artefacts/model/saved_model/{model_name}/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     return path
 
@@ -120,7 +122,6 @@ def main():
     args = init_args()
     wandb_logger = init_wandb()
     run_name = wandb_logger.experiment.name
-    repo_path = init_repo(run_name, args.ruche)
     module = load_module(
         train_bs = args.train_bs,
         test_bs = args.test_bs,
@@ -131,7 +132,16 @@ def main():
         feature_extractor = load_feature_extractor()
     else :
         feature_extractor = None
-
+    model = load_model(
+        learning_rate = args.lr,
+        task= args.task,
+        n_class = module.n_class,
+        feature_extractor = feature_extractor,
+        resume_from_cpkt = args.resume_from_cpkt    
+    )
+    
+    model_name = type(model).__name__
+    repo_path = init_repo(wandb_name = run_name, model_name = model_name, ruche = args.ruche)
     
     rank_zero_info("\n \n \n ")
     rank_zero_info(f"Task : {args.task}")
@@ -147,19 +157,8 @@ def main():
     if args.resume_from_cpkt:
         rank_zero_info(f"Resume from checkpoint : {args.resume_from_cpkt}, checkpoint path : {ATTENTION_MEDGAN_CPKT}")
     
-    model = load_model(
-        learning_rate = args.lr,
-        task= args.task,
-        n_class = module.n_class,
-        feature_extractor = feature_extractor,
-        resume_from_cpkt = args.resume_from_cpkt    
-    )
-    
-    model_name = type(model).__name__
     rank_zero_info(f"Model name : {model_name}")
     rank_zero_info("\n \n \n ")
-    saving_path = f"{repo_path}/{model_name}"
-    os.makedirs(saving_path , exist_ok=True)
     monitor_dict = {
         "AttentionMEDGAN": ("test_mse_loss","min"),
         "VGG19": ("val_acc","max"),
@@ -167,9 +166,9 @@ def main():
     }
     callbacks = [
             ModelCheckpoint(
-        dirpath = saving_path,
+        dirpath = repo_path,
         filename = "best_model-{epoch:02d}-{test_mse_loss:.2f}" if model_name == "AttentionMEDGAN" else "best_model-{epoch:02d}-{val_acc:.2f}",
-        save_top_k =1,
+        save_top_k = 1,
         verbose = True,   
         monitor = monitor_dict[model_name][0],
         mode = monitor_dict[model_name][1], 
