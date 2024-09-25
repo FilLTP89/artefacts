@@ -187,6 +187,7 @@ def main():
         callbacks=callbacks,
         precision="bf16-mixed" if args.mix_precision else 32,
         log_every_n_steps=1,
+        accumulate_grad_batches=2,
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
