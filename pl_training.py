@@ -47,6 +47,7 @@ def init_args():
     parser.add_argument("--task", type=str, default="GAN")
     parser.add_argument("--resume_from_cpkt", action = argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--data_folder", type=str, default="complete")
+    parser.add_argument("--accumulate_grad_batches", type=int, default=1)
     args = parser.parse_args()
     return args
 
@@ -187,7 +188,7 @@ def main():
         callbacks=callbacks,
         precision="bf16-mixed" if args.mix_precision else 32,
         log_every_n_steps=1,
-        accumulate_grad_batches=8,
+        accumulate_grad_batches= args.accumulate_grad_batches,
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),

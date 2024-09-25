@@ -47,6 +47,7 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --task="Diffusion" \
     --data_folder="control" \
     --mix_precision \
+    --accumulate_grad_batches 8 \
 
 
 
