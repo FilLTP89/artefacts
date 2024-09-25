@@ -48,7 +48,6 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --data_folder="control" \
     --mix_precision \
     --lr 3e-4 \
-    --one_batch \
 
 
 
