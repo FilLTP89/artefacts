@@ -37,9 +37,9 @@ class Diffusion_UNET(pl.LightningModule):
             down_block_types=("DownBlock2D", "DownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D"),
             up_block_types=("AttnUpBlock2D", "AttnUpBlock2D", "UpBlock2D", "UpBlock2D"),
             add_attention=True,
-            block_out_channels=(64, 128, 256, 384),
-            attention_head_dim=4,
-            norm_num_groups=16,
+            #block_out_channels=(64, 128, 256, 384),
+            #attention_head_dim=4,
+            #norm_num_groups=16,
         )
         self.learning_rate = learning_rate
         self.prediction_type = prediction_type
@@ -67,7 +67,7 @@ class Diffusion_UNET(pl.LightningModule):
         noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
         
         # Use automatic mixed precision
-        with torch.cuda.amp.autocast():
+        with torch.amp.autocast("cuda"):
             predicted_noise = self(noisy_sample=noisy_sample, x=x, t=timesteps)
             
             if self.prediction_type == "epsilon":
@@ -81,7 +81,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
-    @torch.cuda.amp.autocast()
+    @torch.amp.autocast("cuda")
     def sample(self, x):
         batch_size = x.shape[0]
         xt = torch.rand_like(x, device='cpu').to(self.device)
