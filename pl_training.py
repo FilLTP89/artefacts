@@ -29,6 +29,7 @@ class CustomModelCheckpoint(ModelCheckpoint):
 
     @rank_zero_only
     def _save_model(self, trainer, filepath):
+        rank_zero_info("Using custom model checkpoint")
         # Get the size of the model
         model_size = self._get_model_size(trainer.model)
 
@@ -36,8 +37,8 @@ class CustomModelCheckpoint(ModelCheckpoint):
         num_files = self._count_checkpoint_files(filepath)
 
         # Print the information
-        print(f"Model size: {model_size:.2f} MB")
-        print(f"Number of files to be saved: {num_files}")
+        rank_zero_info(f"Model size: {model_size:.2f} MB")
+        rank_zero_info(f"Number of files to be saved: {num_files}")
 
         # Call the parent class method to save the model
         super()._save_model(trainer, filepath)
