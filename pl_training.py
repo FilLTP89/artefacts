@@ -29,6 +29,7 @@ class CustomModelCheckpoint(ModelCheckpoint):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         print("CustomModelCheckpoint initialized")
+        
     def _save_checkpoint(self, trainer, filepath):
         print("\n\n----- CUSTOM CHECKPOINT INFO -----")
         print(f"Saving model to: {filepath}")
@@ -169,6 +170,7 @@ def main():
         feature_extractor = feature_extractor,
         resume_from_cpkt = args.resume_from_cpkt    
     )
+    model = torch.compile(model)
     
     model_name = type(model).__name__
     repo_path = init_repo(wandb_name = run_name, model_name = model_name, ruche = args.ruche)

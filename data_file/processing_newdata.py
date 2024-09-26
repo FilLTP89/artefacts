@@ -224,8 +224,10 @@ class Datav2Dataset(Dataset):
                  data_folder = "complete",
                  transform = transforms.Compose([
                     transforms.Resize((512, 512)),
-                    ])
+                    ]),
+                 augmentation = None,
             ):
+
         if data_folder == "complete":
             self.folder = gpt_create_all_dataset(folder)
         elif data_folder == "control":
@@ -234,7 +236,7 @@ class Datav2Dataset(Dataset):
             self.folder = gptcreate_dataset(folder, control=False)
 
         self.transform = transform
-        self.augmentation = None
+        self.augmentation = augmentation
         self.n_class = None
         #self.augmentation = CTImageAugmentation()
 

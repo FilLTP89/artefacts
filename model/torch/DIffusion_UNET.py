@@ -79,8 +79,8 @@ class Diffusion_UNET(pl.LightningModule):
         batch_size, channels, height, width = y.shape
         
         # Move to CPU to save GPU memory
-        noise = torch.rand_like(y, device='cpu').to(self.device)
-        timesteps = torch.randint(0, self.n_training_steps, (batch_size,), device='cpu').to(self.device).long()
+        noise = torch.randn_like(y).to(self.device)
+        timesteps = torch.randint(0, self.n_training_steps, (batch_size,)).to(self.device).long()
 
         noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
         
@@ -91,19 +91,19 @@ class Diffusion_UNET(pl.LightningModule):
             if self.prediction_type == "epsilon":
                 loss = F.mse_loss(predicted_noise, noise)
             elif self.prediction_type == "sample":
-                alpha_t = self.noise_scheduler.alphas_cumprod[timesteps].to(self.device)
-                alpha_t = alpha_t.view(batch_size, 1, 1, 1)
+                alpha_t = self.noise_scheduler.alphas_cumprod[timesteps]
                 snr_weights = alpha_t / (1 - alpha_t)
-                loss = (snr_weights * F.mse_loss(predicted_noise, y, reduction="none")).mean()
+                loss = (snr_weights.view(-1, 1, 1, 1) * F.mse_loss(predicted_noise, y, reduction="none")).mean()
 
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     @torch.amp.autocast("cuda")
+    @torch.no_grad()
     def sample(self, x):
-        batch_size = x.shape[0]
-        xt = torch.rand_like(x, device='cpu').to(self.device)
-        timesteps = torch.linspace(0, self.num_steps, self.num_steps, device='cpu').to(self.device)
+        """batch_size = x.shape[0]
+        xt = torch.randn_like(x).to(self.device)
+        timesteps = torch.linspace(0, self.num_steps, self.num_steps).to(self.device)
         timesteps = repeat(timesteps, "i -> i b", b=batch_size)
         self.noise_scheduler.set_timesteps(num_inference_steps=self.num_steps)
 
@@ -116,8 +116,22 @@ class Diffusion_UNET(pl.LightningModule):
                     timestep=step,
                     sample=xt
                 ).prev_sample
-            torch.cuda.empty_cache()  # Clear cache after each step
-        return xt   
+            torch.cuda.empty_cache()  # Clear cache after each step"""
+        batch_size = x.shape[0]
+        xt = torch.randn_like(x, device=self.device)
+        self.noise_scheduler.set_timesteps(num_inference_steps=self.num_steps)
+    
+        for t in tqdm(self.noise_scheduler.timesteps):
+            # Expand the latents if we are doing classifier free guidance
+            t_input = torch.full((batch_size,), t, device=self.device, dtype=torch.long)
+        
+            # Predict the noise
+            noise_pred = self(noisy_sample=xt, x=x, t=t_input)
+        
+            # Perform the denoising step
+            xt = self.noise_scheduler.step(model_output=noise_pred, timestep=t, sample=xt).prev_sample
+        
+        return xt
     
     def validation_step(self, batch, batch_idx):
         x, y = batch
