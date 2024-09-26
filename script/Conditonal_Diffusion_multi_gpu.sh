@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
 #SBATCH --mem=40GB
-#SBATCH --output=ruche_log/multigpu_output.txt
-#SBATCH --error=ruche_log/multigpu_error.txt
+#SBATCH --output=ruche_log/cd_multigpu_output.txt
+#SBATCH --error=ruche_log/cd_multigpu_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=4
@@ -49,7 +49,6 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --mix_precision \
     --lr 3e-4 \
     --accumulate_grad_batches 4 \   
-
 
 
 
