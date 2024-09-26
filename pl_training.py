@@ -200,7 +200,8 @@ def main():
     monitor_dict = {
         "AttentionMEDGAN": ("test_mse_loss","min"),
         "VGG19": ("val_acc","max"),
-        "Diffusion_UNET": ("MSE_loss","min")
+        "Diffusion_UNET": ("MSE_loss","min"),
+        "ImageToImageDDIMLightningModule": ("MSE_loss","min")
     }
     callbacks = [
             CustomModelCheckpoint(
