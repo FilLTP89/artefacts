@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #SBATCH --job-name=artefact
 #SBATCH --nodes=1
