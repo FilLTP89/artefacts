@@ -123,7 +123,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.noise_scheduler = checkpoint["noise_scheduler"]
 
 
-class ImageToImageDDIMLightningModule(LightningModule):
+class ImageToImageDDIMLightningModule(pl.LightningModule):
     def __init__(self, img_size=512, num_channels=1):
         super().__init__()
         self.img_size = img_size
@@ -212,7 +212,7 @@ class ImageToImageDDIMLightningModule(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return Adam(self.parameters(), lr=1e-4)
+        return torch.optm.Adam(self.parameters(), lr=1e-4)
 
     def sample(self, bad_image, num_inference_steps=50):
         # Ensure bad_image has the correct shape
@@ -239,7 +239,7 @@ class ImageToImageDDIMLightningModule(LightningModule):
             image = self.noise_scheduler.step(noise_pred, t, image).prev_sample
 
         # Scale and clip the image to [-1, 1]
-        image = torch.clamp(image, -1.0, 1.0)
+        image = torch.clamp(image, 0, 1.0)
         
         return image
 
