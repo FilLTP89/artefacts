@@ -182,7 +182,21 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
         self.log("train_loss", loss)
         return loss
-
+    def forward(self, noisy_image, timestep, condition):
+        """
+        Forward pass of the model.
+        
+        Args:
+            noisy_image (torch.Tensor): The noisy image input.
+            timestep (torch.Tensor): The current timestep in the diffusion process.
+            condition (torch.Tensor): The conditioning input (flattened bad image).
+        
+        Returns:
+            torch.Tensor: The predicted noise.
+        """
+        return self.unet(noisy_image, timestep, condition).sample
+    
+    
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-4)
     @torch.no_grad()
