@@ -196,7 +196,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         """
         return self.unet(noisy_image, timestep, condition).sample
     
-    
+
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-4)
     @torch.no_grad()
@@ -239,5 +239,6 @@ if __name__ == "__main__":
     model = ImageToImageDDIMLightningModule().to("cuda")
     summary(model, [(1, 512, 512), (1, 512, 512)])
     bad_image = torch.randn(1, 1, 512, 512).to("cuda")
+    t = torch.Tensor([1]).to("cuda")
     good_image = torch.randn(1, 1, 512, 512).to("cuda")
-    out = model(bad_image, good_image)
+    out = model(bad_image, t, good_image)

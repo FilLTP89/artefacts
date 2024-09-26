@@ -249,8 +249,8 @@ class Datav2Dataset(Dataset):
 
         input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
         target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
-        input = normalize_ct_image(input, normalization_type='minmax')
-        target = normalize_ct_image(target, normalization_type='minmax')
+        input = normalize_ct_image(input, normalization_type='simple')
+        target = normalize_ct_image(target, normalization_type='simple')
         input = torch.tensor(input).unsqueeze(0)
         target = torch.tensor(target).unsqueeze(0)
         if self.transform:

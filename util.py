@@ -37,6 +37,8 @@ def normalize_ct_image(dicom_image, normalization_type='minmax', custom_range=No
         min_val, max_val = custom_range
         normalized = np.clip(hu_image, min_val, max_val)
         normalized = (normalized - min_val) / (max_val - min_val)
+    elif normalization_type == 'simple':
+        normalized = hu_image / np.max(hu_image)
     else:
         raise ValueError("Invalid normalization type")
 
