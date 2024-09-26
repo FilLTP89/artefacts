@@ -250,9 +250,25 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         self.log("train_loss", loss)
         return loss
 
-    def configure_optimizers(self):
-        return torch.optm.Adam(self.parameters(), lr=1e-4)
     
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode='min', 
+            factor=0.5, 
+            patience=5, 
+            verbose=True
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "MSE_loss",
+                "interval": "epoch",
+                "frequency": 1
+            }
+        }
     @torch.no_grad()
     def sample(self, bad_image, num_inference_steps=50):
         # Ensure bad_image has the correct shape
