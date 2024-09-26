@@ -252,7 +252,7 @@ if __name__ == "__main__":
     print(out.shape)
     """
     model = ImageToImageDDIMLightningModule().to("cuda")
-    summary(model, [(1, 512, 512), (1, 512, 512)])
+    summary(model, [(1, 1, 512, 512), (1,), (1, 1, 512, 512)])
     bad_image = torch.randn(1, 1, 512, 512).to("cuda")
     t = torch.Tensor([1]).to("cuda")
     good_image = torch.randn(1, 1, 512, 512).to("cuda")
