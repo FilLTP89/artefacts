@@ -273,6 +273,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             }
         }
     @torch.no_grad()
+    @torch.amp.autocast("cuda")
     def sample(self, bad_image, num_inference_steps=50):
         # Ensure bad_image has the correct shape
         if bad_image.dim() == 3:
@@ -302,6 +303,14 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         image = torch.clamp(image, 0, 1.0)
         
         return image
+
+    def validation_step(self,batch, batch_idx):
+        x, y = batch
+        xt = self.sample(x)
+        MSE = F.mse_loss(y, xt)
+        self.log("MSE_loss", MSE, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, reduce_fx='mean')
+        return {"MSE": MSE}
+
 
 if __name__ == "__main__":
     """
