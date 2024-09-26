@@ -156,11 +156,14 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                  img_size=512, 
                  num_channels=1,
                  condition_embedding : bool = False,
-                 embed_dim=256
+                 embed_dim=256,
+                 learning_rate = 3e-4,
+                 *args, **kwargs
                  ):
         super().__init__()
         self.img_size = img_size
         self.num_channels = num_channels
+        self.learning_rate = learning_rate
         
         # Initialize the UNet2DConditionModel
         self.unet = UNet2DConditionModel(
