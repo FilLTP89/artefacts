@@ -25,7 +25,7 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 5,
+                num_steps = 10,
                 layers_per_block = 1,
                 *args, **kwargs):
         super().__init__()
@@ -141,7 +141,23 @@ class Diffusion_UNET(pl.LightningModule):
         return {"MSE": MSE}
 
     def configure_optimizers(self):
-        return bnb.optim.AdamW8bit(self.parameters(), lr=self.learning_rate)
+        optimizer = bnb.optim.AdamW8bit(self.parameters(), lr=self.learning_rate)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode='min', 
+            factor=0.5, 
+            patience=5, 
+            verbose=True
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "MSE_loss",  # This is the metric to monitor
+                "interval": "epoch",
+                "frequency": 1
+            }
+        }
 
 if __name__ == "__main__":
     model = Diffusion_UNET(in_channels=1).to("cuda")
