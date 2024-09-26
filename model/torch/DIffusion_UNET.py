@@ -53,6 +53,30 @@ class Diffusion_UNET(pl.LightningModule):
         input = torch.cat([noisy_sample, x], dim=1)
         return self.model(input, t).sample
 
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        batch_size, channels, height, width = y.shape
+        
+        # Move to CPU to save GPU memory
+        noise = torch.randn_like(y).to(self.device)
+        timesteps = torch.randint(0, self.n_training_steps, (batch_size,)).to(self.device).long()
+
+        noisy_sample = self.noise_scheduler.add_noise(y, noise, timesteps)
+        
+        # Use automatic mixed precision
+        with torch.amp.autocast("cuda"):
+            predicted_noise = self(noisy_sample=noisy_sample, x=x, t=timesteps)
+            
+            if self.prediction_type == "epsilon":
+                loss = F.mse_loss(predicted_noise, noise)
+            elif self.prediction_type == "sample":
+                alpha_t = self.noise_scheduler.alphas_cumprod[timesteps]
+                snr_weights = alpha_t / (1 - alpha_t)
+                loss = (snr_weights.view(-1, 1, 1, 1) * F.mse_loss(predicted_noise, y, reduction="none")).mean()
+
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        return loss
+    
     @torch.no_grad()
     def sample(self, x):
         batch_size = x.shape[0]

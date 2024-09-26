@@ -342,7 +342,20 @@ class LoadOneAcquisition(Dataset):
         return len(self.folder)
     
     def __getitem__(self, idx):
-        pass
+        input_path, target_path = self.folder[idx]
+
+        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
+        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
+        input = normalize_ct_image(input, normalization_type='minmax')
+        target = normalize_ct_image(target, normalization_type='minmax')
+        input = torch.tensor(input).unsqueeze(0)
+        target = torch.tensor(target).unsqueeze(0)
+        if self.transform:
+            input = self.transform(input)
+            target = self.transform(target)
+        if self.augmentation:
+            input, target = self.augmentation(input, target)
+        return input, target
 
 
 class Datav2Module(pl.LightningDataModule):
@@ -413,23 +426,29 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    """
     acq = load_one_acquisition(
         path = "datav2/protocole_1/",
         control = True,
         categorie="fibralowmetal",
         acquisition=3
     ) 
-    print(acq[:5])
     ds = LoadOneAcquisition(
         path = "datav2/protocole_1/",
         control = True,
         categorie="fibralowmetal",
         acquisition=3
     )
-    print(len(ds))
-    
-    """
+    DataLoader = torch.utils.data.DataLoader(
+        ds,
+        batch_size = 1,
+        shuffle = False
+    )
+    for idx, (input, target) in enumerate(DataLoader):
+        input = input.squeeze().numpy()
+        target = target.squeeze().numpy()
+        plt.imsave(f"testing_processing/input/{idx}_input.png", input, cmap="gray")
+        plt.imsave(f"testing_processing/target/{idx}_target.png", target, cmap="gray")
+
 
     """ 
     from model.torch.Attention_MEDGAN import VGG19
@@ -464,6 +483,8 @@ if __name__ == "__main__":
         print(input.dtype, target.dtype)
         break
     """
+    """
     all_ds = gpt_create_all_dataset()
     print(len(all_ds))
+    """
    
