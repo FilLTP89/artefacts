@@ -136,7 +136,7 @@ def load_model(task ="GAN",
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
-        model = ImageToImageDDIMLightningModule(in_channels=1,
+        model = ImageToImageDDIMLightningModule(num_channels=1,
                                                 img_size=512,
                                                 condition_embedding=True,
                                                 embed_dim=256)
