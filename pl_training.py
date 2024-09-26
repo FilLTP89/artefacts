@@ -7,7 +7,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
 from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
-from model.torch.DIffusion_UNET import Diffusion_UNET
+from model.torch.DIffusion_UNET import Diffusion_UNET, ImageToImageDDIMLightningModule
 from pytorch_lightning.utilities import rank_zero_only
 import logging
 import tempfile
@@ -110,15 +110,16 @@ def load_module(
         train_bs = 1,
         test_bs = 1,
         *args, **kwargs):
-    if (task == "GAN") or (task == "Diffusion"):
+    if task == "Classification":
+        module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
+    else:
         module = Datav2Module(dataset_type = Datav2Dataset,
                               data_folder = data_folder, 
                               train_bs = train_bs,
                               test_bs = test_bs,
                               *args, 
                               **kwargs)
-    else:
-        module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
+
     module.setup()
     return module
 
@@ -134,6 +135,11 @@ def load_model(task ="GAN",
             model = AttentionMEDGAN(*args, **kwargs)
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
+    elif task == "Conditional_Diffusion":
+        model = ImageToImageDDIMLightningModule(in_channels=1,
+                                                img_size=512,
+                                                condition_embedding=True,
+                                                embed_dim=256)
     else:
         model = VGG19(classifier_training= True,
                       n_class=n_class, 

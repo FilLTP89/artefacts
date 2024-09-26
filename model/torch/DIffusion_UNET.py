@@ -122,9 +122,42 @@ class Diffusion_UNET(pl.LightningModule):
     def on_load_checkpoint(self, checkpoint):
         self.noise_scheduler = checkpoint["noise_scheduler"]
 
+class ConditionEmbedding(nn.Module):
+    def __init__(self, in_channels, img_size, embed_dim):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+        
+        # Calculate the flattened size
+        with torch.no_grad():
+            x = torch.randn(1, in_channels, img_size, img_size)
+            x = self.conv1(x)
+            x = self.conv2(x)
+            x = self.conv3(x)
+            x = self.adaptive_pool(x)
+            flattened_size = x.numel()
+
+        self.fc = nn.Linear(flattened_size, embed_dim)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = self.adaptive_pool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+    
 
 class ImageToImageDDIMLightningModule(pl.LightningModule):
-    def __init__(self, img_size=512, num_channels=1):
+    def __init__(self, 
+                 img_size=512, 
+                 num_channels=1,
+                 condition_embedding : bool = False,
+                 embed_dim=256
+                 ):
         super().__init__()
         self.img_size = img_size
         self.num_channels = num_channels
@@ -152,11 +185,19 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                 "CrossAttnUpBlock2D",
                 "CrossAttnUpBlock2D",
             ),
-            cross_attention_dim=num_channels * img_size * img_size,  # flattened bad image dimension
+            cross_attention_dim=embed_dim,  # flattened bad image dimension
         )
         
         # Initialize the DDIM scheduler
         self.noise_scheduler = DDIMScheduler(num_train_timesteps=1000)
+        if condition_embedding:
+            self.condition_embedding = ConditionEmbedding(
+                in_channels=num_channels, 
+                img_size=img_size, 
+                embed_dim=embed_dim
+            )
+        else:
+            self.condition_embedding = nn.Identity()
 
     def forward(self, bad_image, timestep, good_image):
         """
@@ -164,24 +205,22 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         
         Args:
             bad_image (torch.Tensor): The bad image input (B, C, H, W).
-            timestep (torch.Tensor): The current timestep in the diffusion process.
+            timestep (torch.Tensor or float or int): The current timestep in the diffusion process. 
             good_image (torch.Tensor): The good image input (B, C, H, W).
         
         Returns:
             torch.Tensor: The predicted noise.
         """
         # Print shape information for debugging
-        print(f"bad_image shape: {bad_image.shape}")
-        print(f"timestep shape: {timestep.shape}")
-        print(f"good_image shape: {good_image.shape}")
         
         # Ensure timestep is a 1D tensor
         if timestep.dim() == 0:
             timestep = timestep.unsqueeze(0)
         
         # Flatten the bad image to use as condition
-        condition = bad_image.view(bad_image.shape[0], -1)
-        
+        condition = self.condition_embedding(bad_image)
+        condition = condition.view(condition.shape[0], 1, -1) # (batch, sequence_length, feature_dim).
+      
         try:
             return self.unet(good_image, timestep, condition).sample
         except ValueError as e:
@@ -197,7 +236,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         bs = good_images.shape[0]
 
         # Sample a random timestep for each image
-        timesteps = torch.randint(0, self.noise_scheduler.num_train_timesteps, (bs,), device=good_images.device).long()
+        timesteps = torch.randint(0, self.noise_scheduler.config.num_train_timesteps, (bs,), device=good_images.device).long()
 
         # Add noise to the good images according to the noise magnitude at each timestep
         noisy_images = self.noise_scheduler.add_noise(good_images, noise, timesteps)
@@ -213,7 +252,8 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optm.Adam(self.parameters(), lr=1e-4)
-
+    
+    @torch.no_grad()
     def sample(self, bad_image, num_inference_steps=50):
         # Ensure bad_image has the correct shape
         if bad_image.dim() == 3:
@@ -229,6 +269,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
         for t in self.noise_scheduler.timesteps:
             # Scale the noisy image according to the scheduler
+            t = t.to(self.device)
             model_input = self.noise_scheduler.scale_model_input(image, t)
 
             # Predict the noise residual
@@ -251,9 +292,13 @@ if __name__ == "__main__":
     out = model(x,x,t)
     print(out.shape)
     """
-    model = ImageToImageDDIMLightningModule().to("cuda")
-    summary(model, [(1, 1, 512, 512), (1,), (1, 1, 512, 512)])
-    bad_image = torch.randn(1, 1, 512, 512).to("cuda")
+    img_size = 64
+    model = ImageToImageDDIMLightningModule(img_size=img_size, condition_embedding=True).to("cuda")
+    bad_image = torch.randn(1, 1, img_size,img_size).to("cuda")
     t = torch.Tensor([1]).to("cuda")
-    good_image = torch.randn(1, 1, 512, 512).to("cuda")
+    good_image = torch.randn(1, 1, img_size,img_size).to("cuda")
     out = model(bad_image, t, good_image)
+    loss = model.training_step((bad_image, good_image), 0)
+    print(loss)
+    sampled = model.sample(bad_image, num_inference_steps=50)
+    print(sampled.shape)
