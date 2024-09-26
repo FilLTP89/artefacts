@@ -123,7 +123,7 @@ class Diffusion_UNET(pl.LightningModule):
         self.noise_scheduler = checkpoint["noise_scheduler"]
 
 
-class ImageToImageDDIMLightningModule(pl.LightningModule):
+class ImageToImageDDIMLightningModule(LightningModule):
     def __init__(self, img_size=512, num_channels=1):
         super().__init__()
         self.img_size = img_size
@@ -158,11 +158,39 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         # Initialize the DDIM scheduler
         self.noise_scheduler = DDIMScheduler(num_train_timesteps=1000)
 
+    def forward(self, bad_image, timestep, good_image):
+        """
+        Forward pass of the model.
+        
+        Args:
+            bad_image (torch.Tensor): The bad image input (B, C, H, W).
+            timestep (torch.Tensor): The current timestep in the diffusion process.
+            good_image (torch.Tensor): The good image input (B, C, H, W).
+        
+        Returns:
+            torch.Tensor: The predicted noise.
+        """
+        # Print shape information for debugging
+        print(f"bad_image shape: {bad_image.shape}")
+        print(f"timestep shape: {timestep.shape}")
+        print(f"good_image shape: {good_image.shape}")
+        
+        # Ensure timestep is a 1D tensor
+        if timestep.dim() == 0:
+            timestep = timestep.unsqueeze(0)
+        
+        # Flatten the bad image to use as condition
+        condition = bad_image.view(bad_image.shape[0], -1)
+        
+        try:
+            return self.unet(good_image, timestep, condition).sample
+        except ValueError as e:
+            print(f"Error in forward pass: {e}")
+            print(f"UNet expected shapes: in_channels={self.unet.config.in_channels}, cross_attention_dim={self.unet.config.cross_attention_dim}")
+            raise
+
     def training_step(self, batch, batch_idx):
         bad_images, good_images = batch
-        
-        # Flatten the bad images to use as condition
-        condition = bad_images.view(bad_images.shape[0], -1)
         
         # Sample noise to add to the good images
         noise = torch.randn(good_images.shape).to(good_images.device)
@@ -175,38 +203,25 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         noisy_images = self.noise_scheduler.add_noise(good_images, noise, timesteps)
 
         # Get the model prediction for the noise
-        noise_pred = self.unet(noisy_images, timesteps, condition).sample
+        noise_pred = self(bad_images, timesteps, noisy_images)
 
         # Calculate the loss
         loss = F.mse_loss(noise_pred, noise)
 
         self.log("train_loss", loss)
         return loss
-    def forward(self, noisy_image, timestep, condition):
-        """
-        Forward pass of the model.
-        
-        Args:
-            noisy_image (torch.Tensor): The noisy image input.
-            timestep (torch.Tensor): The current timestep in the diffusion process.
-            condition (torch.Tensor): The conditioning input (flattened bad image).
-        
-        Returns:
-            torch.Tensor: The predicted noise.
-        """
-        return self.unet(noisy_image, timestep, condition).sample
-    
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-4)
-    @torch.no_grad()
-    def sample(self, bad_image, num_inference_steps=50):
-        # Flatten the bad image to use as condition
-        condition = bad_image.view(1, -1)
+        return Adam(self.parameters(), lr=1e-4)
 
+    def sample(self, bad_image, num_inference_steps=50):
+        # Ensure bad_image has the correct shape
+        if bad_image.dim() == 3:
+            bad_image = bad_image.unsqueeze(0)  # Add batch dimension if it's missing
+        
         # Start from pure noise
         image = torch.randn(
-            (1, self.num_channels, self.img_size, self.img_size),
+            (bad_image.shape[0], self.num_channels, self.img_size, self.img_size),
             device=self.device
         )
 
@@ -218,7 +233,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
             # Predict the noise residual
             with torch.no_grad():
-                noise_pred = self.unet(model_input, t, condition).sample
+                noise_pred = self(bad_image, t, model_input)
 
             # Compute the previous noisy sample x_t -> x_t-1
             image = self.noise_scheduler.step(noise_pred, t, image).prev_sample
