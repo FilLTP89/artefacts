@@ -171,7 +171,7 @@ def main():
         resume_from_cpkt = args.resume_from_cpkt    
     )
     model_name = type(model).__name__
-    model = torch.compile(model)
+    #model = torch.compile(model)
     
     repo_path = init_repo(wandb_name = run_name, model_name = model_name, ruche = args.ruche)
     

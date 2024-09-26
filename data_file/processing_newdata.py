@@ -435,8 +435,8 @@ if __name__ == "__main__":
     ds = LoadOneAcquisition(
         path = "datav2/protocole_1/",
         control = True,
-        categorie="fibralowmetal",
-        acquisition=3
+        categorie="huttalowmetal",
+        acquisition=1
     )
     DataLoader = torch.utils.data.DataLoader(
         ds,
