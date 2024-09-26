@@ -158,12 +158,14 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                  condition_embedding : bool = False,
                  embed_dim=256,
                  learning_rate = 3e-4,
+                 num_inference_steps=50,
                  *args, **kwargs
                  ):
         super().__init__()
         self.img_size = img_size
         self.num_channels = num_channels
         self.learning_rate = learning_rate
+        self.num_inference_steps = num_inference_steps
         
         # Initialize the UNet2DConditionModel
         self.unet = UNet2DConditionModel(
@@ -274,7 +276,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         }
     @torch.no_grad()
     @torch.amp.autocast("cuda")
-    def sample(self, bad_image, num_inference_steps=50):
+    def sample(self, bad_image):
         # Ensure bad_image has the correct shape
         if bad_image.dim() == 3:
             bad_image = bad_image.unsqueeze(0)  # Add batch dimension if it's missing
@@ -285,7 +287,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             device=self.device
         )
 
-        self.noise_scheduler.set_timesteps(num_inference_steps)
+        self.noise_scheduler.set_timesteps(self.num_inference_steps)
 
         for t in self.noise_scheduler.timesteps:
             # Scale the noisy image according to the scheduler
