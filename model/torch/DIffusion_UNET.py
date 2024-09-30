@@ -246,6 +246,36 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
+    @torch.no_grad()
+    def sample(self, bad_image):
+        # Ensure bad_image has the correct shape
+        if bad_image.dim() == 3:
+            bad_image = bad_image.unsqueeze(0)  # Add batch dimension if it's missing
+        
+        # Start from pure noise
+        image = torch.randn(
+            (bad_image.shape[0], self.num_channels, self.img_size, self.img_size),
+            device=self.device, dtype=self.dtype
+        )
+
+        self.noise_scheduler.set_timesteps(self.num_inference_steps)
+
+        for t in self.noise_scheduler.timesteps:
+            # Scale the noisy image according to the scheduler
+            t = t.to(self.device)
+            model_input = self.noise_scheduler.scale_model_input(image, t)
+
+            # Predict the noise residual
+            with torch.amp.autocast("cuda"):
+                noise_pred = self(bad_image, t, model_input)
+
+            # Compute the previous noisy sample x_t -> x_t-1
+            image = self.noise_scheduler.step(noise_pred, t, image).prev_sample
+
+        # Scale and clip the image to [0, 1]
+        image = torch.clamp(image, 0, 1.0)
+        
+        return image
 
     
     def configure_optimizers(self):
@@ -266,36 +296,6 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                 "frequency": 1
             }
         }
-    @torch.no_grad()
-    def sample(self, bad_image):
-        # Ensure bad_image has the correct shape
-        if bad_image.dim() == 3:
-            bad_image = bad_image.unsqueeze(0)  # Add batch dimension if it's missing
-        
-        # Start from pure noise
-        image = torch.randn(
-            (bad_image.shape[0], self.num_channels, self.img_size, self.img_size),
-            device=self.device
-        )
-
-        self.noise_scheduler.set_timesteps(self.num_inference_steps)
-
-        for t in self.noise_scheduler.timesteps:
-            # Scale the noisy image according to the scheduler
-            t = t.to(self.device)
-            model_input = self.noise_scheduler.scale_model_input(image, t)
-
-            # Predict the noise residual
-            with torch.amp.autocast("cuda"):
-                noise_pred = self(bad_image, t, model_input)
-
-            # Compute the previous noisy sample x_t -> x_t-1
-            image = self.noise_scheduler.step(noise_pred, t, image).prev_sample
-
-        # Scale and clip the image to [-1, 1]
-        image = torch.clamp(image, 0, 1.0)
-        
-        return image
 
     def validation_step(self,batch, batch_idx):
         x, y = batch

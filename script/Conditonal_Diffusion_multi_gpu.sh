@@ -2,7 +2,7 @@
 #SBATCH --job-name=artefact
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
-#SBATCH --mem=40GB
+#SBATCH --mem=100GB
 #SBATCH --output=ruche_log/cd_multigpu_output.txt
 #SBATCH --error=ruche_log/cd_multigpu_error.txt
 #SBATCH --time=24:00:00

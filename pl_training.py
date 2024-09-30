@@ -211,7 +211,8 @@ def main():
         verbose = True,   
         monitor = monitor_dict[model_name][0],
         mode = monitor_dict[model_name][1], 
-        save_weights_only=SAVE_WEIGHTS_ONLY
+        save_weights_only=SAVE_WEIGHTS_ONLY,
+        every_n_train_steps = 10,
         ),
         LearningRateMonitor(logging_interval='step')]
     
@@ -225,7 +226,7 @@ def main():
         num_nodes=1,
         callbacks=callbacks,
         precision="bf16-mixed" if args.mix_precision else 32,
-        log_every_n_steps=1,
+        log_every_n_steps=50,
         accumulate_grad_batches= args.accumulate_grad_batches,
     )
     trainer.fit(model, 
