@@ -28,7 +28,6 @@ export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
 
 source activate artefact
-conda info --envs
 
 cd $WORKDIR/artefacts/
 
@@ -40,14 +39,14 @@ export CUDA_LAUNCH_BLOCKING=1
 echo "Starting srun command"
 srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
-    --train_bs 2 \
-    --test_bs 2 \
+    --train_bs 1 \
+    --test_bs 1 \
     --ruche \
     --no-use_feature_extractor \
     --task="Conditional_Diffusion" \
     --data_folder="control" \
     --mix_precision \
-    --accumulate_grad_batches 16 \
+    --accumulate_grad_batches 32 \
     --lr 3e-4 \
    
 
