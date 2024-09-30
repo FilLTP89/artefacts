@@ -47,8 +47,9 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --task="Conditional_Diffusion" \
     --data_folder="control" \
     --mix_precision \
+    --accumulate_grad_batches 4 \
     --lr 3e-4 \
-    --accumulate_grad_batches 4 \   
+   
 
 
 

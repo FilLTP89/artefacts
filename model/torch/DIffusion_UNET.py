@@ -252,7 +252,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         # Calculate the loss
         loss = F.mse_loss(noise_pred, noise)
 
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     
