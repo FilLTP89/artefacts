@@ -383,11 +383,14 @@ class Datav2Module(pl.LightningDataModule):
 
     def get_optimal_num_workers(self):
         num_cpus = os.cpu_count()
+        print(f"Number of CPUs: {num_cpus}")    
         num_gpus = torch.cuda.device_count()
         if num_gpus > 0:
-            return min(num_cpus, 4 * num_gpus)
+            cpu_used = min(num_cpus, 4 * num_gpus, 7)
         else:
-            return min(num_cpus, 8)  # Cap at 8 for CPU-only machines
+            cpu_used = min(num_cpus, 8)  # Cap at 8 for CPU-only machines
+        print(f"Number of workers: {cpu_used}")
+        return cpu_used
         
     def setup(self, stage = None):
         self.dataset = self.dataset_type(self.folder, data_folder=self.data_folder)
