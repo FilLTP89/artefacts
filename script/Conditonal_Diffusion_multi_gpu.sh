@@ -40,14 +40,14 @@ export CUDA_LAUNCH_BLOCKING=1
 echo "Starting srun command"
 srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
-    --train_bs 1 \
-    --test_bs 1 \
+    --train_bs 2 \
+    --test_bs 2 \
     --ruche \
     --no-use_feature_extractor \
     --task="Conditional_Diffusion" \
     --data_folder="control" \
     --mix_precision \
-    --accumulate_grad_batches 4 \
+    --accumulate_grad_batches 16 \
     --lr 3e-4 \
    
 

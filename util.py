@@ -4,7 +4,8 @@ import torch.nn as nn
 import numpy as np
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-
+import pydicom
+from functools import lru_cache
 def normalize_ct_image(dicom_image, normalization_type='minmax', custom_range=None):
     # Apply rescale
     hu_image = dicom_image * 1 - 1000  # Using the rescale values from your results
@@ -129,3 +130,8 @@ class CTImageAugmentation(nn.Module):
             image = image.squeeze(0)
         
         return image
+
+@lru_cache(maxsize=10)
+def load_and_normalize_dicom(path, normalization_type='simple'):
+    image = pydicom.dcmread(path).pixel_array.astype(np.float32)
+    return normalize_ct_image(image, normalization_type)

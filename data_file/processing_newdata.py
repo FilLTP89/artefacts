@@ -247,12 +247,12 @@ class Datav2Dataset(Dataset):
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
 
-        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
-        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
+        input = dicom.dcmread(input_path).pixel_array.astype(np.float32)
+        target = dicom.dcmread(target_path).pixel_array.astype(np.float32)
         input = normalize_ct_image(input, normalization_type='simple')
         target = normalize_ct_image(target, normalization_type='simple')
-        input = torch.tensor(input).unsqueeze(0)
-        target = torch.tensor(target).unsqueeze(0)
+        input = torch.from_numpy(input).unsqueeze(0)
+        target = torch.from_numpy(target).unsqueeze(0)
         if self.transform:
             input = self.transform(input)
             target = self.transform(target)
@@ -367,7 +367,7 @@ class Datav2Module(pl.LightningDataModule):
                  train_ratio = 0.8,
                  data_folder = "complete",
                  img_size = 512,
-                 num_workers= multiprocessing.cpu_count(),
+                 pin_memory=True,
                  *args, **kwargs):
         
         self.folder = folder
@@ -379,7 +379,7 @@ class Datav2Module(pl.LightningDataModule):
         self.num_workers = self.get_optimal_num_workers()
         self.dataset_type = dataset_type
         self.data_folder = data_folder
-
+        self.pin_memory = pin_memory
 
     def get_optimal_num_workers(self):
         num_cpus = os.cpu_count()
@@ -402,24 +402,28 @@ class Datav2Module(pl.LightningDataModule):
         return DataLoader(self.train_ds, 
                           batch_size=self.train_bs, 
                           num_workers=self.num_workers,
+                          pin_memory=self.pin_memory,
                           shuffle=True)
     
     def val_dataloader(self):
         return DataLoader(self.valid_ds, 
                           batch_size=self.test_bs, 
                           num_workers=self.num_workers,
+                          pin_memory=self.pin_memory,
                           shuffle=False)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, 
                           batch_size=self.test_bs, 
                           num_workers=self.num_workers,
+                          pin_memory=self.pin_memory,
                           shuffle=False)
     
     def combined_dataloader(self):
         return DataLoader(self.dataset, 
                           batch_size=self.train_bs, 
                           num_workers=self.num_workers,
+                          pin_memory=self.pin_memory,
                           shuffle=True)
 
 

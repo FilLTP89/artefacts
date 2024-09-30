@@ -1,4 +1,5 @@
 import torch
+import torch.amp
 import torch.nn as nn
 from diffusers import DDPMScheduler,DDIMScheduler
 from einops import rearrange, repeat
@@ -219,20 +220,11 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         # Print shape information for debugging
         
         # Ensure timestep is a 1D tensor
-        if timestep.dim() == 0:
-            timestep = timestep.unsqueeze(0)
-        
-        # Flatten the bad image to use as condition
-        condition = self.condition_embedding(bad_image)
-        condition = condition.view(condition.shape[0], 1, -1) # (batch, sequence_length, feature_dim).
-      
-        try:
-            return self.unet(good_image, timestep, condition).sample
-        except ValueError as e:
-            print(f"Error in forward pass: {e}")
-            print(f"UNet expected shapes: in_channels={self.unet.config.in_channels}, cross_attention_dim={self.unet.config.cross_attention_dim}")
-            raise
+        timestep = timestep.view(-1) if timestep.dim() == 0 else timestep
+        condition = self.condition_embedding(bad_image).view(bad_image.shape[0], 1, -1)
+        return self.unet(good_image, timestep, condition).sample
 
+    
     def training_step(self, batch, batch_idx):
         bad_images, good_images = batch
         
@@ -246,11 +238,11 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         # Add noise to the good images according to the noise magnitude at each timestep
         noisy_images = self.noise_scheduler.add_noise(good_images, noise, timesteps)
 
-        # Get the model prediction for the noise
-        noise_pred = self(bad_images, timesteps, noisy_images)
-
-        # Calculate the loss
-        loss = F.mse_loss(noise_pred, noise)
+        with torch.amp.autocast("cuda"):
+            # Get the model prediction for the noise
+            noise_pred = self(bad_images, timesteps, noisy_images)
+            # Calculate the loss
+            loss = F.mse_loss(noise_pred, noise)
 
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
@@ -275,7 +267,6 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             }
         }
     @torch.no_grad()
-    @torch.amp.autocast("cuda")
     def sample(self, bad_image):
         # Ensure bad_image has the correct shape
         if bad_image.dim() == 3:
@@ -295,7 +286,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             model_input = self.noise_scheduler.scale_model_input(image, t)
 
             # Predict the noise residual
-            with torch.no_grad():
+            with torch.amp.autocast("cuda"):
                 noise_pred = self(bad_image, t, model_input)
 
             # Compute the previous noisy sample x_t -> x_t-1
