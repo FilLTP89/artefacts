@@ -13,7 +13,7 @@
 
 
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
-
+module load singularity/3.8.5
 
 command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
