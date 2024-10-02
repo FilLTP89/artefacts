@@ -14,7 +14,6 @@
 
 # Environment settings
 export NCCL_DEBUG=INFO
-export NCCL_IB_DISABLE=1
 export NCCL_SOCKET_IFNAME=^lo,docker0
 export PYTHONFAULTHANDLER=1
 export CUDA_VISIBLE_DEVICES=0,1

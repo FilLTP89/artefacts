@@ -223,7 +223,7 @@ def main():
         LearningRateMonitor(logging_interval='step')]
     
     trainer = pl.Trainer(
-        logger=wandb_logger,
+        logger=wandb_logger if args.ruche else None,
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
