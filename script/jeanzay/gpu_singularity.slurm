@@ -4,8 +4,8 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=2
-#SBATCH --gres=gpu:2
+#SBATCH --ntasks-per-node=1
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
@@ -15,7 +15,6 @@
 export NCCL_DEBUG=INFO
 export NCCL_SOCKET_IFNAME=^lo,docker0
 export PYTHONFAULTHANDLER=1
-export CUDA_VISIBLE_DEVICES=0,1
 
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
