@@ -236,7 +236,6 @@ class Datav2Dataset(Dataset):
 
         self.transform = transforms.Compose([
             transforms.Resize((img_size, img_size), antialias=True),
-            transforms.ToTensor()
         ])
         self.augmentation = augmentation
         self.n_class = None
