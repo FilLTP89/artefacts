@@ -226,7 +226,7 @@ def main():
         num_nodes=1,
         callbacks=callbacks,
         precision="bf16-mixed" if args.mix_precision else 32,
-        log_every_n_steps=50,
+        log_every_n_steps=10,
         accumulate_grad_batches= args.accumulate_grad_batches,
     )
     trainer.fit(model, 

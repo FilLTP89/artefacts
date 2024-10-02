@@ -107,10 +107,11 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
     Returns:
         list: A list of tuples containing paired input and target files.
     """
-    control_folder = "control" if control else "fracture"
+    control_folder = "control"
+    data_folder = "control" if control else "fracture"
     data_format = "dcm" if dcm else "raw"
 
-    input_dirs = [f"{path}{control_folder}/{i}/{data_format}/Input/" for i in range(1, nb_folder + 1)]
+    input_dirs = [f"{path}{data_folder}/{i}/{data_format}/Input/" for i in range(1, nb_folder + 1)]
     target_dirs = [f"{path}{control_folder}/{i}/{data_format}/Target/" for i in range(1, nb_folder + 1)]
 
     try:
@@ -433,7 +434,7 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    acq = load_one_acquisition(
+    """ acq = load_one_acquisition(
         path = "datav2/protocole_1/",
         control = True,
         categorie="fibralowmetal",
@@ -454,7 +455,12 @@ if __name__ == "__main__":
         input = input.squeeze().numpy()
         target = target.squeeze().numpy()
         plt.imsave(f"testing_processing/input/{idx}_input.png", input, cmap="gray")
-        plt.imsave(f"testing_processing/target/{idx}_target.png", target, cmap="gray")
+        plt.imsave(f"testing_processing/target/{idx}_target.png", target, cmap="gray") """
+    ds = gpt_create_all_dataset()
+    print(len(ds))
+    random.shuffle(ds)
+    for i in range(5):
+        print(ds[i])
 
 
     """ 
