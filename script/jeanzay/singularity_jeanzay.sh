@@ -8,7 +8,6 @@
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
-#SBATCH --hint=nomultithread
 #SBATCH --account=xvy@a100
 #SBATCH -C a100
 
@@ -20,7 +19,6 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 3 \
     --test_bs 3 \
-    --ruche \
     --no-use_feature_extractor \
     --task=Conditional_Diffusion \
     --mix_precision \
