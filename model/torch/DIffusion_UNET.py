@@ -96,7 +96,7 @@ class Diffusion_UNET(pl.LightningModule):
         xt = self.sample(x)
         MSE = F.mse_loss(y, xt)
         self.log("MSE_loss", MSE, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, reduce_fx='mean')
-        return {"MSE": MSE}
+        return {"MSE_loss": MSE}
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
@@ -244,7 +244,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             # Calculate the loss
             loss = F.mse_loss(noise_pred, noise)
 
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True),
         return loss
     @torch.no_grad()
     def sample(self, bad_image):
@@ -302,7 +302,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         xt = self.sample(x)
         MSE = F.mse_loss(y, xt)
         self.log("MSE_loss", MSE, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, reduce_fx='mean')
-        return {"MSE": MSE}
+        return {"MSE_loss": MSE}
 
 
 if __name__ == "__main__":
