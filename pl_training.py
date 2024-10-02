@@ -177,7 +177,7 @@ def main():
         train_bs = args.train_bs,
         test_bs = args.test_bs,
         task= args.task,
-        data_folder = args.data_folder
+        data_folder = args.data_folder,
         img_size=args.img_size
     )
     if args.use_feature_extractor:
