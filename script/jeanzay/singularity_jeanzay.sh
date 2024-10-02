@@ -4,8 +4,8 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks=4
-#SBATCH --gres=gpu:4
+#SBATCH --ntasks=2
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --hint=nomultithread
@@ -24,6 +24,7 @@ command_to_run='WANDB_MODE=offline python3 pl_training.py \
     --no-use_feature_extractor \
     --task="Conditional_Diffusion" \
     --mix_precision \
-    --data_folder="control"'
+    --data_folder="control"
+    --accumulate_grad_batches 4'
 
 $start_container_cmd $command_to_run
