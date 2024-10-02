@@ -322,5 +322,5 @@ if __name__ == "__main__":
     out = model(bad_image, t, good_image)
     loss = model.training_step((bad_image, good_image), 0)
     print(loss)
-    sampled = model.sample(bad_image, num_inference_steps=50)
+    sampled = model.sample(bad_image)
     print(sampled.shape)

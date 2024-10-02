@@ -77,7 +77,7 @@ def init_args():
     parser.add_argument("--resume_from_cpkt", action = argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--data_folder", type=str, default="complete")
     parser.add_argument("--accumulate_grad_batches", type=int, default=1)
-    parser.add_argument("--img_size", type=int, default=64)
+    parser.add_argument("--img_size", type=int, default=512)
     args = parser.parse_args()
     return args
 
