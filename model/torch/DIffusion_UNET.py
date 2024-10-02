@@ -321,6 +321,6 @@ if __name__ == "__main__":
     good_image = torch.randn(1, 1, img_size,img_size).to("cuda")
     out = model(bad_image, t, good_image)
     loss = model.training_step((bad_image, good_image), 0)
-    print(loss)
+    loss.backward()
     sampled = model.sample(bad_image)
     print(sampled.shape)
