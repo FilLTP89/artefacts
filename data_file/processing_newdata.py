@@ -383,9 +383,10 @@ class Datav2Module(pl.LightningDataModule):
         self.pin_memory = pin_memory
 
     def get_optimal_num_workers(self):
-        try :
-            num_cpus = os.environ.get('SLURM_CPUS_PER_TASK')
-        except:
+        slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
+        if num_cpus is None:
+            num_cpus = int(slurms_cpu)
+        else:
             num_cpus = os.cpu_count()
         print(f"Number of CPUs: {num_cpus}")    
         num_gpus = torch.cuda.device_count()
