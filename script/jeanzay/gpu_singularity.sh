@@ -38,4 +38,4 @@ start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn
     --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 # Run the command inside Singularity
-$start_container_cmd /bin/bash -c "$command_to_run"
+srun $start_container_cmd /bin/bash -c "$command_to_run"

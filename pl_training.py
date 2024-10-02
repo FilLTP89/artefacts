@@ -181,6 +181,7 @@ def main():
         feature_extractor = feature_extractor,
         resume_from_cpkt = args.resume_from_cpkt    
     )
+    grad_clip = 0 if args.mix_precision else 1
     model_name = type(model).__name__
     #model = torch.compile(model)
     
@@ -233,6 +234,7 @@ def main():
         precision="bf16-mixed" if args.mix_precision else 32,
         log_every_n_steps=10,
         accumulate_grad_batches= args.accumulate_grad_batches,
+        gradient_clip_val=grad_clip,
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
