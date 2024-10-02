@@ -19,14 +19,13 @@ cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
 
 # Command to run inside the container
-command_to_run="python3 pl_training.py \
+command_to_run_GAN="python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 3 \
-    --test_bs 3 \
-    --no-use_feature_extractor \
+    --train_bs 16 \
+    --test_bs 16 \
     --task=Conditional_Diffusion \
     --mix_precision \
-    --data_folder=control \
+    --data_folder=complete \
     --accumulate_grad_batches 1"
 
 # Singularity execution with GPU support
@@ -36,4 +35,4 @@ start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn
     --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 # Run the command inside Singularity
-$start_container_cmd $command_to_run
+$start_container_cmd $command_to_run_GAN

@@ -223,9 +223,7 @@ class Datav2Dataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
                  data_folder = "complete",
-                 transform = transforms.Compose([
-                    transforms.Resize((512, 512), antialias=True),
-                    ]),
+                 img_size = 512,
                  augmentation = None,
             ):
 
@@ -236,7 +234,10 @@ class Datav2Dataset(Dataset):
         else:
             self.folder = gptcreate_dataset(folder, control=False)
 
-        self.transform = transform
+        self.transform = transforms.Compose([
+            transforms.Resize((img_size, img_size), antialias=True),
+            transforms.ToTensor()
+        ])
         self.augmentation = augmentation
         self.n_class = None
         #self.augmentation = CTImageAugmentation()
@@ -381,6 +382,7 @@ class Datav2Module(pl.LightningDataModule):
         self.dataset_type = dataset_type
         self.data_folder = data_folder
         self.pin_memory = pin_memory
+        self.img_size = img_size
 
     def get_optimal_num_workers(self):
         slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
@@ -398,7 +400,7 @@ class Datav2Module(pl.LightningDataModule):
         return cpu_used
         
     def setup(self, stage = None):
-        self.dataset = self.dataset_type(self.folder, data_folder=self.data_folder)
+        self.dataset = self.dataset_type(self.folder, data_folder=self.data_folder, img_size=self.img_size)
         self.n_class = self.dataset.n_class
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)

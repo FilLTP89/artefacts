@@ -121,6 +121,7 @@ def load_module(
                               train_bs = train_bs,
                               test_bs = test_bs,
                               *args, 
+                              img_size=64,
                               **kwargs)
 
     module.setup()
