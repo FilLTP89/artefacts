@@ -10,6 +10,7 @@ from torchsummary import summary
 from tqdm import tqdm
 import bitsandbytes as bnb
 from torch.profiler import profile, record_function, ProfilerActivity
+from pytorch_lightning.utilities import rank_zero_info
 
 def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
     if not isinstance(arr, torch.Tensor):
@@ -74,7 +75,7 @@ class Diffusion_UNET(pl.LightningModule):
                 alpha_t = self.noise_scheduler.alphas_cumprod[timesteps]
                 snr_weights = alpha_t / (1 - alpha_t)
                 loss = (snr_weights.view(-1, 1, 1, 1) * F.mse_loss(predicted_noise, y, reduction="none")).mean()
-
+        
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
     
@@ -243,7 +244,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             noise_pred = self(bad_images, timesteps, noisy_images)
             # Calculate the loss
             loss = F.mse_loss(noise_pred, noise)
-
+        rank_zero_info(f"Loss : {loss}")    
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True),
         return loss
     @torch.no_grad()

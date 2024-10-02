@@ -82,11 +82,16 @@ def init_args():
 
 
 
-def init_wandb():
-    from pytorch_lightning.loggers import WandbLogger
-    wandb_logger = WandbLogger(
-            project=f"Metal_Artifacts_Reduction",
-    )
+def init_wandb(ruche = False):
+    if ruche:
+        from pytorch_lightning.loggers import WandbLogger
+        wandb_logger = WandbLogger(
+                project=f"Metal_Artifacts_Reduction",
+        )
+    else:
+        from pytorch_lightning.loggers import TensorBoardLogger
+        wandb_logger = TensorBoardLogger("logs/")
+        os.environ["WANDB_MODE"] = "offline"
     return wandb_logger
 
 
@@ -159,7 +164,7 @@ def main():
     if args.ruche:
         work_dir = "/gpfs/users/gabrielihu/tmp"  # Replace this with your actual work directory path
         tempfile.tempdir = work_dir
-    wandb_logger = init_wandb()
+    wandb_logger = init_wandb(args.ruche)
     try :
         run_name = wandb_logger.experiment.name
     except:
@@ -223,7 +228,7 @@ def main():
         LearningRateMonitor(logging_interval='step')]
     
     trainer = pl.Trainer(
-        logger=wandb_logger if args.ruche else None,
+        logger=wandb_logger,
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
