@@ -29,8 +29,7 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --task=Conditional_Diffusion \
     --mix_precision \
     --data_folder=control \
-    --accumulate_grad_batches 1 \
-    --log_level debug"
+    --accumulate_grad_batches 1"
 
 # Singularity execution with GPU support
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/ \
