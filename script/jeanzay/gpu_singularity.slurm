@@ -10,7 +10,6 @@
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
 #SBATCH --hint=nomultithread           # hyperthreading deactivated
-#SBATCH --export=ALL
 
 # Environment settings
 export NCCL_DEBUG=INFO
@@ -19,7 +18,7 @@ export NCCL_SOCKET_IFNAME=^lo,docker0
 export PYTHONFAULTHANDLER=1
 export CUDA_VISIBLE_DEVICES=0,1
 
-cd ${SLURM_SUBMIT_DIR}
+cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
 
 # Command to run inside the container
@@ -37,7 +36,7 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/ \
     -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ \
     --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts \
-    --nv lightning_latest.sif"
+    --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 # Run the command inside Singularity
 srun $start_container_cmd /bin/bash -c "$command_to_run"
