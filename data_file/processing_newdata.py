@@ -172,7 +172,7 @@ class ClassificationDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
                  transform = transforms.Compose([
-                    transforms.Resize((512, 512)),
+                    transforms.Resize((512, 512), antialias=True),
                     ])
             ):
         self.folder = classification_dataset(folder)
@@ -224,7 +224,7 @@ class Datav2Dataset(Dataset):
                  folder = "datav2/protocole_1/",
                  data_folder = "complete",
                  transform = transforms.Compose([
-                    transforms.Resize((512, 512)),
+                    transforms.Resize((512, 512), antialias=True),
                     ]),
                  augmentation = None,
             ):
@@ -280,7 +280,7 @@ class Stacked3DDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
                  transform = transforms.Compose([
-                    transforms.Resize((512, 512)),
+                    transforms.Resize((512, 512), antialias=True),
                     ])
             ):
         self.folder = load_all_acquisition(folder)
@@ -324,7 +324,7 @@ class LoadOneAcquisition(Dataset):
                  categorie = "cocrhigh",
                  acquisition = 1,
                  transform = transforms.Compose([
-                    transforms.Resize((512, 512)),
+                    transforms.Resize((512, 512), antialias=True),
                     ]),
                  augmentation = None
                  ) -> None:
