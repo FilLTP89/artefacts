@@ -9,13 +9,9 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
-#SBATCH --hint=nomultithread           # hyperthreading deactivated
+#SBATCH --hint=nomultithread        
 
-# Environment settings
-export NCCL_DEBUG=INFO
-export PYTHONFAULTHANDLER=1
 
-cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
 
 # Command to run inside the container
