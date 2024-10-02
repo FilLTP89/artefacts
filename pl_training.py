@@ -113,6 +113,7 @@ def load_module(
         data_folder = None,
         train_bs = 1,
         test_bs = 1,
+        img_size = 512,
         *args, **kwargs):
     if task == "Classification":
         module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
@@ -122,7 +123,7 @@ def load_module(
                               train_bs = train_bs,
                               test_bs = test_bs,
                               *args, 
-                              img_size=64,
+                              img_size=img_size,
                               **kwargs)
 
     module.setup()
@@ -177,6 +178,7 @@ def main():
         test_bs = args.test_bs,
         task= args.task,
         data_folder = args.data_folder
+        img_size=args.img_size
     )
     if args.use_feature_extractor:
         feature_extractor = load_feature_extractor()
