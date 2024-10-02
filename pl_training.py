@@ -99,7 +99,7 @@ def init_repo(wandb_name,
         path = f"model/saved_model/{model_name}/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     else:
-        path = f"/gpfs/workdir/gabrielihu/artefacts/model/saved_model/{model_name}/{wandb_name}"
+        path = f"model/saved_model/{model_name}/{wandb_name}"
         os.makedirs(path, exist_ok=True)
     return path
 
