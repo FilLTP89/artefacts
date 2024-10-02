@@ -4,7 +4,7 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=4
+#SBATCH --ntasks-per-node=2
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
@@ -12,8 +12,10 @@
 #SBATCH -C a100
 
 
+export NCCL_P2P_DISABLE=1
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
+
 
 command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
