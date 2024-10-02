@@ -19,7 +19,7 @@ command_to_run_GAN="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 2 \
     --test_bs 2 \
-    --task=GAN \
+    --task=Conditional_Diffusion \
     --mix_precision \
     --no-use_feature_extractor \
     --data_folder=control \
