@@ -15,7 +15,8 @@
 
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 
-command_to_run='WANDB_MODE=offline python3 pl_training.py \
+
+command_to_run="srun --ntasks-per-node=2 --gres=gpu:2 WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 3 \
     --test_bs 3 \
@@ -24,7 +25,7 @@ command_to_run='WANDB_MODE=offline python3 pl_training.py \
     --task=Conditional_Diffusion \
     --mix_precision \
     --data_folder=control \
-    --one_batch'
+    --accumulate_grad_batches 4"
 
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
