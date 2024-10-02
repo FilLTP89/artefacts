@@ -27,7 +27,7 @@ class Diffusion_UNET(pl.LightningModule):
                 learning_rate: float = 3e-4,
                 prediction_type = "epsilon",
                 training = True,
-                num_steps = 10,
+                num_steps = 1,
                 layers_per_block = 1,
                 *args, **kwargs):
         super().__init__()
@@ -160,7 +160,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                  condition_embedding : bool = False,
                  embed_dim=256,
                  learning_rate = 3e-4,
-                 num_inference_steps=50,
+                 num_inference_steps=2,
                  *args, **kwargs
                  ):
         super().__init__()
