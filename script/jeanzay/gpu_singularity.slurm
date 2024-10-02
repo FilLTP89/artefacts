@@ -4,8 +4,8 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
+#SBATCH --ntasks-per-node=2
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
@@ -21,11 +21,12 @@ module load singularity/3.8.5
 # Command to run inside the container
 command_to_run_GAN="python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 16 \
-    --test_bs 16 \
+    --train_bs 2 \
+    --test_bs 2 \
     --task=Conditional_Diffusion \
     --mix_precision \
-    --data_folder=complete \
+    --no-use_feature_extractor \
+    --data_folder=control \
     --accumulate_grad_batches 1"
 
 # Singularity execution with GPU support

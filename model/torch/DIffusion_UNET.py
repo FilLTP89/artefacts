@@ -244,7 +244,6 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             noise_pred = self(bad_images, timesteps, noisy_images)
             # Calculate the loss
             loss = F.mse_loss(noise_pred, noise)
-        rank_zero_info(f"Loss : {loss}")    
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True),
         return loss
     @torch.no_grad()
