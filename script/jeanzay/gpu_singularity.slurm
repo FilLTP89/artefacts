@@ -19,7 +19,7 @@ cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 module load singularity/3.8.5
 
 # Command to run inside the container
-command_to_run_GAN="srun python3 pl_training.py \
+command_to_run_GAN="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 2 \
     --test_bs 2 \
@@ -36,4 +36,4 @@ start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn
          --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 # Run the command inside Singularity
-$start_container_cmd $command_to_run_GAN
+srun $start_container_cmd $command_to_run_GAN
