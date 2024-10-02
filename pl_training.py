@@ -15,8 +15,6 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-work_dir = "/gpfs/users/gabrielihu/tmp"  # Replace this with your actual work directory path
-tempfile.tempdir = work_dir
 
 torch.backends.cuda.enable_mem_efficient_sdp(True)
 torch.set_float32_matmul_precision('medium')
@@ -154,9 +152,13 @@ def load_feature_extractor(*args, **kwargs):
     return model
 
 def main():
+
     set_seed(42)
     device_count = torch.cuda.device_count()
     args = init_args()
+    if args.ruche:
+        work_dir = "/gpfs/users/gabrielihu/tmp"  # Replace this with your actual work directory path
+        tempfile.tempdir = work_dir
     wandb_logger = init_wandb()
     try :
         run_name = wandb_logger.experiment.name
