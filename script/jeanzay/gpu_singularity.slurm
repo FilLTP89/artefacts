@@ -13,7 +13,6 @@
 
 # Environment settings
 export NCCL_DEBUG=INFO
-export NCCL_SOCKET_IFNAME=^lo,docker0
 export PYTHONFAULTHANDLER=1
 
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
@@ -37,4 +36,4 @@ start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn
     --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 # Run the command inside Singularity
-srun $start_container_cmd $command_to_run
+$start_container_cmd $command_to_run
