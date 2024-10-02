@@ -4,7 +4,7 @@
 #SBATCH --error=jeanzay_log/error.txt
 #SBATCH --constraint=a100
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=2
+#SBATCH --ntasks-per-node=4
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
