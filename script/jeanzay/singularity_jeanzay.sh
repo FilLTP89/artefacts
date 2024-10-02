@@ -15,7 +15,7 @@
 
 cd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/
 
-start_container_cmd='singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif /bin/bash'
+start_container_cmd='singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif'
 command_to_run='WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 3 \
