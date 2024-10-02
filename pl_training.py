@@ -131,6 +131,7 @@ def load_module(
 def load_model(task ="GAN",
                n_class = None,
                resume_from_cpkt = False,
+               img_size = 512,
                *args, **kwargs):
     if task == "GAN":
         if resume_from_cpkt:
@@ -142,7 +143,7 @@ def load_model(task ="GAN",
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
         model = ImageToImageDDIMLightningModule(num_channels=1,
-                                                img_size=512,
+                                                img_size=img_size,
                                                 condition_embedding=True,
                                                 embed_dim=256)
     else:
@@ -186,7 +187,8 @@ def main():
         task= args.task,
         n_class = module.n_class,
         feature_extractor = feature_extractor,
-        resume_from_cpkt = args.resume_from_cpkt    
+        resume_from_cpkt = args.resume_from_cpkt,
+        img_size = args.img_size   
     )
     grad_clip = 0 if args.mix_precision else 1
     model_name = type(model).__name__
