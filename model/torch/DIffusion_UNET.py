@@ -314,7 +314,7 @@ if __name__ == "__main__":
     out = model(x,x,t)
     print(out.shape)
     """
-    img_size = 64
+    img_size = 512
     model = ImageToImageDDIMLightningModule(img_size=img_size, condition_embedding=True).to("cuda")
     bad_image = torch.randn(1, 1, img_size,img_size).to("cuda")
     t = torch.Tensor([1]).to("cuda")
