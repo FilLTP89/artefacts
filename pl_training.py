@@ -158,7 +158,10 @@ def main():
     device_count = torch.cuda.device_count()
     args = init_args()
     wandb_logger = init_wandb()
-    run_name = wandb_logger.experiment.name
+    try :
+        run_name = wandb_logger.experiment.name
+    except:
+        run_name = "jeanzay"
     module = load_module(
         train_bs = args.train_bs,
         test_bs = args.test_bs,
