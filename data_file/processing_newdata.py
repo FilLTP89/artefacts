@@ -384,7 +384,7 @@ class Datav2Module(pl.LightningDataModule):
 
     def get_optimal_num_workers(self):
         slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
-        if slurms_cpu is None:
+        if slurms_cpu is not None:
             num_cpus = int(slurms_cpu)
         else:
             num_cpus = os.cpu_count()
