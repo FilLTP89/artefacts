@@ -77,6 +77,7 @@ def init_args():
     parser.add_argument("--resume_from_cpkt", action = argparse.BooleanOptionalAction, type=bool, default=False)
     parser.add_argument("--data_folder", type=str, default="complete")
     parser.add_argument("--accumulate_grad_batches", type=int, default=1)
+    parser.add_argument("--img_size", type=int, default=64)
     args = parser.parse_args()
     return args
 
@@ -202,6 +203,7 @@ def main():
     rank_zero_info(f"Use one batch : {args.one_batch}")
     rank_zero_info(f"Save weight only : {SAVE_WEIGHTS_ONLY}")
     rank_zero_info(f"Data used : {args.data_folder}")
+    rank_zero_info(f"Img size : {args.img_size}")
 
 
     if args.resume_from_cpkt:
