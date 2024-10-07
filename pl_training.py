@@ -21,7 +21,7 @@ torch.set_float32_matmul_precision('medium')
 
 SAVE_WEIGHTS_ONLY = False
 VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
-ATTENTION_MEDGAN_CPKT = "model/saved_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
+ATTENTION_MEDGAN_CPKT = "model/saved_model/AttentionMEDGAN/best_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
 
 class CustomModelCheckpoint(ModelCheckpoint):
     def __init__(self, *args, **kwargs):
