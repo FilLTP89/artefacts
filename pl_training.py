@@ -230,7 +230,7 @@ def main():
         monitor = monitor_dict[model_name][0],
         mode = monitor_dict[model_name][1], 
         save_weights_only=SAVE_WEIGHTS_ONLY,
-        every_n_train_steps = 10,
+        every_n_train_steps = None if model_name == "AttentionMEDGAN" else 10, # Save every 10 steps for Diffusion models
         ),
         LearningRateMonitor(logging_interval='step')]
     
@@ -244,7 +244,7 @@ def main():
         num_nodes=1,
         callbacks=callbacks,
         precision="bf16-mixed" if args.mix_precision else 32,
-        log_every_n_steps=10,
+        log_every_n_steps= 10, # Log 
         accumulate_grad_batches= args.accumulate_grad_batches,
         gradient_clip_val=grad_clip,
     )
