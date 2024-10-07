@@ -57,7 +57,6 @@ srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --task="GAN" \
     --resume_from_cpkt \
     --data_folder="complete" \
-    --mix_precision \
 
 echo "Job script completed"
 
