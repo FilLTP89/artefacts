@@ -20,7 +20,7 @@ command_to_run_GAN="python3 pl_training.py \
     --train_bs 16 \
     --test_bs 16 \
     --task=GAN \
-    --resume_from_cpkt \ 
+    --resume_from_cpkt \
     --no-use_feature_extractor \
     --data_folder=control \
     --accumulate_grad_batches 1"
