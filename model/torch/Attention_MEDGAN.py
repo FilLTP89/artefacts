@@ -333,10 +333,11 @@ class AttentionMEDGAN(pl.LightningModule):
         self.generator = generator or ConsNet(3, self.shape, filters=filters)
         self.discriminator = discriminator or PatchGAN(self.shape)
         if feature_extractor :
-            self.feature_extractor = feature_extractor 
-            feature_extractor.eval()
-            for param in feature_extractor.parameters():
-                param.requires_grad = False
+            #self.feature_extractor = feature_extractor 
+            #feature_extractor.eval()
+            #for param in feature_extractor.parameters():
+            #    param.requires_grad = False
+            pass
         else :
             self.feature_extractor = VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
 

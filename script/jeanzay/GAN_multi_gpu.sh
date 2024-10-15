@@ -22,7 +22,7 @@ command_to_run_GAN="python3 pl_training.py \
     --task=GAN \
     --resume_from_cpkt \
     --no-use_feature_extractor \
-    --data_folder=control \
+    --data_folder=complete \
     --accumulate_grad_batches 1"
 
 # Singularity execution with GPU support
