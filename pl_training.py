@@ -246,7 +246,6 @@ def main():
         precision="bf16-mixed" if args.mix_precision else 32,
         log_every_n_steps= 10, # Log 
         accumulate_grad_batches= args.accumulate_grad_batches,
-        gradient_clip_val=grad_clip,
     )
     trainer.fit(model, 
                 train_dataloaders = module.train_dataloader(),
