@@ -580,8 +580,13 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
     def init_weights(self, model):
         for m in model.modules():
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
+                # Check if the weight is not initialized (i.e., it's a new layer)
+                if m.weight.data.numel() == 0:
+                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                # For existing weights, we don't reinitialize
+
+                # Initialize bias if it exists and is not initialized
+                if m.bias is not None and m.bias.data.numel() == 0:
                     nn.init.constant_(m.bias, 0)
 
     def configure_optimizers(self):
