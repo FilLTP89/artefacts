@@ -6,7 +6,7 @@ from pytorch_lightning.utilities import rank_zero_info
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
-from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19
+from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19,OptimizedAttentionMEDGAN
 from model.torch.DIffusion_UNET import Diffusion_UNET, ImageToImageDDIMLightningModule
 from pytorch_lightning.utilities import rank_zero_only
 import logging
@@ -139,7 +139,7 @@ def load_model(task ="GAN",
             vgg = VGG19(classifier_training= False, n_class=15, load_whole_architecture=True)
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
-            model = AttentionMEDGAN(*args, **kwargs)
+            model = OptimizedAttentionMEDGAN(*args, **kwargs)
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
@@ -216,6 +216,7 @@ def main():
     rank_zero_info(f"Model name : {model_name}")
     rank_zero_info("\n \n \n ")
     monitor_dict = {
+        "OptimizedAttentionMEDGAN": ("test_mse_loss","min"),
         "AttentionMEDGAN": ("test_mse_loss","min"),
         "VGG19": ("val_acc","max"),
         "Diffusion_UNET": ("MSE_loss","min"),
