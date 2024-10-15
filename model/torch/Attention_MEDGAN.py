@@ -567,6 +567,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.generator = generator or self.init_generator(filters)
         self.discriminator = discriminator or self.init_discriminator()
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
+        print(f"n_class : {self.feature_extractor.n_class}")
 
         self.init_weights(self.generator)
         self.init_weights(self.discriminator)
@@ -580,13 +581,8 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
     def init_weights(self, model):
         for m in model.modules():
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
-                # Check if the weight is not initialized (i.e., it's a new layer)
-                if m.weight.data.numel() == 0:
-                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                # For existing weights, we don't reinitialize
-
-                # Initialize bias if it exists and is not initialized
-                if m.bias is not None and m.bias.data.numel() == 0:
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
     def configure_optimizers(self):
