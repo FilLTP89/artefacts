@@ -217,6 +217,7 @@ class VGG19(pl.LightningModule):
         self.classifier_training = classifier_training
         self.load_whole_architecture = load_whole_architecture
         
+        print(f"n_class : {self.n_class}")
         # block 1
         self.conv1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
         self.relu1 = nn.ReLU(inplace=True)
