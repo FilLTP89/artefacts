@@ -569,8 +569,8 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.discriminator = discriminator or self.init_discriminator()
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
 
-        self.init_weights(self.generator)
-        self.init_weights(self.discriminator)
+        #self.init_weights(self.generator)
+        #self.init_weights(self.discriminator)
 
     def init_generator(self, filters):
         return ConsNet(3, self.shape, filters=filters)
