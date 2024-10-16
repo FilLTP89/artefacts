@@ -161,7 +161,6 @@ def load_feature_extractor(*args, **kwargs):
     return model
 
 def main():
-
     set_seed(42)
     device_count = torch.cuda.device_count()
     args = init_args()

@@ -576,7 +576,9 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         return ConsNet(3, self.shape, filters=filters)
 
     def init_discriminator(self):
-        return nn.Sequential(*[spectral_norm(layer) for layer in PatchGAN(self.shape).layers])
+        patch_gan = PatchGAN(self.shape)
+        return nn.Sequential(*[spectral_norm(layer) if isinstance(layer, nn.Conv2d) else layer 
+                           for layer in patch_gan.model])
 
     def init_weights(self, model):
         for m in model.modules():
