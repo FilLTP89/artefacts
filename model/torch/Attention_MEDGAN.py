@@ -255,7 +255,7 @@ class VGG19(pl.LightningModule):
             self.dense1 = nn.Linear(512 * 16 * 16, 1024)  # Adjust input size based on your needs
             self.dense2 = nn.Linear(1024, 1024)
             self.classifier = nn.Linear(1024, n_class)
-            self.loss = nn.CrossEntropyLoss()
+            self.loss = nn.CrossEntropyLoss() # nn.LogSoftmax() and nn.NLLLoss()
             self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=n_class)
 
     def forward(self, x):
@@ -334,10 +334,10 @@ class AttentionMEDGAN(pl.LightningModule):
         self.generator = generator or ConsNet(3, self.shape, filters=filters)
         self.discriminator = discriminator or PatchGAN(self.shape)
         if feature_extractor :
-            #self.feature_extractor = feature_extractor 
-            #feature_extractor.eval()
-            #for param in feature_extractor.parameters():
-            #    param.requires_grad = False
+            self.feature_extractor = feature_extractor 
+            feature_extractor.eval()
+            for param in feature_extractor.parameters():
+                param.requires_grad = False
             pass
         else :
             self.feature_extractor = VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
@@ -568,7 +568,6 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.generator = generator or self.init_generator(filters)
         self.discriminator = discriminator or self.init_discriminator()
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
-        print(f"n_class : {self.feature_extractor.n_class}")
 
         self.init_weights(self.generator)
         self.init_weights(self.discriminator)

@@ -130,7 +130,7 @@ def load_module(
     return module
 
 def load_model(task ="GAN",
-               n_class = None,
+               n_class = 2,
                resume_from_cpkt = False,
                img_size = 512,
                *args, **kwargs):
@@ -139,7 +139,7 @@ def load_model(task ="GAN",
             vgg = VGG19(classifier_training= False, n_class=15, load_whole_architecture=True)
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
-            model = OptimizedAttentionMEDGAN(*args, **kwargs)
+            model = AttentionMEDGAN(*args, **kwargs)
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
