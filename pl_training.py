@@ -239,7 +239,7 @@ def main():
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
-        strategy="ddp_find_unused_parameters_true" if model_name == "AttentionMEDGAN" else "ddp",
+        strategy="ddp_find_unused_parameters_true" if (model_name == "AttentionMEDGAN" or model == "OptimizedAttentionMEDGAN") else "ddp",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
         callbacks=callbacks,
