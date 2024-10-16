@@ -577,16 +577,18 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
 
     def init_discriminator(self):
         patch_gan = PatchGAN(self.shape)
-        return nn.Sequential(*[spectral_norm(layer) if isinstance(layer, nn.Conv2d) else layer 
-                           for layer in patch_gan.model])
+        return patch_gan
+        """ return nn.Sequential(*[spectral_norm(layer) if isinstance(layer, nn.Conv2d) else layer 
+                           for layer in patch_gan.model]) """
 
+    """     
     def init_weights(self, model):
         for m in model.modules():
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-
+    """
     def configure_optimizers(self):
         g_opt = torch.optim.Adam(self.generator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
         d_opt = torch.optim.Adam(self.discriminator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
