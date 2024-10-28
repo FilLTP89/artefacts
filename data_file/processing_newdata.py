@@ -376,8 +376,8 @@ class Datav2Module(pl.LightningDataModule):
         self.test_bs = test_bs
         self.train_ratio = train_ratio
         self.valid_ratio = (1 - train_ratio)/2
-        self.test_ration = self.valid_ratio
-        self.num_workers = self.get_optimal_num_workers()
+        self.test_ratio = self.valid_ratio
+            
         self.dataset_type = dataset_type
         self.data_folder = data_folder
         self.pin_memory = pin_memory
@@ -461,13 +461,10 @@ if __name__ == "__main__":
         target = target.squeeze().numpy()
         plt.imsave(f"testing_processing/input/{idx}_input.png", input, cmap="gray")
         plt.imsave(f"testing_processing/target/{idx}_target.png", target, cmap="gray") """
-    ds = gpt_create_all_dataset()
-    print(len(ds))
-    random.shuffle(ds)
-    for i in range(5):
-        print(ds[i])
-
-
+    """ 
+    ds = Datav2Dataset()
+    ds.visualize_random()
+    """
     """ 
     from model.torch.Attention_MEDGAN import VGG19
     model = VGG19(classifier_training=True, n_class=2)
@@ -505,4 +502,10 @@ if __name__ == "__main__":
     all_ds = gpt_create_all_dataset()
     print(len(all_ds))
     """
+    folder = gpt_create_all_dataset("datav2/protocole_1/")
+    for x in folder:
+        control_or_fracture = x[0].split("/")[-3].lower()
+        target_or_input = x[0].split("/")[-2].lower()
+        print(control_or_fracture, target_or_input)
+        print("\n")
    

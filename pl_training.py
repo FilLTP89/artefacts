@@ -229,8 +229,8 @@ def main():
         verbose = True,   
         monitor = monitor_dict[model_name][0],
         mode = monitor_dict[model_name][1], 
-        save_weights_only=SAVE_WEIGHTS_ONLY,
-        every_n_train_steps = None if model_name == "AttentionMEDGAN" else 10, # Save every 10 steps for Diffusion models
+        save_weights_only = SAVE_WEIGHTS_ONLY,
+        every_n_train_steps = None if model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"] else 10, # Save every 10 steps for Diffusion models
         ),
         LearningRateMonitor(logging_interval='step')]
     
@@ -239,7 +239,7 @@ def main():
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
-        strategy="ddp_find_unused_parameters_true" if (model_name == "AttentionMEDGAN" or model == "OptimizedAttentionMEDGAN") else "ddp",
+        strategy="ddp_find_unused_parameters_true" if (model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"]) else "ddp",
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
         callbacks=callbacks,
