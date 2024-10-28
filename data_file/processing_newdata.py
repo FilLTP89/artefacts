@@ -16,6 +16,16 @@ import pytorch_lightning as pl
 import multiprocessing
 import torch
 
+def select_folder(path,control = True ,category="controlhigh", dcm= True):
+    folder = []
+    dcm = "dcm" if dcm else "raw"
+    control = "control" if control else "fracture"
+    for i in range(1,6):
+        try:
+            folder += os.listdir(os.path.join(path, f"{control}/{i}/{dcm}/Input/{category}"))
+        except:
+            pass
+    return folder
 
 def create_all_dataset(
         path = "datav2/protocole_1/",
@@ -171,43 +181,107 @@ def load_all_acquisition(path = "datav2/protocole_1/",
 class ClassificationDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
+                 data_folder = "complete",
                  transform = transforms.Compose([
                     transforms.Resize((512, 512), antialias=True),
-                    ])
+                    ]),
+                *args, **kwargs
             ):
-        self.folder = classification_dataset(folder)
+        self.data_folder = data_folder    
+        self.folder = folder    
+        self.create_ds()
+
         self.transform = transform
         self.augmentation = None
-        self.input_dict = {
-            "input":0,
-            "target":1,
-        }
-        self.category_dict = {
-           "cocrhigh"  : 0,
-           "cocrhighmetal" : 1, 
-           "cocrlow" : 2,
-           "cocrlowmetal" : 3,  
-           "controlhighmetal" : 4,
-           "controllowmetal" : 5,
-           "fibrahighmetal" : 6,
-           "fibralow"  : 7,
-           "fibralowmetal" : 8, 
-           "guttahigh" : 9,
-           "guttahighmetal" : 10,  
-           "guttalow" : 11,
-           "huttalowmetal" : 12,
-           "controlhigh" : 13,
-           "fibrahigh" : 14
-        }
         self.n_class = len(self.category_dict)
         #self.augmentation = CTImageAugmentation()
+
+
+    def create_ds(self):
+        if self.data_folder == "complete":
+            self.folder = gpt_create_all_dataset(self.folder)
+            self.folder = [x[0] for x in self.folder]
+
+            control_controlhigh = select_folder(path = self.folder,
+                                                control = True,
+                                                category="controlhigh")
+            control_fibrahigh = select_folder(path = self.folder,
+                                                control = True,
+                                                category="fibrahigh")
+            fracture_controlhigh = select_folder(path =self.folder,
+                                                control = False,
+                                                category="control_high")
+            fracture_fibrahigh = select_folder(path =self.folder,
+                                                control = False,
+                                                category="fibra_high")
+            self.folder = self.folder + control_controlhigh + control_fibrahigh + fracture_controlhigh + fracture_fibrahigh
+            self.category_dict ={
+                "control_cocrhigh" : -1,
+                "control_cocrhighmetal" : 0,
+                "control_cocrlow" : 1,
+                "control_cocrlowmetal" : 2,
+                "control_controlhighmetal" : 3,
+                "control_controllowmetal" : 4,
+                "control_fibrahighmetal" : 5,
+                "control_fibralow" : 6,
+                "control_fibralowmetal" : 7,
+                "control_guttahigh" : 8,
+                "control_guttahighmetal" : 9,
+                "control_guttalow" : 10,
+                "control_huttalowmetal" : 11,
+                "fracture_cocr_high":12,
+                "fracture_cocr_high_metal":13,
+                "fracture_cocr_low":14,
+                "fracture_cocr_low_metal":15,
+                "fracture_control_high_metal":16,
+                "fracture_control_low":17,
+                "fracture_control_low_metal":18,
+                "fracture_fibra_high_metal":19,
+                "fracture_fibra_low":20,
+                "fracture_fibra_low_metal":21,
+                "fracture_gutta_high":22,
+                "fracture_gutta_high_metal":23,
+                "fracture_gutta_low":24,
+                "fracture_gutta_low_metal":25,
+                "control_controlhigh" : 26,
+                "control_fibrahigh" : 27,
+                "fracture_controlhigh" : 28,
+                "fracture_fibrahigh" : 29,
+            }
+
+        elif self.data_folder == "control":
+            self.folder = classification_dataset(path = self.path)
+            self.category_dict = {
+                "control_cocrhigh" : 0,
+                "control_cocrhighmetal" : 1,
+                "control_cocrlow" : 2,
+                "control_cocrlowmetal" : 3,
+                "control_controlhighmetal" : 4,
+                "control_controllowmetal" : 5,
+                "control_fibrahighmetal" : 6,
+                "control_fibralow" : 7,
+                "control_fibralowmetal" : 8,
+                "control_guttahigh" : 9,
+                "control_guttahighmetal" : 10,
+                "control_guttalow" : 11,
+                "control_huttalowmetal" : 12,
+           }
+        else:
+            print("Unrecognized dataset argument")
+
+    def get_name(self, name):
+        category = name.split("/")[-2]
+        control = name.split("/")[-6]
+        name = control + "_" + category   
+        name = name.replace(" ","_")
+        return name
 
     def __len__(self):
         return len(self.folder)
     
     def __getitem__(self, idx):
         x = self.folder[idx]
-        target_or_input = x.split("/")[-2].lower()
+        target_or_input = self.get_name(x)
         target = self.category_dict[target_or_input]
         x = np.array(dicom.dcmread(x).pixel_array, dtype=np.float32)
         x = normalize_ct_image(x)
@@ -216,7 +290,6 @@ class ClassificationDataset(Dataset):
             x = self.transform(x)
         if self.augmentation:
             x = self.augmentation(x)
-        
         return x, torch.tensor(target).type(torch.LongTensor)
 
 class Datav2Dataset(Dataset):
@@ -382,6 +455,7 @@ class Datav2Module(pl.LightningDataModule):
         self.data_folder = data_folder
         self.pin_memory = pin_memory
         self.img_size = img_size
+        self.num_workers = self.get_optimal_num_workers()
 
     def get_optimal_num_workers(self):
         slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
@@ -399,7 +473,7 @@ class Datav2Module(pl.LightningDataModule):
         return cpu_used
         
     def setup(self, stage = None):
-        self.dataset = self.dataset_type(self.folder, data_folder=self.data_folder, img_size=self.img_size)
+        self.dataset = self.dataset_type(folder = self.folder, data_folder=self.data_folder, img_size=self.img_size)
         self.n_class = self.dataset.n_class
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)
@@ -465,11 +539,12 @@ if __name__ == "__main__":
     ds = Datav2Dataset()
     ds.visualize_random()
     """
-    """ 
     from model.torch.Attention_MEDGAN import VGG19
-    model = VGG19(classifier_training=True, n_class=2)
-    ds = ClassificationDataset()
-    module = Datav2Module(train_bs=3,
+    ds = ClassificationDataset(folder = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/", data_folder="complete")
+    model = VGG19(classifier_training=True, n_class=len(ds.category_dict))
+    module = Datav2Module(folder = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/",
+                          train_bs =3,
+                          data_folder="complete",
                           dataset_type=ClassificationDataset)
     module.setup()
     train_ds = module.train_dataloader()
@@ -479,7 +554,6 @@ if __name__ == "__main__":
         loss = F.cross_entropy(pred,target)
         print(loss)
         break
-    """
     """
      load_one_acquisition(
         path = "datav2/protocole_1/",
@@ -502,10 +576,3 @@ if __name__ == "__main__":
     all_ds = gpt_create_all_dataset()
     print(len(all_ds))
     """
-    folder = gpt_create_all_dataset("datav2/protocole_1/")
-    for x in folder:
-        control_or_fracture = x[0].split("/")[-3].lower()
-        target_or_input = x[0].split("/")[-2].lower()
-        print(control_or_fracture, target_or_input)
-        print("\n")
-   

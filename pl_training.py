@@ -116,7 +116,7 @@ def load_module(
         img_size = 512,
         *args, **kwargs):
     if task == "Classification":
-        module = Datav2Module(dataset_type = ClassificationDataset,*args, **kwargs)
+        module = Datav2Module(dataset_type = ClassificationDataset, data_folder= data_folder,*args, **kwargs)
     else:
         module = Datav2Module(dataset_type = Datav2Dataset,
                               data_folder = data_folder, 
