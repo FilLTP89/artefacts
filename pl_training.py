@@ -230,7 +230,7 @@ def main():
         monitor = monitor_dict[model_name][0],
         mode = monitor_dict[model_name][1], 
         save_weights_only = SAVE_WEIGHTS_ONLY,
-        every_n_train_steps = None if model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"] else 10, # Save every 10 steps for Diffusion models
+        every_n_train_steps = None if model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN","VGG19"] else 10, # Save every 10 steps for Diffusion models
         ),
         LearningRateMonitor(logging_interval='step')]
     

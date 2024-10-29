@@ -15,6 +15,7 @@ from util import normalize_ct_image, CTImageAugmentation
 import pytorch_lightning as pl  
 import multiprocessing
 import torch
+from augmentation import DicomClassificationCollator, DicomPredictionCollator
 
 def select_folder(path,control = True ,category="controlhigh", dcm= True):
     folder = []
@@ -194,7 +195,6 @@ class ClassificationDataset(Dataset):
         self.transform = transform
         self.augmentation = None
         self.n_class = len(self.category_dict)
-        #self.augmentation = CTImageAugmentation()
 
 
     def create_ds(self):
@@ -288,8 +288,6 @@ class ClassificationDataset(Dataset):
         x = torch.tensor(x).unsqueeze(0)
         if self.transform:
             x = self.transform(x)
-        if self.augmentation:
-            x = self.augmentation(x)
         return x, torch.tensor(target).type(torch.LongTensor)
 
 class Datav2Dataset(Dataset):
@@ -456,6 +454,25 @@ class Datav2Module(pl.LightningDataModule):
         self.pin_memory = pin_memory
         self.img_size = img_size
         self.num_workers = self.get_optimal_num_workers()
+        self.augmentation_dict = {
+            ClassificationDataset :  DicomClassificationCollator(
+                    prob_augment=0.5,  # 50% chance of applying an augmentation
+                    rotation_range=(-10, 10),
+                    scale_range=(0.95, 1.05),
+                    brightness_range=(0.9, 1.1),
+                    contrast_range=(0.9, 1.1),
+                    noise_std=0.02,
+                    enable_elastic=False  # Set to True if you want elastic deformation
+            ),
+            Datav2Dataset: DicomPredictionCollator(prob_augment=0.5,  # 50% chance of applying an augmentation
+                    rotation_range=(-10, 10),
+                    scale_range=(0.95, 1.05),
+                    brightness_range=(0.9, 1.1),
+                    contrast_range=(0.9, 1.1),
+                    noise_std=0.02,
+                    enable_elastic=False  # Set to True if you want elastic deformation
+            )
+        }
 
     def get_optimal_num_workers(self):
         slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
@@ -486,21 +503,22 @@ class Datav2Module(pl.LightningDataModule):
                           batch_size=self.train_bs, 
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
-                          shuffle=True)
+                          shuffle=True,
+                          collate_fn=self.augmentation_dict[self.dataset_type])
     
     def val_dataloader(self):
         return DataLoader(self.valid_ds, 
                           batch_size=self.test_bs, 
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=True)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, 
                           batch_size=self.test_bs, 
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=True)
     
     def combined_dataloader(self):
         return DataLoader(self.dataset, 

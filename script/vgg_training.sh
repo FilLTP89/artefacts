@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=artefact
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:4
 #SBATCH --mem=40GB
 #SBATCH --output=ruche_log/vgg_output.txt
 #SBATCH --error=ruche_log/vgg_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=4
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
 #SBATCH --export=NONE
@@ -27,11 +27,12 @@ export PYTHONPATH="./"
 
 python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 32 \
-    --test_bs 32 \
+    --train_bs 128 \
+    --test_bs 128 \
     --ruche \
     --task="Classification" \
     --data_folder="complete" \
+    --lr 0.0001 \
 
 
 
