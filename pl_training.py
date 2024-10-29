@@ -147,9 +147,9 @@ def load_model(task ="GAN",
                                                 img_size=img_size,
                                                 condition_embedding=True,
                                                 embed_dim=256)
-    else:
+    elif task == "Classification":
         model = VGG19(classifier_training= True,
-                      n_class=n_class, 
+                      n_class=31, 
                       *args, **kwargs)
     return model
 
