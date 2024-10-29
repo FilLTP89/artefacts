@@ -216,7 +216,6 @@ class ClassificationDataset(Dataset):
                                                 category="fibra_high")
             self.folder = self.folder + control_controlhigh + control_fibrahigh + fracture_controlhigh + fracture_fibrahigh
             self.category_dict ={
-                "control_cocrhigh" : -1,
                 "control_cocrhighmetal" : 0,
                 "control_cocrlow" : 1,
                 "control_cocrlowmetal" : 2,
@@ -247,6 +246,7 @@ class ClassificationDataset(Dataset):
                 "control_fibrahigh" : 27,
                 "fracture_controlhigh" : 28,
                 "fracture_fibrahigh" : 29,
+                "control_cocrhigh" : 30,
             }
 
         elif self.data_folder == "control":
