@@ -540,9 +540,10 @@ if __name__ == "__main__":
     ds.visualize_random()
     """
     from model.torch.Attention_MEDGAN import VGG19
-    ds = ClassificationDataset(folder = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/", data_folder="complete")
+    folder = "datav2/protocole_1/"
+    ds = ClassificationDataset(folder = folder, data_folder="complete")
     model = VGG19(classifier_training=True, n_class=len(ds.category_dict))
-    module = Datav2Module(folder = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/",
+    module = Datav2Module(folder = folder,
                           train_bs =3,
                           data_folder="complete",
                           dataset_type=ClassificationDataset)
