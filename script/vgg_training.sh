@@ -30,7 +30,7 @@ python3 pl_training.py \
     --train_bs 32 \
     --test_bs 32 \
     --ruche \
-    --task="classification" \
+    --task="Classification" \
     --data_folder="complete" \
 
 
