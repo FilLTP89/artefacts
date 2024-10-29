@@ -10,8 +10,8 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
-#SBATCH --export=NONE
-#SBATCH --exclude=ruche-gpu16,ruche-gpu13,ruche-gpu11
+#SBATCH --export=ALL
+#SBATCH --exclude=ruche-gpu16,ruche-gpu11
 
 module load anaconda3/2022.10/gcc-11.2.0 
 module load gcc/11.2.0/gcc-4.8.5
@@ -19,13 +19,28 @@ module load cuda/11.8.0/gcc-11.2.0
 
 export NCCL_P2P_DISABLE=1
 export LD_LIBRARY_PATH=/gpfs/users/gabrielihu/.conda/envs/artefact/lib
-export  XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
-source activate artefact
-cd $WORKDIR/artefacts/
-export PYTHONPATH="./"
-#export WANDB__SERVICE_WAIT=1000
+export XLA_FLAGS="--xla_gpu_cuda_data_dir=/gpfs/users/gabrielihu/.conda/envs/artefact/lib/"
 
-python3 pl_training.py \
+echo "Activating conda environment"
+source activate artefact
+conda info --envs
+
+cd $WORKDIR/artefacts/
+echo "Current working directory: $(pwd)"
+
+export PYTHONPATH="./"
+export WANDB__SERVICE_WAIT=1000
+export PATH="/gpfs/users/gabrielihu/.conda/envs/artefact/bin:$PATH"
+export CUDA_LAUNCH_BLOCKING=1
+
+echo "Python location:"
+which python3
+
+echo "Python version:"
+python3 --version
+
+
+srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
     --train_bs 128 \
     --test_bs 128 \
