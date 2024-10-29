@@ -27,10 +27,11 @@ export PYTHONPATH="./"
 
 python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 16 \
-    --test_bs 16 \
+    --train_bs 32 \
+    --test_bs 32 \
     --ruche \
     --task="classification" \
+    --data_folder="complete" \
 
 
 

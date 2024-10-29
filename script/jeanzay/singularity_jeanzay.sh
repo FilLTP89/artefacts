@@ -33,6 +33,13 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --data_folder=control \
     --accumulate_grad_batches 4"
 
+VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
+    --max_epochs 100 \
+    --train_bs 64 \
+    --test_bs 64 \
+    --task=Classification \
+    --data_folder=complete "
+
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
 
 srun $start_container_cmd /bin/bash -c "$command_to_run"
