@@ -346,7 +346,62 @@ class Datav2Dataset(Dataset):
         axs[1].imshow(target, cmap="gray")
         axs[1].set_title(target_name)
         plt.show()
-    
+
+    def validate_data(self):
+        """
+        Validates DICOM images for NaN values and corrupted/bad images.
+        Checks both input and target images.
+
+        Returns:
+        - tuple: (bool, list) - (is_valid, list of error messages)
+        """
+        errors = []
+        is_valid = True
+
+        for idx, (input_path, target_path) in enumerate(self.folder):
+            try:
+                # Load and check input image
+                input_dicom = dicom.dcmread(input_path)
+                input_array = input_dicom.pixel_array
+
+                # Check for NaN in input
+                if np.isnan(input_array).any():
+                    errors.append(f"Input image contains NaN values: {input_path}")
+                    is_valid = False
+
+                # Check for corrupted/bad input image
+                if np.all(input_array == 0) or input_array.size == 0:
+                    errors.append(f"Input image appears corrupted (all zeros or empty): {input_path}")
+                    is_valid = False
+
+                # Load and check target image
+                target_dicom = dicom.dcmread(target_path)
+                target_array = target_dicom.pixel_array
+
+                # Check for NaN in target
+                if np.isnan(target_array).any():
+                    errors.append(f"Target image contains NaN values: {target_path}")
+                    is_valid = False
+
+                # Check for corrupted/bad target image
+                if np.all(target_array == 0) or target_array.size == 0:
+                    errors.append(f"Target image appears corrupted (all zeros or empty): {target_path}")
+                    is_valid = False
+
+            except Exception as e:
+                errors.append(f"Error reading DICOM at index {idx}: {str(e)}")
+                is_valid = False
+
+        if not is_valid:
+            print(f"Found {len(errors)} validation errors:")
+            for error in errors:
+                print(f"- {error}")
+        else:
+            print("All DICOM images passed validation!")
+
+        return is_valid, errors
+
+
 class Stacked3DDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
@@ -533,67 +588,5 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    """ acq = load_one_acquisition(
-        path = "datav2/protocole_1/",
-        control = True,
-        categorie="fibralowmetal",
-        acquisition=3
-    ) 
-    ds = LoadOneAcquisition(
-        path = "datav2/protocole_1/",
-        control = True,
-        categorie="huttalowmetal",
-        acquisition=1
-    )
-    DataLoader = torch.utils.data.DataLoader(
-        ds,
-        batch_size = 1,
-        shuffle = False
-    )
-    for idx, (input, target) in enumerate(DataLoader):
-        input = input.squeeze().numpy()
-        target = target.squeeze().numpy()
-        plt.imsave(f"testing_processing/input/{idx}_input.png", input, cmap="gray")
-        plt.imsave(f"testing_processing/target/{idx}_target.png", target, cmap="gray") """
-    """ 
     ds = Datav2Dataset()
-    ds.visualize_random()
-    """
-    from model.torch.Attention_MEDGAN import VGG19
-    folder = "datav2/protocole_1/"
-    ds = ClassificationDataset(folder = folder, data_folder="complete")
-    model = VGG19(classifier_training=True, n_class=len(ds.category_dict))
-    module = Datav2Module(folder = folder,
-                          train_bs =3,
-                          data_folder="complete",
-                          dataset_type=ClassificationDataset)
-    module.setup()
-    train_ds = module.train_dataloader()
-    for idx, (input, target) in enumerate(train_ds):
-        pred = model(input)
-        print(pred.shape)
-        loss = F.cross_entropy(pred,target)
-        print(loss)
-        break
-    """
-     load_one_acquisition(
-        path = "datav2/protocole_1/",
-        control = True,
-        nb_folder = 5,
-        dcm = True
-    )
-    """
-    """
-    module = Datav2Module(train_bs=1)
-    module.setup()
-    train_ds = module.train_dataloader()
-    print(len(module.dataset))
-    for idx, (input, target) in enumerate(train_ds):
-        print(input.shape, target.shape)
-        print(input.dtype, target.dtype)
-        break
-    """
-    """
-    all_ds = gpt_create_all_dataset()
-    print(len(all_ds))
-    """
+    ds.validate_data()
