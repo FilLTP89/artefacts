@@ -309,7 +309,7 @@ class Datav2Dataset(Dataset):
             transforms.Resize((img_size, img_size), antialias=True),
         ])
         self.augmentation = augmentation
-        self.n_class = None
+        self.n_class = 31
         #self.augmentation = CTImageAugmentation()
 
 

@@ -33,6 +33,15 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --data_folder=control \
     --accumulate_grad_batches 4"
 
+GAN_command="WANDB_MODE=offline python3 pl_training.py \
+    --max_epochs 100 \
+    --train_bs 16 \
+    --test_bs 16 \
+    --no-use_feature_extractor \
+    --task=GAN \
+    --data_folder=complete \
+    --resume_from_cpkt"
+
 VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 64 \
