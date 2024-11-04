@@ -246,6 +246,7 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
             loss = F.mse_loss(noise_pred, noise)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True),
         return loss
+    
     @torch.no_grad()
     def sample(self, bad_image):
         # Ensure bad_image has the correct shape
@@ -300,9 +301,9 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
     def validation_step(self,batch, batch_idx):
         x, y = batch
         xt = self.sample(x)
-        MSE = F.mse_loss(y, xt)
-        self.log("MSE_loss", MSE, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, reduce_fx='mean')
-        return {"MSE_loss": MSE}
+        mse = F.mse_loss(y, xt)
+        self.log("MSE_loss", mse, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, reduce_fx='mean')
+        return {"MSE_loss": mse}
 
 
 if __name__ == "__main__":

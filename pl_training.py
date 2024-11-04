@@ -1,7 +1,9 @@
 import os
 import torch
 import random 
+import yaml
 import numpy as np
+from pytorch_lightning.strategies import DeepSpeedStrategy
 from pytorch_lightning.utilities import rank_zero_info
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning as pl  
@@ -167,7 +169,7 @@ def load_feature_extractor(data_folder = "complete",*args, **kwargs):
                                        n_class = 31)
     return model
 
-def main():
+def main(ds_config=None):
     set_seed(42)
     device_count = torch.cuda.device_count()
     args = init_args()
@@ -242,13 +244,17 @@ def main():
         every_n_train_steps = None if model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN","VGG19"] else 10, # Save every 10 steps for Diffusion models
         ),
         LearningRateMonitor(logging_interval='step')]
-    
+    if ds_config:
+        strategy = DeepSpeedStrategy(ds_config)
+    else:
+        strategy = "ddp_find_unused_parameters_true" if (model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"]) else "ddp",
+
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,
         accelerator="gpu", 
         devices=device_count, 
-        strategy="ddp_find_unused_parameters_true" if (model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"]) else "ddp",
+        strategy= strategy,
         overfit_batches= 1 if args.one_batch else 0,
         num_nodes=1,
         callbacks=callbacks,
@@ -264,4 +270,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with open('deepspeed_config.yaml', 'r') as f:
+        ds_config = yaml.safe_load(f)
+    ds_config = None
+    main(ds_config)
