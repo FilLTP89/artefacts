@@ -42,12 +42,12 @@ python3 --version
 
 srun /gpfs/users/gabrielihu/.conda/envs/artefact/bin/python pl_training.py \
     --max_epochs 100 \
-    --train_bs 128 \
-    --test_bs 128 \
+    --train_bs 512 \
+    --test_bs 512 \
     --ruche \
     --task="Classification" \
     --data_folder="complete" \
-    --lr 0.0001 \
+    --mix_precision \
 
 
 

@@ -20,7 +20,8 @@ torch.backends.cuda.enable_mem_efficient_sdp(True)
 torch.set_float32_matmul_precision('medium')
 
 SAVE_WEIGHTS_ONLY = False
-VGG_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
+VGG_CONTROL_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
+VGG_COMPLETE_CPKT = "model/saved_model/VGG19/comfy-dragon-158/best_model-epoch=52-val_acc=0.91.ckpt"
 ATTENTION_MEDGAN_CPKT = "model/saved_model/AttentionMEDGAN/best_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
 
 class CustomModelCheckpoint(ModelCheckpoint):
@@ -29,13 +30,15 @@ class CustomModelCheckpoint(ModelCheckpoint):
         print("CustomModelCheckpoint initialized")
         
     def _save_checkpoint(self, trainer, filepath):
-        print("\n\n----- CUSTOM CHECKPOINT INFO -----")
-        print(f"Saving model to: {filepath}")
+        if int(os.environ.get('LOCAL_RANK', 0)) == 0:
+            print("\n\n----- CUSTOM CHECKPOINT INFO -----")
+            print(f"Saving model to: {filepath}")
         model_size = self._get_model_size(trainer.model)
         num_files = self._count_checkpoint_files(filepath)
-        print(f"Model size: {model_size:.2f} MB")
-        print(f"Number of files to be saved: {num_files}")
-        print("----- END CUSTOM CHECKPOINT INFO -----\n\n")
+        if int(os.environ.get('LOCAL_RANK', 0)) == 0:
+            print(f"Model size: {model_size:.2f} MB")
+            print(f"Number of files to be saved: {num_files}")
+            print("----- END CUSTOM CHECKPOINT INFO -----\n\n")
         super()._save_checkpoint(trainer, filepath)
 
     def _get_model_size(self, model):
@@ -130,13 +133,13 @@ def load_module(
     return module
 
 def load_model(task ="GAN",
-               n_class = 15,
+               n_class = 31,
                resume_from_cpkt = False,
                img_size = 512,
                *args, **kwargs):
     if task == "GAN":
         if resume_from_cpkt:
-            vgg = VGG19(classifier_training= False, n_class=15, load_whole_architecture=True)
+            vgg = VGG19(classifier_training= False, n_class=n_class, load_whole_architecture=True)
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
             model = OptimizedAttentionMEDGAN(*args, **kwargs)
@@ -153,11 +156,15 @@ def load_model(task ="GAN",
                       *args, **kwargs)
     return model
 
-def load_feature_extractor(*args, **kwargs):
-    model = VGG19.load_from_checkpoint(VGG_CPKT, 
+def load_feature_extractor(data_folder = "complete",*args, **kwargs):
+    if data_folder =="complete":
+        cpkt = VGG_COMPLETE_CPKT
+    elif data_folder == "control":
+        cpkt = VGG_CONTROL_CPKT
+    model = VGG19.load_from_checkpoint(cpkt, 
                                        load_whole_architecture = True,
                                        classifier_training=False,
-                                       n_class = 15)
+                                       n_class = 31)
     return model
 
 def main():
@@ -180,7 +187,9 @@ def main():
         img_size=args.img_size
     )
     if args.use_feature_extractor:
-        feature_extractor = load_feature_extractor()
+        feature_extractor = load_feature_extractor(
+            data_folder = args.data_folder,
+        )
     else :
         feature_extractor = None
     model = load_model(

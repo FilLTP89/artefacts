@@ -480,13 +480,15 @@ class Datav2Module(pl.LightningDataModule):
             num_cpus = int(slurms_cpu)
         else:
             num_cpus = os.cpu_count()
-        print(f"Number of CPUs: {num_cpus}")    
+        if int(os.environ.get('LOCAL_RANK', 0)) == 0:
+            print(f"Number of CPUs: {num_cpus}")    
         num_gpus = torch.cuda.device_count()
         if num_gpus > 0:
             cpu_used = min(num_cpus, 4 * num_gpus, 7)
         else:
             cpu_used = min(num_cpus, 8)  # Cap at 8 for CPU-only machines
-        print(f"Number of workers: {cpu_used}")
+        if int(os.environ.get('LOCAL_RANK', 0)) == 0:
+            print(f"Number of workers: {cpu_used}")
         return cpu_used
         
     def setup(self, stage = None):
@@ -518,14 +520,14 @@ class Datav2Module(pl.LightningDataModule):
                           batch_size=self.test_bs, 
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
-                          shuffle=True)
+                          shuffle=False)
     
     def combined_dataloader(self):
         return DataLoader(self.dataset, 
                           batch_size=self.train_bs, 
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
-                          shuffle=True)
+                          shuffle=False)
 
 
 

@@ -135,3 +135,5 @@ class CTImageAugmentation(nn.Module):
 def load_and_normalize_dicom(path, normalization_type='simple'):
     image = pydicom.dcmread(path).pixel_array.astype(np.float32)
     return normalize_ct_image(image, normalization_type)
+
+
