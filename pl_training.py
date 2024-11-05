@@ -169,10 +169,9 @@ def load_feature_extractor(data_folder = "complete",*args, **kwargs):
                                        n_class = 31)
     return model
 
-def main(ds_config=None):
+def main(args,ds_config=None):
     set_seed(42)
     device_count = torch.cuda.device_count()
-    args = init_args()
     if args.ruche:
         work_dir = "/gpfs/users/gabrielihu/tmp"  # Replace this with your actual work directory path
         tempfile.tempdir = work_dir
@@ -245,14 +244,16 @@ def main(ds_config=None):
         ),
         LearningRateMonitor(logging_interval='step')]
     if ds_config:
-        strategy = DeepSpeedStrategy(ds_config)
+        print("Using DeepSpeed")
+        strategy = DeepSpeedStrategy(config=ds_config,
+                                    accelerator="gpu")
+    
     else:
-        strategy = "ddp_find_unused_parameters_true" if (model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"]) else "ddp",
+        strategy = "ddp_find_unused_parameters_true" if (model_name in ["AttentionMEDGAN","OptimizedAttentionMEDGAN"]) else "ddp"
 
     trainer = pl.Trainer(
         logger=wandb_logger,
         max_epochs=args.max_epochs,
-        accelerator="gpu", 
         devices=device_count, 
         strategy= strategy,
         overfit_batches= 1 if args.one_batch else 0,
@@ -267,10 +268,37 @@ def main(ds_config=None):
                 val_dataloaders = module.val_dataloader(),
                 ckpt_path= None if not args.resume_from_cpkt else ATTENTION_MEDGAN_CPKT
                 )
-
+def get_deepspeed_config():
+    with open('config/deepspeed_config.yaml', 'r') as f:
+        ds_config = yaml.safe_load(f)
+    
+    # Set and convert optimizer parameters to proper numeric types
+    #optimizer_params = ds_config['optimizer']['params']
+    #optimizer_params['lr'] = float(optimizer_params.get('lr', 1e-3))
+    #optimizer_params['eps'] = float(optimizer_params.get('eps', 1e-8))
+    #optimizer_params['weight_decay'] = float(optimizer_params.get('weight_decay', 0.0))
+    
+    # Convert remaining 'auto' values to None
+    def convert_auto_to_none(config):
+        if isinstance(config, dict):
+            return {k: convert_auto_to_none(v) for k, v in config.items()}
+        elif isinstance(config, list):
+            return [convert_auto_to_none(v) for v in config]
+        elif config == 'auto':
+            return None
+        elif isinstance(config, str) and config.replace('.', '').replace('e-', '').isdigit():
+            # Convert string numbers to float
+            return float(config)
+        return config
+    
+    ds_config = convert_auto_to_none(ds_config)
+    return ds_config
 
 if __name__ == "__main__":
-    with open('deepspeed_config.yaml', 'r') as f:
-        ds_config = yaml.safe_load(f)
-    ds_config = None
-    main(ds_config)
+    args = init_args()
+    if args.use_deepspeed:
+        import deepspeed
+        print(f"PyTorch Lightning version: {pl.__version__}")
+        print(f"DeepSpeed version: {deepspeed.__version__}")
+        ds_config = get_deepspeed_config()
+    main(args=args)
