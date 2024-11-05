@@ -9,6 +9,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
+#SBATCH --hint=nomultithread
 #SBATCH -C a100
 
 
@@ -31,6 +32,7 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --task=Conditional_Diffusion \
     --mix_precision \
     --data_folder=control \
+    --no-use_deepspeed \
     --accumulate_grad_batches 4"
 
 GAN_command="WANDB_MODE=offline python3 pl_training.py \
@@ -49,6 +51,6 @@ VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
     --task=Classification \
     --data_folder=complete "
 
-start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/lightning_latest.sif"
+start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/artefact.sif"
 
 srun $start_container_cmd /bin/bash -c "$command_to_run"
