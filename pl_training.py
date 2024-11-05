@@ -297,9 +297,10 @@ def get_deepspeed_config():
 
 if __name__ == "__main__":
     args = init_args()
+    ds_config = None
     if args.use_deepspeed:
         import deepspeed
         print(f"PyTorch Lightning version: {pl.__version__}")
         print(f"DeepSpeed version: {deepspeed.__version__}")
         ds_config = get_deepspeed_config()
-    main(args=args)
+    main(args=args, ds_config=ds_config)
