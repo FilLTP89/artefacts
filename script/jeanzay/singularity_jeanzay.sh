@@ -10,6 +10,7 @@
 #SBATCH --time=20:00:00
 #SBATCH --account=xvy@a100
 #SBATCH --hint=nomultithread
+#SBATCH export=ALL
 #SBATCH -C a100
 
 
@@ -53,4 +54,4 @@ VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
 
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/artefact.sif"
 
-srun $start_container_cmd /bin/bash -c "$command_to_run"
+srun $start_container_cmd /bin/bash -c "$GAN_command"
