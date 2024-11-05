@@ -25,7 +25,8 @@ default_config = SimpleNamespace(
     save_weights=False,
     pretrained_MedGAN = False,
     segmentation = False,
-    shuffle = False
+    shuffle = False,
+    use_deepspeed = False,
 )
 
 
@@ -147,6 +148,12 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=default_config.save_weights,
         help="Save weights",
+    )
+    argparser.add_argument(
+        "--use_deepspeed",
+        action=argparse.BooleanOptionalAction,
+        default=default_config.use_deepspeed,
+        help="Use deepspeed",
     )
     args = argparser.parse_args()
     vars(default_config).update(vars(args))
