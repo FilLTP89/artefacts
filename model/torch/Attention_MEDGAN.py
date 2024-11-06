@@ -690,7 +690,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
 
         if torch.isnan(total_loss):
             print(f"NaN detected in generator loss: gan_loss={gan_loss}, perceptual_loss={perceptual_loss}, style_loss={style_loss}, content_loss={content_loss}, mse_loss={mse_loss}")
-            return torch.zeros_like(total_loss)
+            return torch.zeros_like(total_loss,requires_grad=True)
 
         return total_loss
 
