@@ -41,8 +41,7 @@ GAN_command="WANDB_MODE=offline python3 pl_training.py \
     --no-use_feature_extractor \
     --task=GAN \
     --no-use_deepspeed \
-    --data_folder=complete \
-    --resume_from_cpkt"
+    --data_folder=complete"
 
 VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
