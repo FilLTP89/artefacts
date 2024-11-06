@@ -382,6 +382,7 @@ class AttentionMEDGAN(pl.LightningModule):
 
             g_loss = self.generator_loss(fake_output, real_features, fake_features, real_vgg_features, fake_vgg_features, real_y, fake_y)
             self.manual_backward(g_loss)
+            torch.nn.utils.clip_grad_norm_(self.generator.parameters(), max_norm=1.0)
             g_opt.step()
 
         # Train Discriminator
@@ -391,6 +392,7 @@ class AttentionMEDGAN(pl.LightningModule):
         _, fake_output = self.discriminator(fake_y.detach())
         d_loss = self.discriminator_loss(real_output, fake_output)
         self.manual_backward(d_loss)
+        torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), max_norm=1.0)
         d_opt.step()
 
         # Log losses
