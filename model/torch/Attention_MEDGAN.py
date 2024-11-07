@@ -540,7 +540,6 @@ class AttentionMEDGAN(pl.LightningModule):
         for fake_feat, real_feat in zip(fake_features, real_features):
             style_loss += nn.MSELoss()(gram_matrix(fake_feat), gram_matrix(real_feat))
         return style_loss
-    
 
 class OptimizedAttentionMEDGAN(pl.LightningModule):
     def __init__(
@@ -559,10 +558,11 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.save_hyperparameters()
         self.shape = input_shape
         self.N_g = N_g
-        self.lambda_1 = 20
-        self.lambda_2 = 1e-4
-        self.lambda_3 = 1
-        self.lambda_4 = 1
+        # Adjusted lambda values to prevent loss explosion
+        self.lambda_1 = 10.0  # Reduced from 20
+        self.lambda_2 = 1e-5  # Reduced from 1e-4
+        self.lambda_3 = 0.1   # Reduced from 1
+        self.lambda_4 = 0.1   # Reduced from 1
         self.automatic_optimization = False
         self.learning_rate = learning_rate
         self.cosine_decay = cosine_decay
@@ -570,40 +570,54 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.generator = generator or self.init_generator(filters)
         self.discriminator = discriminator or self.init_discriminator()
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
+        
+        # Initialize weights
+        self.init_weights(self.generator)
+        self.init_weights(self.discriminator)
 
-        #self.init_weights(self.generator)
-        #self.init_weights(self.discriminator)
+        # Add gradient clipping values
+        self.grad_clip_value = 1.0
+        
+        # Add loss smoothing
+        self.loss_smoothing = 0.995
+        self.prev_g_loss = None
+        self.prev_d_loss = None
 
-    def init_generator(self, filters):
-        return ConsNet(3, self.shape, filters=filters)
-
-    def init_discriminator(self):
-        patch_gan = PatchGAN(self.shape)
-        return patch_gan
-        """ return nn.Sequential(*[spectral_norm(layer) if isinstance(layer, nn.Conv2d) else layer 
-                           for layer in patch_gan.model]) """
-
-    """     
     def init_weights(self, model):
+        """Improved weight initialization"""
         for m in model.modules():
-            if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
                 if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-    """
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
     def configure_optimizers(self):
-        g_opt = torch.optim.Adam(self.generator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
-        d_opt = torch.optim.Adam(self.discriminator.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
+        # Add epsilon to Adam optimizer for better stability
+        g_opt = torch.optim.Adam(
+            self.generator.parameters(),
+            lr=self.learning_rate,
+            betas=(0.5, 0.999),
+            eps=1e-8
+        )
+        d_opt = torch.optim.Adam(
+            self.discriminator.parameters(),
+            lr=self.learning_rate,
+            betas=(0.5, 0.999),
+            eps=1e-8
+        )
         
         if self.cosine_decay:
-            g_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(g_opt, T_max=1000, eta_min=1e-6)
-            d_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(d_opt, T_max=1000, eta_min=1e-6)
+            g_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                g_opt, T_max=1000, eta_min=1e-6
+            )
+            d_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                d_opt, T_max=1000, eta_min=1e-6
+            )
             return [g_opt, d_opt], [g_scheduler, d_scheduler]
-        else:
-            return [g_opt, d_opt]
-
-    def forward(self, x):
-        return self.generator(x)
+        return [g_opt, d_opt]
 
     def training_step(self, batch, batch_idx):
         real_x, real_y = batch
@@ -613,123 +627,128 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         for _ in range(self.N_g):
             g_opt.zero_grad()
             fake_y = self.generator(real_x)
+            
+            # Add noise to labels for label smoothing
+            real_label = torch.rand_like(fake_output) * 0.1 + 0.85  # Random between 0.85 and 0.95
+            fake_label = torch.rand_like(fake_output) * 0.1  # Random between 0 and 0.1
+            
             fake_features, fake_output = self.discriminator(fake_y)
             real_features, _ = self.discriminator(real_y)
 
             fake_vgg_features = self.feature_extractor(fake_y)
             real_vgg_features = self.feature_extractor(real_y)
 
-            g_loss = self.generator_loss(fake_output, real_features, fake_features, real_vgg_features, fake_vgg_features, real_y, fake_y)
-            self.manual_backward(g_loss)
-            torch.nn.utils.clip_grad_norm_(self.generator.parameters(), max_norm=1.0)
-            g_opt.step()
+            g_loss = self.generator_loss(
+                fake_output, 
+                real_features, 
+                fake_features, 
+                real_vgg_features, 
+                fake_vgg_features, 
+                real_y, 
+                fake_y,
+                real_label
+            )
+            
+            # Smooth the generator loss
+            if self.prev_g_loss is not None:
+                g_loss = self.loss_smoothing * self.prev_g_loss + (1 - self.loss_smoothing) * g_loss
+            self.prev_g_loss = g_loss.detach()
+
+            if not torch.isnan(g_loss) and not torch.isinf(g_loss):
+                self.manual_backward(g_loss)
+                # Clip gradients
+                torch.nn.utils.clip_grad_norm_(self.generator.parameters(), self.grad_clip_value)
+                g_opt.step()
 
         # Train Discriminator
         d_opt.zero_grad()
-        fake_y = self.generator(real_x)
+        with torch.no_grad():
+            fake_y = self.generator(real_x)
+        
         _, real_output = self.discriminator(real_y)
         _, fake_output = self.discriminator(fake_y.detach())
-        d_loss = self.discriminator_loss(real_output, fake_output)
-        self.manual_backward(d_loss)
-        torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), max_norm=1.0)
-        d_opt.step()
+        
+        d_loss = self.discriminator_loss(real_output, fake_output, real_label, fake_label)
+        
+        # Smooth the discriminator loss
+        if self.prev_d_loss is not None:
+            d_loss = self.loss_smoothing * self.prev_d_loss + (1 - self.loss_smoothing) * d_loss
+        self.prev_d_loss = d_loss.detach()
 
+        if not torch.isnan(d_loss) and not torch.isinf(d_loss):
+            self.manual_backward(d_loss)
+            # Clip gradients
+            torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), self.grad_clip_value)
+            d_opt.step()
+
+        # Add gradient value logging
+        g_grad_norm = self.get_gradient_norm(self.generator)
+        d_grad_norm = self.get_gradient_norm(self.discriminator)
+        
         self.log_dict({
-            'g_loss': g_loss, 'd_loss': d_loss,
-            'perceptual_loss': self.perceptual_loss, 'style_loss': self.style_loss,
-            'content_loss': self.content_loss, 'mse_loss': self.mse_loss,
-            'real_loss': self.real_loss, 'fake_loss': self.fake_loss
+            'g_loss': g_loss, 
+            'd_loss': d_loss,
+            'g_grad_norm': g_grad_norm,
+            'd_grad_norm': d_grad_norm,
+            'perceptual_loss': self.perceptual_loss, 
+            'style_loss': self.style_loss,
+            'content_loss': self.content_loss, 
+            'mse_loss': self.mse_loss,
+            'real_loss': self.real_loss, 
+            'fake_loss': self.fake_loss
         }, prog_bar=True, sync_dist=True, rank_zero_only=True)
 
         return {'g_loss': g_loss, 'd_loss': d_loss}
 
-    def validation_step(self, batch, batch_idx):
-        real_x, real_y = batch
-        fake_y = self.generator(real_x)
-        fake_features, fake_output = self.discriminator(fake_y)
-        real_features, real_output = self.discriminator(real_y)
+    def get_gradient_norm(self, model):
+        """Calculate gradient norm for monitoring"""
+        total_norm = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                param_norm = p.grad.data.norm(2)
+                total_norm += param_norm.item() ** 2
+        return total_norm ** 0.5
 
-        fake_vgg_features = self.feature_extractor(fake_y)
-        real_vgg_features = self.feature_extractor(real_y)
-
-        g_loss = self.generator_loss(fake_output, real_features, fake_features, real_vgg_features, fake_vgg_features, real_y, fake_y)
-        d_loss = self.discriminator_loss(real_output, fake_output)
-
-        self.log_dict({
-            'val_g_loss': g_loss, 'val_d_loss': d_loss,
-            'val_perceptual_loss': self.perceptual_loss, 'val_style_loss': self.style_loss,
-            'val_content_loss': self.content_loss, 'val_mse_loss': self.mse_loss,
-            'val_real_loss': self.real_loss, 'val_fake_loss': self.fake_loss
-        }, prog_bar=True, sync_dist=True, rank_zero_only=True)
-
-        return {'val_g_loss': g_loss, 'val_d_loss': d_loss}
-
-    def on_train_epoch_end(self):
-        if self.cosine_decay:
-            sch = self.lr_schedulers()
-            sch[0].step()
-            sch[1].step()
-
-    def generator_loss(self, fake_output, real_features, fake_features, real_vgg_features, fake_vgg_features, real_y, fake_y):
-        gan_loss = nn.BCEWithLogitsLoss()(fake_output, torch.ones_like(fake_output) * 0.9)
+    def generator_loss(self, fake_output, real_features, fake_features, real_vgg_features, 
+                      fake_vgg_features, real_y, fake_y, real_label):
+        # Add epsilon to prevent division by zero or log(0)
+        eps = 1e-8
+        
+        gan_loss = nn.BCEWithLogitsLoss()(fake_output, real_label)
         perceptual_loss = nn.MSELoss()(fake_features[-1], real_features[-1])
         style_loss = self.compute_style_loss(fake_vgg_features, real_vgg_features)
         content_loss = self.compute_content_loss(fake_vgg_features, real_vgg_features)
         mse_loss = nn.MSELoss()(fake_y, real_y)
 
-        self.perceptual_loss = perceptual_loss
-        self.style_loss = style_loss
-        self.content_loss = content_loss
-        self.mse_loss = mse_loss
+        # Store individual losses for logging
+        self.perceptual_loss = torch.clamp(perceptual_loss, 0, 100)
+        self.style_loss = torch.clamp(style_loss, 0, 100)
+        self.content_loss = torch.clamp(content_loss, 0, 100)
+        self.mse_loss = torch.clamp(mse_loss, 0, 100)
 
+        # Calculate total loss with clamped values
         total_loss = (gan_loss + 
-                      self.lambda_1 * perceptual_loss * 0.1 + 
-                      self.lambda_2 * style_loss * 0.1 + 
-                      self.lambda_3 * content_loss * 0.1 + 
-                      self.lambda_4 * mse_loss)
-
-        if torch.isnan(total_loss):
-            print(f"NaN detected in generator loss: gan_loss={gan_loss}, perceptual_loss={perceptual_loss}, style_loss={style_loss}, content_loss={content_loss}, mse_loss={mse_loss}")
-            return torch.zeros_like(total_loss,requires_grad=True)
+                     self.lambda_1 * torch.clamp(perceptual_loss, 0, 100) * 0.1 + 
+                     self.lambda_2 * torch.clamp(style_loss, 0, 100) * 0.1 + 
+                     self.lambda_3 * torch.clamp(content_loss, 0, 100) * 0.1 + 
+                     self.lambda_4 * torch.clamp(mse_loss, 0, 100))
 
         return total_loss
-
-    def compute_content_loss(self, fake_features, real_features):
-        content_loss = 0
-        for fake_feat, real_feat in zip(fake_features, real_features):
-            content_loss += nn.MSELoss()(fake_feat, real_feat)
-        return content_loss
-
-    def discriminator_loss(self, real_output, fake_output):
-        real_loss = nn.BCEWithLogitsLoss()(real_output, torch.ones_like(real_output) * 0.9)
-        fake_loss = nn.BCEWithLogitsLoss()(fake_output, torch.zeros_like(fake_output) * 0.1)
-
-        self.real_loss = real_loss
-        self.fake_loss = fake_loss
-
-        return (real_loss + fake_loss) / 2
 
     def compute_style_loss(self, fake_features, real_features):
         def gram_matrix(x):
             b, c, h, w = x.size()
             features = x.view(b, c, h * w)
             gram = torch.bmm(features, features.transpose(1, 2))
-            return gram.div(c * h * w + 1e-8)
+            return gram.div(c * h * w + 1e-8)  # Added epsilon
 
         style_loss = 0
         for fake_feat, real_feat in zip(fake_features, real_features):
-            style_loss += nn.MSELoss()(gram_matrix(fake_feat), gram_matrix(real_feat))
+            fake_gram = gram_matrix(fake_feat)
+            real_gram = gram_matrix(real_feat)
+            style_loss += torch.clamp(nn.MSELoss()(fake_gram, real_gram), 0, 100)
         return style_loss
-
-    def on_after_backward(self):
-        for name, param in self.named_parameters():
-            if param.grad is not None:
-                grad_norm = param.grad.norm()
-                if torch.isnan(grad_norm) or torch.isinf(grad_norm):
-                    print(f'Detected NaN or Inf gradient in {name}')
-                    param.grad = None
-
-
+    
 if __name__ == "__main__":
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
