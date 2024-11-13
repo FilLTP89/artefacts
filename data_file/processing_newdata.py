@@ -452,7 +452,8 @@ class LoadOneAcquisition(Dataset):
                  transform = transforms.Compose([
                     transforms.Resize((512, 512), antialias=True),
                     ]),
-                 augmentation = None
+                 augmentation = None,
+                 generating = False
                  ) -> None:
         super().__init__()
         self.folder = load_one_acquisition(
@@ -462,8 +463,9 @@ class LoadOneAcquisition(Dataset):
             acquisition = acquisition
         )
         self.control = control
-        self.transform = transform
+        self.transform = None
         self.augmentation = augmentation
+        self.generating = generating
 
     def __len__(self):
         return len(self.folder)
@@ -471,18 +473,82 @@ class LoadOneAcquisition(Dataset):
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
 
-        input = np.array(dicom.dcmread(input_path).pixel_array, dtype=np.float32)
-        target = np.array(dicom.dcmread(target_path).pixel_array, dtype=np.float32)
-        input = normalize_ct_image(input, normalization_type='minmax')
-        target = normalize_ct_image(target, normalization_type='minmax')
+        # Read DICOM properly preserving the intensity scaling
+        input_dcm = dicom.dcmread(input_path)
+        input = input_dcm.pixel_array
+
+        # Apply proper DICOM rescaling
+        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
+            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
+
+        # Check bit depth and adjust accordingly
+        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
+        max_val = float(2**bit_depth - 1)
+
+        # Convert to float32 while preserving the dynamic range
+        #input = input.astype(np.float32)
+        input = input.astype(np.float32) / max_val
+
+        # Do the same for target
+        target_dcm = dicom.dcmread(target_path)
+        target = target_dcm.pixel_array
+        if hasattr(target_dcm, 'RescaleIntercept') and hasattr(target_dcm, 'RescaleSlope'):
+            target = target_dcm.pixel_array * target_dcm.RescaleSlope + target_dcm.RescaleIntercept
+        #target = target.astype(np.float32)
+        target = target.astype(np.float32) / max_val
+
+        # Convert to tensor
         input = torch.tensor(input).unsqueeze(0)
         target = torch.tensor(target).unsqueeze(0)
-        if self.transform:
-            input = self.transform(input)
-            target = self.transform(target)
-        if self.augmentation:
-            input, target = self.augmentation(input, target)
+        if self.generating:
+            return input, target, input_path, target_path
         return input, target
+    def save_images(self):
+        for idx in range(len(self)):
+            input_path, target_path = self.folder[idx]
+            input_dcm = dicom.dcmread(input_path)
+            target_dcm = dicom.dcmread(target_path)
+
+            input_tensor, target_tensor = self[idx]
+            input_array = input_tensor.squeeze().numpy()
+            target_array = target_tensor.squeeze().numpy()
+
+            # Get the same max_val used in __getitem__
+            bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
+            max_val = float(2**bit_depth - 1)
+
+            # First multiply back by max_val to reverse the division
+            input_array = input_array * max_val
+            target_array = target_array * max_val
+
+            # Then handle rescale slope/intercept if present
+            if hasattr(input_dcm, 'RescaleSlope') and hasattr(input_dcm, 'RescaleIntercept'):
+                input_array = (input_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
+                target_array = (target_array - target_dcm.RescaleIntercept) / target_dcm.RescaleSlope
+                print(f"Input rescale slope: {input_dcm.RescaleSlope}, intercept: {input_dcm.RescaleIntercept}")
+                print(f"Target rescale slope: {target_dcm.RescaleSlope}, intercept: {target_dcm.RescaleIntercept}")
+                
+            # Convert to original data type
+            input_array = input_array.astype(input_dcm.pixel_array.dtype)
+            target_array = target_array.astype(target_dcm.pixel_array.dtype)
+
+            # Create new DICOM files
+            new_input_dcm = input_dcm.copy()
+            new_target_dcm = target_dcm.copy()
+
+            # Update pixel data
+            new_input_dcm.PixelData = input_array.tobytes()
+            new_target_dcm.PixelData = target_array.tobytes()
+
+            # Generate new UIDs
+            new_input_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+            new_target_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+
+            # Save files
+            os.makedirs("generated_test/analyze/input", exist_ok=True)
+            os.makedirs("generated_test/analyze/target", exist_ok=True)
+            new_input_dcm.save_as(f"generated_test/analyze/input/{idx}.dcm")
+            new_target_dcm.save_as(f"generated_test/analyze/target/{idx}.dcm")    
 
 
 class Datav2Module(pl.LightningDataModule):
@@ -588,5 +654,13 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    ds = Datav2Dataset()
-    ds.validate_data()
+    """ ds = Datav2Dataset()
+    ds.validate_data() """
+    acquisition_number = 4
+    categorie = "controllowmetal"
+    ds = LoadOneAcquisition(
+        path = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/",
+        categorie = categorie,
+        acquisition = acquisition_number,
+    )
+    ds.save_images()

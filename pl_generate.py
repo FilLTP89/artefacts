@@ -7,44 +7,11 @@ from data_file.processing_newdata import Datav2Module, load_one_acquisition, Loa
 from model.torch.Attention_MEDGAN import AttentionMEDGAN
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
+import pydicom as dicom
 
 CPKT_PATH = "model/saved_model/AttentionMEDGAN/best_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
 
 
-def save_image(
-        x, 
-        preds,
-        y, 
-        path, 
-        idx
-    ):
-    x = x.squeeze(0)
-    preds = preds.squeeze(0)
-    y = y.squeeze(0)
-
-    cmap = plt.cm.gray
-    x = x.cpu().numpy()
-    preds = preds.cpu().numpy()
-    y = y.cpu().numpy()
-
-    mse = np.mean((preds - y)**2)
-    print(f"MSE: {mse}")
-    
-    plt.imsave(
-        path + f"{idx}_original_image" + ".png",
-        x,
-        cmap=cmap,
-    )
-    plt.imsave(
-        path  + f"{idx}_predicted_image" + ".png",
-        preds,
-        cmap=cmap,
-    )
-    plt.imsave(
-        path + f"{idx}_ground_truth_image" + ".png",
-        y,
-        cmap=cmap,
-    )
 
     
 
@@ -61,26 +28,55 @@ def load_module(*args, **kwargs):
     return module
 
 def generate_images(model, 
-                    dataloader, 
+                    ds, 
                     saving_path,
                     device = "cpu",
                     run_name = "run_name",
                     ):
     print(f"Saving in folder {saving_path + run_name}")
-    for idx_, batch in enumerate(dataloader):
-        x,y = batch
-        x = x.to(device)
-        y = y.to(device)
+    for idx_, (input,target,input_path,target_path) in enumerate(ds):
+        input = input.to(device)
         with torch.no_grad():
-            generated = model(x)
-        for i in range(generated.size(0)):
-            save_image(
-                x[i], generated[i], y[i], 
-                path = saving_path + run_name,
-                idx = idx_*generated.size(0) + i
-            )
+            generated = model(input)
+            generated = generated.cpu().detach().numpy()
+            input = input.cpu().detach().numpy()
 
-        
+            input_dcm = dicom.dcmread(input)
+            target_dcm = dicom.dcmread(target)  
+            bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
+            max_val = float(2**bit_depth - 1)
+            input = input * max_val
+            target = target * max_val
+            generated = generated * max_val
+
+            if hasattr(input_dcm, 'RescaleSlope') and hasattr(input_dcm, 'RescaleIntercept'):
+                input_array = (input_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
+                generated_array = (generated_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
+                target_array = (target_array - target_dcm.RescaleIntercept) / target_dcm.RescaleSlope
+            
+            input_array = input_array.astype(input_dcm.pixel_array.dtype)
+            target_array = target_array.astype(target_dcm.pixel_array.dtype)
+            generated_array = generated_array.astype(target_dcm.pixel_array.dtype)
+
+            new_input_dcm = input_array.astype(input_dcm.pixel_array.dtype)
+            new_target_dcm = target_array.astype(target_dcm.pixel_array.dtype)
+            new_generated_dcm = generated_array.astype(target_dcm.pixel_array.dtype) 
+
+
+            new_input_dcm.PixelData = input_array.tobytes()
+            new_target_dcm.PixelData = target_array.tobytes()
+            new_generated_dcm.PixelData = generated_array.tobytes()
+
+            # Generate new UIDs
+            new_input_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+            new_target_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+            new_generated_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+
+            new_input_dcm.save_as(saving_path + run_name + f"input_{idx_}.dcm")
+            new_target_dcm.save_as(saving_path + run_name + f"target_{idx_}.dcm")
+            new_generated_dcm.save_as(saving_path + run_name + f"generated_{idx_}.dcm")
+
+
         
 def main():
     i = 0
@@ -106,16 +102,12 @@ def main():
     ds = LoadOneAcquisition(
         categorie = categorie,
         acquisition = acquisition_number,
+        generating=True
     )
     print("Dataset size : ", len(ds))
-    dataloader = torch.utils.data.DataLoader(
-        ds,
-        batch_size = 16,
-        shuffle = False
-    ) 
     print("Model loaded")
     generate_images(model = model, 
-                    dataloader = dataloader, 
+                    dataloader = ds, 
                     saving_path = saving_path,
                     run_name = run_name,
                     device = device
