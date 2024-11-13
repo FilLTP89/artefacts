@@ -41,8 +41,8 @@ def generate_images(model,
             generated = generated.cpu().detach().numpy()
             input = input.cpu().detach().numpy()
 
-            input_dcm = dicom.dcmread(input)
-            target_dcm = dicom.dcmread(target)  
+            input_dcm = dicom.dcmread(input_path)
+            target_dcm = dicom.dcmread(target_path)  
             bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
             max_val = float(2**bit_depth - 1)
             input = input * max_val
@@ -50,6 +50,9 @@ def generate_images(model,
             generated = generated * max_val
 
             if hasattr(input_dcm, 'RescaleSlope') and hasattr(input_dcm, 'RescaleIntercept'):
+                """
+                Actually input and output have the same RescaleSlope and RescaleIntercept
+                """
                 input_array = (input_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
                 generated_array = (generated_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
                 target_array = (target_array - target_dcm.RescaleIntercept) / target_dcm.RescaleSlope
@@ -107,7 +110,7 @@ def main():
     print("Dataset size : ", len(ds))
     print("Model loaded")
     generate_images(model = model, 
-                    dataloader = ds, 
+                    ds = ds, 
                     saving_path = saving_path,
                     run_name = run_name,
                     device = device
