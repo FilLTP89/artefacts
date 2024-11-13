@@ -252,7 +252,7 @@ class VGG19(pl.LightningModule):
         if self.classifier_training or self.load_whole_architecture:
             self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
             self.flat = nn.Flatten()
-            self.dense1 = nn.Linear(512 * 18 * 18, 1024)  # Adjust input size based on your needs
+            self.dense1 = nn.Linear(578 * 16 * 16, 1024)  # Adjust input size based on your needs
             self.dense2 = nn.Linear(1024, 1024)
             self.classifier = nn.Linear(1024, n_class)
             self.loss = nn.CrossEntropyLoss() # nn.LogSoftmax() and nn.NLLLoss()
@@ -275,6 +275,7 @@ class VGG19(pl.LightningModule):
         if self.classifier_training:
             x = self.maxpool5(x8)
             x = self.flat(x)
+            print(x.shape)
             x = torch.relu(self.dense1(x))
             x = torch.relu(self.dense2(x))
             x = self.classifier(x)
@@ -768,8 +769,8 @@ if __name__ == "__main__":
     print(loss)
     summary(model, (1, 512, 512))
     """
-    vgg = VGG19(classifier_training=True, n_class=14).to("cuda")
-    x = torch.randn((2,1,577,577)).to("cuda")
+    vgg = VGG19(classifier_training=True, n_class=31).to("cuda")
+    x = torch.randn((2,1,557,557)).to("cuda")
     y = torch.ones([2]).type(torch.LongTensor).to("cuda")
     print(y.shape)
     pred = vgg(x)

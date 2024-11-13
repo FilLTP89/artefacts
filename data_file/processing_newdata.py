@@ -345,11 +345,13 @@ class Datav2Dataset(Dataset):
         # Convert to tensor
         input = torch.tensor(input).unsqueeze(0)
         target = torch.tensor(target).unsqueeze(0)
-        print(input.shape, target.shape)
         return input, target        
 
-
-
+    def check_shape(self):
+        for idx in range(len(self)):
+            input, target = self[idx]
+            if (input.shape != (1,557,557)) or (target.shape != (1,557,557)):
+                print(f"Error at index {idx}: input shape {input.shape}, target shape {target.shape}")  
 
     def visualize_random(self):
         idx = random.randint(0, len(self) - 1)
@@ -676,6 +678,7 @@ class Datav2Module(pl.LightningDataModule):
 if __name__ == "__main__":
     ds = Datav2Dataset("/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/")
     x,y = ds[0]
+    ds.check_shape()
     
     """ 
     acquisition_number = 5
