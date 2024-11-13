@@ -7,10 +7,10 @@
 #SBATCH --error=ruche_log/singularity_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks=4
+#SBATCH --ntasks-per-node=4
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
-#SBATCH --export=NONE
+#SBATCH --export=all
 #SBATCH --exclude=ruche-gpu16,ruche-gpu13,ruche-gpu11
 
 cd $WORKDIR
