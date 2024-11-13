@@ -183,16 +183,12 @@ class ClassificationDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
                  data_folder = "complete",
-                 transform = transforms.Compose([
-                    transforms.Resize((512, 512), antialias=True),
-                    ]),
                 *args, **kwargs
             ):
         self.data_folder = data_folder    
         self.folder = folder    
         self.create_ds()
 
-        self.transform = transform
         self.augmentation = None
         self.n_class = len(self.category_dict)
 
@@ -296,8 +292,6 @@ class ClassificationDataset(Dataset):
         input = torch.tensor(input).unsqueeze(0)
 
         target = torch.tensor(target).type(torch.LongTensor)
-        if self.transform:
-            x = self.transform(x)
         return input, target
 
 class Datav2Dataset(Dataset):
@@ -315,9 +309,6 @@ class Datav2Dataset(Dataset):
         else:
             self.folder = gptcreate_dataset(folder, control=False)
 
-        self.transform = transforms.Compose([
-            transforms.Resize((img_size, img_size), antialias=True),
-        ])
         self.augmentation = augmentation
         self.n_class = 31
         #self.augmentation = CTImageAugmentation()
@@ -477,9 +468,6 @@ class LoadOneAcquisition(Dataset):
                  control = True,
                  categorie = "cocrhigh",
                  acquisition = 1,
-                 transform = transforms.Compose([
-                    transforms.Resize((512, 512), antialias=True),
-                    ]), # Actually is there a need for this ?
                  augmentation = None,
                  generating = False
                  ) -> None:
@@ -491,7 +479,6 @@ class LoadOneAcquisition(Dataset):
             acquisition = acquisition
         )
         self.control = control
-        self.transform = None
         self.augmentation = augmentation
         self.generating = generating
 
