@@ -549,6 +549,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         discriminator=None,
         feature_extractor=None,
         learning_rate=1e-4,
+        n_ublocks=6,
         N_g=3,
         vgg_whole_arc=False,
         cosine_decay=True,
@@ -566,7 +567,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.automatic_optimization = False
         self.learning_rate = learning_rate
         self.cosine_decay = cosine_decay
-
+        self.n_ublocks = n_ublocks
         self.generator = generator or self.init_generator(filters)
         self.discriminator = discriminator or self.init_discriminator()
         self.feature_extractor = feature_extractor or VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
@@ -582,6 +583,12 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.loss_smoothing = 0.995
         self.prev_g_loss = None
         self.prev_d_loss = None
+
+    def init_generator(self, filters):
+        return ConsNet(self.n_ublocks, self.shape, filters=filters)
+
+    def init_discriminator(self):
+        return PatchGAN(self.shape)
 
     def init_weights(self, model):
         """Improved weight initialization"""

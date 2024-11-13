@@ -84,8 +84,8 @@ def generate_images(model,
         
 def main():
     i = 0
-    acquisition_number = 1
-    categorie = "huttalowmetal"
+    acquisition_number = 4
+    categorie = "controllowmetal"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = "new_generated/"
