@@ -37,6 +37,7 @@ def generate_images(model,
     for idx_, (input,target,input_path,target_path) in enumerate(ds):
         input = input.to(device)
         with torch.no_grad():
+            print(input.unsqueeze(0).shape)
             generated = model(input.unsqueeze(0))   
             generated = generated.squeeze(0) 
             generated = generated.cpu().detach().numpy()
