@@ -15,7 +15,7 @@
 
 cd $WORKDIR
 module load singularity/3.8.3/gcc-11.2.0
-start_container_cmd="singularity exec --pwd /gpfs/workdir/gabrielihu -B /gpfs/workdir:/gpfs/workdir --bind /home/${USER}/:/home/${USER}/ --bind /gpfs/workdir/gabrielihu/artefacts:/gpfs/users/gabrielihu/artefacts --nv lightning_latest.sif"
+start_container_cmd="singularity exec --pwd /gpfs/users/gabrielihu/artefacts --bind /home/${USER}/:/home/${USER}/ --bind /gpfs/workdir/gabrielihu/artefacts:/gpfs/users/gabrielihu/artefacts --nv lightning_latest.sif"
 
 
 command_to_run="WANDB_MODE=offline python3 pl_training.py \
