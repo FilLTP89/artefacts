@@ -48,9 +48,10 @@ VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
     --train_bs 64 \
     --test_bs 64 \
     --no-use_deepspeed \
+    --no-use_feature_extractor \
     --task=Classification \
     --data_folder=complete "
 
 start_container_cmd="singularity exec --pwd /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/ -B /lustre/fswork/projects/rech/xvy/ucn85lb:/lustre/fswork/projects/rech/xvy/ucn85lb/ --bind /lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts:/lustre/fswork/projects/rech/xvy/ucn85lb/artefacts --nv /lustre/fsn1/singularity/images/ucn85lb/artefact.sif"
 
-srun $start_container_cmd /bin/bash -c "$GAN_command"
+srun $start_container_cmd /bin/bash -c "$VGG_COMMAND"

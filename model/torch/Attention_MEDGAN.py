@@ -275,7 +275,6 @@ class VGG19(pl.LightningModule):
         if self.classifier_training:
             x = self.maxpool5(x8)
             x = self.flat(x)
-            print(x.shape)
             x = torch.relu(self.dense1(x))
             x = torch.relu(self.dense2(x))
             x = self.classifier(x)
