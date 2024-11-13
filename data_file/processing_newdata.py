@@ -283,12 +283,22 @@ class ClassificationDataset(Dataset):
         x = self.folder[idx]
         target_or_input = self.get_name(x)
         target = self.category_dict[target_or_input]
-        x = np.array(dicom.dcmread(x).pixel_array, dtype=np.float32)
-        x = normalize_ct_image(x)
-        x = torch.tensor(x).unsqueeze(0)
+
+        input_dcm = dicom.dcmread(x)
+        input = input_dcm.pixel_array
+        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
+            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
+
+        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
+        max_val = float(2**bit_depth - 1)
+
+        input = input.astype(np.float32) / max_val
+        input = torch.tensor(input).unsqueeze(0)
+
+        target = torch.tensor(target).type(torch.LongTensor)
         if self.transform:
             x = self.transform(x)
-        return x, torch.tensor(target).type(torch.LongTensor)
+        return input, target
 
 class Datav2Dataset(Dataset):
     def __init__(self,
@@ -319,18 +329,36 @@ class Datav2Dataset(Dataset):
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
 
-        input = dicom.dcmread(input_path).pixel_array.astype(np.float32)
-        target = dicom.dcmread(target_path).pixel_array.astype(np.float32)
-        input = normalize_ct_image(input, normalization_type='simple')
-        target = normalize_ct_image(target, normalization_type='simple')
-        input = torch.from_numpy(input).unsqueeze(0)
-        target = torch.from_numpy(target).unsqueeze(0)
-        if self.transform:
-            input = self.transform(input)
-            target = self.transform(target)
-        if self.augmentation:
-            input, target = self.augmentation(input, target)
-        return input, target
+        # Read DICOM properly preserving the intensity scaling
+        input_dcm = dicom.dcmread(input_path)
+        input = input_dcm.pixel_array
+
+        # Apply proper DICOM rescaling
+        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
+            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
+
+        # Check bit depth and adjust accordingly
+        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
+        max_val = float(2**bit_depth - 1)
+
+        # Convert to float32 while preserving the dynamic range
+        input = input.astype(np.float32) / max_val
+
+        # Do the same for target
+        target_dcm = dicom.dcmread(target_path)
+        target = target_dcm.pixel_array
+        if hasattr(target_dcm, 'RescaleIntercept') and hasattr(target_dcm, 'RescaleSlope'):
+            target = target_dcm.pixel_array * target_dcm.RescaleSlope + target_dcm.RescaleIntercept
+        target = target.astype(np.float32) / max_val
+
+        # Convert to tensor
+        input = torch.tensor(input).unsqueeze(0)
+        target = torch.tensor(target).unsqueeze(0)
+        print(input.shape, target.shape)
+        return input, target        
+
+
+
 
     def visualize_random(self):
         idx = random.randint(0, len(self) - 1)
@@ -451,7 +479,7 @@ class LoadOneAcquisition(Dataset):
                  acquisition = 1,
                  transform = transforms.Compose([
                     transforms.Resize((512, 512), antialias=True),
-                    ]),
+                    ]), # Actually is there a need for this ?
                  augmentation = None,
                  generating = False
                  ) -> None:
@@ -502,7 +530,12 @@ class LoadOneAcquisition(Dataset):
         target = torch.tensor(target).unsqueeze(0)
         if self.generating:
             return input, target, input_path, target_path
+        print(input.shape)
         return input, target
+    
+
+
+
     def save_images(self):
         for idx in range(len(self)):
             input_path, target_path = self.folder[idx]
@@ -654,13 +687,15 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    """ ds = Datav2Dataset()
-    ds.validate_data() """
-    acquisition_number = 4
+    ds = Datav2Dataset("/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/")
+    x,y = ds[0]
+    
+    """ 
+    acquisition_number = 5
     categorie = "controllowmetal"
     ds = LoadOneAcquisition(
         path = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/",
         categorie = categorie,
         acquisition = acquisition_number,
     )
-    ds.save_images()
+    #ds.save_images() """
