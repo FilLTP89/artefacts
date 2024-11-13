@@ -49,4 +49,4 @@ VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
 
 
 
-$start_container_cmd /bin/bash -c "$VGG_COMMAND"
+srun $start_container_cmd /bin/bash -c "$VGG_COMMAND"
