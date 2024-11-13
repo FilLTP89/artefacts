@@ -203,7 +203,7 @@ class PatchGAN(nn.Module):
 class VGG19(pl.LightningModule):
     def __init__(
         self,
-        shape=(512, 512, 1),
+        shape=(577, 577, 1),
         classifier_training=False,
         load_whole_architecture=False,
         n_class = 1,
@@ -252,7 +252,7 @@ class VGG19(pl.LightningModule):
         if self.classifier_training or self.load_whole_architecture:
             self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
             self.flat = nn.Flatten()
-            self.dense1 = nn.Linear(512 * 16 * 16, 1024)  # Adjust input size based on your needs
+            self.dense1 = nn.Linear(512 * 18 * 18, 1024)  # Adjust input size based on your needs
             self.dense2 = nn.Linear(1024, 1024)
             self.classifier = nn.Linear(1024, n_class)
             self.loss = nn.CrossEntropyLoss() # nn.LogSoftmax() and nn.NLLLoss()
@@ -757,7 +757,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         return style_loss
     
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    """ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AttentionMEDGAN(
         input_shape=(1, 577, 577)
     ).to(device)
@@ -767,14 +767,12 @@ if __name__ == "__main__":
     loss = model.test_training_step((x, y), 0)   
     print(loss)
     summary(model, (1, 512, 512))
-
     """
     vgg = VGG19(classifier_training=True, n_class=14).to("cuda")
-    x = torch.randn((2,1,512,512)).to("cuda")
+    x = torch.randn((2,1,577,577)).to("cuda")
     y = torch.ones([2]).type(torch.LongTensor).to("cuda")
     print(y.shape)
     pred = vgg(x)
     loss = nn.CrossEntropyLoss()
     v_loss = loss(pred,y)
     print(v_loss)
-    """

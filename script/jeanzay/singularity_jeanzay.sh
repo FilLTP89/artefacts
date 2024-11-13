@@ -47,6 +47,7 @@ VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 64 \
     --test_bs 64 \
+    --no-use_deepspeed \
     --task=Classification \
     --data_folder=complete "
 
