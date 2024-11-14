@@ -18,7 +18,7 @@ module load singularity/3.8.3/gcc-11.2.0
 start_container_cmd="singularity exec --pwd /gpfs/users/gabrielihu/artefacts --bind /home/${USER}/:/home/${USER}/ --bind /gpfs/workdir/gabrielihu/artefacts:/gpfs/users/gabrielihu/artefacts --nv lightning_latest.sif"
 
 
-command_to_run="WANDB_MODE=offline python3 pl_training.py \
+command_to_run="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 3 \
     --test_bs 3 \
@@ -29,7 +29,7 @@ command_to_run="WANDB_MODE=offline python3 pl_training.py \
     --no-use_deepspeed \
     --accumulate_grad_batches 4"
 
-GAN_command="WANDB_MODE=offline python3 pl_training.py \
+GAN_command="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 16 \
     --test_bs 16 \
@@ -38,7 +38,7 @@ GAN_command="WANDB_MODE=offline python3 pl_training.py \
     --no-use_deepspeed \
     --data_folder=complete"
 
-VGG_COMMAND="WANDB_MODE=offline python3 pl_training.py \
+VGG_COMMAND="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 64 \
     --test_bs 64 \

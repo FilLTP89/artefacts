@@ -1,6 +1,7 @@
 import os
 import re
 import pydicom as dicom
+from tqdm import tqdm
 import random
 import torch
 import torch.nn.functional as F
@@ -272,6 +273,19 @@ class ClassificationDataset(Dataset):
         name = name.replace(" ","_")
         return name
 
+
+    def normalize(self, image_array):
+        """Simple min-max normalization"""
+        min_val = image_array.min()
+        max_val = image_array.max()
+        return (image_array - min_val) / (max_val - min_val), (min_val, max_val)
+
+    def denormalize(self, normalized_array, original_range):
+        """Restore original values"""
+        min_val, max_val = original_range
+        return normalized_array * (max_val - min_val) + min_val
+
+
     def __len__(self):
         return len(self.folder)
     
@@ -282,146 +296,87 @@ class ClassificationDataset(Dataset):
 
         input_dcm = dicom.dcmread(x)
         input = input_dcm.pixel_array
-        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
-            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
+        input = input.astype(np.float32) 
+        input_norm, input_range = self.normalize(input)
 
-        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
-        max_val = float(2**bit_depth - 1)
-
-        input = input.astype(np.float32) / max_val
-        input = torch.tensor(input).unsqueeze(0)
+        input = torch.tensor(input_norm).unsqueeze(0)
 
         target = torch.tensor(target).type(torch.LongTensor)
         return input, target
 
-class Datav2Dataset(Dataset):
-    def __init__(self,
-                 folder = "datav2/protocole_1/",
-                 data_folder = "complete",
-                 img_size = 512,
-                 augmentation = None,
-            ):
 
+class Datav2Dataset(Dataset):     
+    def __init__(self,
+                 folder="datav2/protocole_1/",
+                 data_folder="complete",
+                 img_size=512,
+                 augmentation=None,
+                 prediction_mode=False):
         if data_folder == "complete":
             self.folder = gpt_create_all_dataset(folder)
         elif data_folder == "control":
             self.folder = gptcreate_dataset(folder, control=True)
         else:
             self.folder = gptcreate_dataset(folder, control=False)
-
+        
+        self.prediction_mode = prediction_mode
         self.augmentation = augmentation
         self.n_class = 31
-        #self.augmentation = CTImageAugmentation()
 
+    def normalize(self, image_array):
+        """Simple min-max normalization"""
+        min_val = image_array.min()
+        max_val = image_array.max()
+        return (image_array - min_val) / (max_val - min_val), (min_val, max_val)
 
-    def __len__(self):
-        return len(self.folder)
+    def denormalize(self, normalized_array, original_range):
+        """Restore original values"""
+        min_val, max_val = original_range
+        return normalized_array * (max_val - min_val) + min_val
 
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
-
-        # Read DICOM properly preserving the intensity scaling
+        
+        # Load input
         input_dcm = dicom.dcmread(input_path)
-        input = input_dcm.pixel_array
-
-        # Apply proper DICOM rescaling
-        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
-            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
-
-        # Check bit depth and adjust accordingly
-        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
-        max_val = float(2**bit_depth - 1)
-
-        # Convert to float32 while preserving the dynamic range
-        input = input.astype(np.float32) / max_val
-
-        # Do the same for target
+        input_arr = input_dcm.pixel_array.astype(np.float32)
+        
+        # Load target
         target_dcm = dicom.dcmread(target_path)
-        target = target_dcm.pixel_array
-        if hasattr(target_dcm, 'RescaleIntercept') and hasattr(target_dcm, 'RescaleSlope'):
-            target = target_dcm.pixel_array * target_dcm.RescaleSlope + target_dcm.RescaleIntercept
-        target = target.astype(np.float32) / max_val
+        target_arr = target_dcm.pixel_array.astype(np.float32)
+        
+        # Normalize while preserving ranges
+        input_norm, input_range = self.normalize(input_arr)
+        target_norm, target_range = self.normalize(target_arr)
+        
+        # Convert to tensors
+        input_tensor = torch.tensor(input_norm).unsqueeze(0)
+        target_tensor = torch.tensor(target_norm).unsqueeze(0)
+        
+        if self.prediction_mode:
+            return input_tensor, target_tensor, (input_range, target_range)
+        return input_tensor, target_tensor
 
-        # Convert to tensor
-        input = torch.tensor(input).unsqueeze(0)
-        target = torch.tensor(target).unsqueeze(0)
-        return input, target        
-
-    def check_shape(self):
-        for idx in range(len(self)):
-            input, target = self[idx]
-            if (input.shape != (1,557,557)) or (target.shape != (1,557,557)):
-                print(f"Error at index {idx}: input shape {input.shape}, target shape {target.shape}")  
-
-    def visualize_random(self):
-        idx = random.randint(0, len(self) - 1)
-        input_name, target_name = self.folder[idx]
-        input_name = input_name.split("/")[-2] + "/" + input_name.split("/")[-1]
-        target_name = target_name.split("/")[-2] + "/" + target_name.split("/")[-1]
-        input, target = self[idx]
-        input = input.permute(1, 2, 0).squeeze().numpy()
-        target = target.permute(1, 2, 0).squeeze().numpy()
-        fig, axs = plt.subplots(1, 2)
-        axs[0].imshow(input, cmap="gray")
-        axs[0].set_title(input_name)
-        axs[1].imshow(target, cmap="gray")
-        axs[1].set_title(target_name)
-        plt.show()
-
-    def validate_data(self):
-        """
-        Validates DICOM images for NaN values and corrupted/bad images.
-        Checks both input and target images.
-
-        Returns:
-        - tuple: (bool, list) - (is_valid, list of error messages)
-        """
-        errors = []
-        is_valid = True
-
-        for idx, (input_path, target_path) in enumerate(self.folder):
-            try:
-                # Load and check input image
-                input_dicom = dicom.dcmread(input_path)
-                input_array = input_dicom.pixel_array
-
-                # Check for NaN in input
-                if np.isnan(input_array).any():
-                    errors.append(f"Input image contains NaN values: {input_path}")
-                    is_valid = False
-
-                # Check for corrupted/bad input image
-                if np.all(input_array == 0) or input_array.size == 0:
-                    errors.append(f"Input image appears corrupted (all zeros or empty): {input_path}")
-                    is_valid = False
-
-                # Load and check target image
-                target_dicom = dicom.dcmread(target_path)
-                target_array = target_dicom.pixel_array
-
-                # Check for NaN in target
-                if np.isnan(target_array).any():
-                    errors.append(f"Target image contains NaN values: {target_path}")
-                    is_valid = False
-
-                # Check for corrupted/bad target image
-                if np.all(target_array == 0) or target_array.size == 0:
-                    errors.append(f"Target image appears corrupted (all zeros or empty): {target_path}")
-                    is_valid = False
-
-            except Exception as e:
-                errors.append(f"Error reading DICOM at index {idx}: {str(e)}")
-                is_valid = False
-
-        if not is_valid:
-            print(f"Found {len(errors)} validation errors:")
-            for error in errors:
-                print(f"- {error}")
-        else:
-            print("All DICOM images passed validation!")
-
-        return is_valid, errors
-
+    def save_images(self, output_dir="generated_test/analyze"):
+        os.makedirs(f"{output_dir}/input", exist_ok=True)
+        os.makedirs(f"{output_dir}/target", exist_ok=True)
+        
+        for idx in tqdm(range(len(self))):
+            input_path, target_path = self.folder[idx]
+            input_tensor, target_tensor, (input_range, target_range) = self[idx]
+            
+            # Denormalize
+            input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
+            target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
+            
+            # Save DICOM
+            for arr, orig_path, prefix in [(input_arr, input_path, 'input'), 
+                                         (target_arr, target_path, 'target')]:
+                orig_dcm = dicom.dcmread(orig_path)
+                new_dcm = orig_dcm.copy()
+                new_dcm.PixelData = arr.astype(orig_dcm.pixel_array.dtype).tobytes()
+                new_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+                new_dcm.save_as(f"{output_dir}/{prefix}/{idx}.dcm")
 
 class Stacked3DDataset(Dataset):
     def __init__(self,
@@ -483,94 +438,70 @@ class LoadOneAcquisition(Dataset):
         self.control = control
         self.augmentation = augmentation
         self.generating = generating
-
+    
     def __len__(self):
         return len(self.folder)
     
+    def normalize(self, image_array):
+        """Simple min-max normalization"""
+        min_val = image_array.min()
+        max_val = image_array.max()
+        return (image_array - min_val) / (max_val - min_val), (min_val, max_val)
+
+    def denormalize(self, normalized_array, original_range):
+        """Restore original values"""
+        min_val, max_val = original_range
+        return normalized_array * (max_val - min_val) + min_val
+
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
-
-        # Read DICOM properly preserving the intensity scaling
+        
+        # Load input
         input_dcm = dicom.dcmread(input_path)
-        input = input_dcm.pixel_array
-
-        # Apply proper DICOM rescaling
-        if hasattr(input_dcm, 'RescaleIntercept') and hasattr(input_dcm, 'RescaleSlope'):
-            input = input_dcm.pixel_array * input_dcm.RescaleSlope + input_dcm.RescaleIntercept
-
-        # Check bit depth and adjust accordingly
-        bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
-        max_val = float(2**bit_depth - 1)
-
-        # Convert to float32 while preserving the dynamic range
-        #input = input.astype(np.float32)
-        input = input.astype(np.float32) / max_val
-
-        # Do the same for target
+        input_arr = input_dcm.pixel_array.astype(np.float32)
+        
+        # Load target
         target_dcm = dicom.dcmread(target_path)
-        target = target_dcm.pixel_array
-        if hasattr(target_dcm, 'RescaleIntercept') and hasattr(target_dcm, 'RescaleSlope'):
-            target = target_dcm.pixel_array * target_dcm.RescaleSlope + target_dcm.RescaleIntercept
-        #target = target.astype(np.float32)
-        target = target.astype(np.float32) / max_val
-
-        # Convert to tensor
-        input = torch.tensor(input).unsqueeze(0)
-        target = torch.tensor(target).unsqueeze(0)
-        if self.generating:
-            return input, target, input_path, target_path
-        print(input.shape)
-        return input, target
-    
+        target_arr = target_dcm.pixel_array.astype(np.float32)
+        
+        # Normalize while preserving ranges
+        input_norm, input_range = self.normalize(input_arr)
+        target_norm, target_range = self.normalize(target_arr)
+        
+        # Convert to tensors
+        input_tensor = torch.tensor(input_norm).unsqueeze(0)
+        target_tensor = torch.tensor(target_norm).unsqueeze(0)
+        
+        return input_tensor, target_tensor, (input_range, target_range)
 
 
-
-    def save_images(self):
+    def check_normalization(self):
         for idx in range(len(self)):
+            input, target,*args = self[idx]
+            print(f"Input range: {input.min():.3f} to {input.max():.3f}")
+            print(f"Target range: {target.min():.3f} to {target.max():.3f}")
+            # Should see values between 0 and 1
+    
+    def save_images(self, output_dir="generated_test/analyze"):
+        os.makedirs(f"{output_dir}/input", exist_ok=True)
+        os.makedirs(f"{output_dir}/target", exist_ok=True)
+        
+        for idx in tqdm(range(len(self))):
             input_path, target_path = self.folder[idx]
-            input_dcm = dicom.dcmread(input_path)
-            target_dcm = dicom.dcmread(target_path)
-
-            input_tensor, target_tensor = self[idx]
-            input_array = input_tensor.squeeze().numpy()
-            target_array = target_tensor.squeeze().numpy()
-
-            # Get the same max_val used in __getitem__
-            bit_depth = input_dcm.BitsStored if hasattr(input_dcm, 'BitsStored') else 16
-            max_val = float(2**bit_depth - 1)
-
-            # First multiply back by max_val to reverse the division
-            input_array = input_array * max_val
-            target_array = target_array * max_val
-
-            # Then handle rescale slope/intercept if present
-            if hasattr(input_dcm, 'RescaleSlope') and hasattr(input_dcm, 'RescaleIntercept'):
-                input_array = (input_array - input_dcm.RescaleIntercept) / input_dcm.RescaleSlope
-                target_array = (target_array - target_dcm.RescaleIntercept) / target_dcm.RescaleSlope
-                print(f"Input rescale slope: {input_dcm.RescaleSlope}, intercept: {input_dcm.RescaleIntercept}")
-                print(f"Target rescale slope: {target_dcm.RescaleSlope}, intercept: {target_dcm.RescaleIntercept}")
-                
-            # Convert to original data type
-            input_array = input_array.astype(input_dcm.pixel_array.dtype)
-            target_array = target_array.astype(target_dcm.pixel_array.dtype)
-
-            # Create new DICOM files
-            new_input_dcm = input_dcm.copy()
-            new_target_dcm = target_dcm.copy()
-
-            # Update pixel data
-            new_input_dcm.PixelData = input_array.tobytes()
-            new_target_dcm.PixelData = target_array.tobytes()
-
-            # Generate new UIDs
-            new_input_dcm.SOPInstanceUID = dicom.uid.generate_uid()
-            new_target_dcm.SOPInstanceUID = dicom.uid.generate_uid()
-
-            # Save files
-            os.makedirs("generated_test/analyze/input", exist_ok=True)
-            os.makedirs("generated_test/analyze/target", exist_ok=True)
-            new_input_dcm.save_as(f"generated_test/analyze/input/{idx}.dcm")
-            new_target_dcm.save_as(f"generated_test/analyze/target/{idx}.dcm")    
+            input_tensor, target_tensor, (input_range, target_range) = self[idx]
+            
+            # Denormalize
+            input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
+            target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
+            
+            # Save DICOM
+            for arr, orig_path, prefix in [(input_arr, input_path, 'input'), 
+                                         (target_arr, target_path, 'target')]:
+                orig_dcm = dicom.dcmread(orig_path)
+                new_dcm = orig_dcm.copy()
+                new_dcm.PixelData = arr.astype(orig_dcm.pixel_array.dtype).tobytes()
+                new_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+                new_dcm.save_as(f"{output_dir}/{prefix}/{idx}.dcm")
 
 
 class Datav2Module(pl.LightningDataModule):
@@ -676,11 +607,9 @@ class Datav2Module(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    ds = Datav2Dataset("/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/")
-    x,y = ds[0]
-    ds.check_shape()
-    
-    """ 
+    """ ds = Datav2Dataset("/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/", prediction_mode=True)
+    ds.save_images()
+    """   
     acquisition_number = 5
     categorie = "controllowmetal"
     ds = LoadOneAcquisition(
@@ -688,4 +617,5 @@ if __name__ == "__main__":
         categorie = categorie,
         acquisition = acquisition_number,
     )
-    #ds.save_images() """
+    ds.check_normalization()
+    ds.save_images()
