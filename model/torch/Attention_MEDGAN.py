@@ -149,6 +149,11 @@ class U_block(nn.Module):
             x = layer(x)
             skip = encoder_outputs[-(i+1)]
             #x = attention(x, skip)
+            if x.shape != skip.shape:
+                """
+                Modify this if bad results
+                """
+                x = F.interpolate(x, size=skip.shape[2:], mode='bilinear', align_corners=True)
             x = torch.cat([x, skip], dim=1)
 
         x = self.final_conv(x)
@@ -206,7 +211,7 @@ class VGG19(pl.LightningModule):
         shape=(577, 577, 1),
         classifier_training=False,
         load_whole_architecture=False,
-        n_class = 1,
+        n_class = 31,
         learning_rate=1e-3,
         *args, **kwargs
     ):
@@ -757,16 +762,17 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         return style_loss
     
 if __name__ == "__main__":
-    """ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    input_shape = (1, 577, 577)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AttentionMEDGAN(
         input_shape=(1, 577, 577)
     ).to(device)
 
-    x = torch.randn(1, 1, 512, 512).to(device)
-    y = torch.randn(1, 1, 512, 512).to(device)
+    x = torch.randn(1, 1, 577,577).to(device)
+    y = torch.randn(1, 1, 577,577).to(device)
     loss = model.test_training_step((x, y), 0)   
     print(loss)
-    summary(model, (1, 512, 512))
+    summary(model, (1, 577,577))
     """
     vgg = VGG19(classifier_training=True, n_class=31).to("cuda")
     x = torch.randn((2,1,557,557)).to("cuda")
@@ -776,3 +782,4 @@ if __name__ == "__main__":
     loss = nn.CrossEntropyLoss()
     v_loss = loss(pred,y)
     print(v_loss)
+    """

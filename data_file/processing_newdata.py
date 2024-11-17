@@ -309,7 +309,6 @@ class Datav2Dataset(Dataset):
     def __init__(self,
                  folder="datav2/protocole_1/",
                  data_folder="complete",
-                 img_size=512,
                  augmentation=None,
                  prediction_mode=False):
         if data_folder == "complete":
@@ -379,6 +378,7 @@ class Datav2Dataset(Dataset):
                 new_dcm.save_as(f"{output_dir}/{prefix}/{idx}.dcm")
     def __len__(self):
         return len(self.folder)
+    
 class Stacked3DDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
