@@ -2,7 +2,7 @@
 #SBATCH --job-name=SDD
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-#SBATCH --mem=40GB
+#SBATCH --mem=80GB
 #SBATCH --output=ruche_log/singularity_output.txt
 #SBATCH --error=ruche_log/singularity_error.txt
 #SBATCH --time=24:00:00
@@ -35,7 +35,7 @@ GAN_command="python3 pl_training.py \
     --test_bs 32 \
     --task=GAN \
     --no-use_deepspeed \
-    --data_folder=complete"
+    --data_folder=complete "
 
 VGG_COMMAND="python3 pl_training.py \
     --max_epochs 100 \
