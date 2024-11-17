@@ -31,9 +31,10 @@ command_to_run="python3 pl_training.py \
 
 GAN_command="python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 16 \
-    --test_bs 16 \
-    --no-use_feature_extractor \
+    --train_bs 32 \
+    --test_bs 32 \
+    --use_feature_extractor \
+    --ruche \
     --task=GAN \
     --no-use_deepspeed \
     --data_folder=complete"
@@ -49,4 +50,4 @@ VGG_COMMAND="python3 pl_training.py \
 
 
 
-srun $start_container_cmd /bin/bash -c "$VGG_COMMAND"
+srun $start_container_cmd /bin/bash -c "$GAN_COMMAND"

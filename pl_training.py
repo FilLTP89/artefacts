@@ -23,7 +23,7 @@ torch.set_float32_matmul_precision('medium')
 
 SAVE_WEIGHTS_ONLY = False
 VGG_CONTROL_CPKT = "model/saved_model/best_model-epoch=19-val_acc=0.94.ckpt"
-VGG_COMPLETE_CPKT = "model/saved_model/VGG19/comfy-dragon-158/best_model-epoch=52-val_acc=0.91.ckpt"
+VGG_COMPLETE_CPKT = "model/saved_model/VGG19/jeanzay/best_model-epoch=88-val_acc=0.92.ckpt"
 ATTENTION_MEDGAN_CPKT = "model/saved_model/AttentionMEDGAN/best_model/best_model-epoch=19-test_mse_loss=0.00.ckpt"
 
 class CustomModelCheckpoint(ModelCheckpoint):
