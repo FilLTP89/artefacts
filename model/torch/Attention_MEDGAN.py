@@ -639,26 +639,27 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         for _ in range(self.N_g):
             g_opt.zero_grad()
             fake_y = self.generator(real_x)
+           
+            fake_features, fake_output = self.discriminator(fake_y)
+            real_features, _ = self.discriminator(real_y)
             
             # Add noise to labels for label smoothing
             real_label = torch.rand_like(fake_output) * 0.1 + 0.85  # Random between 0.85 and 0.95
             fake_label = torch.rand_like(fake_output) * 0.1  # Random between 0 and 0.1
             
-            fake_features, fake_output = self.discriminator(fake_y)
-            real_features, _ = self.discriminator(real_y)
 
             fake_vgg_features = self.feature_extractor(fake_y)
             real_vgg_features = self.feature_extractor(real_y)
 
             g_loss = self.generator_loss(
-                fake_output, 
-                real_features, 
-                fake_features, 
-                real_vgg_features, 
-                fake_vgg_features, 
-                real_y, 
-                fake_y,
-                real_label
+                fake_output= fake_output, 
+                real_features= real_features, 
+                fake_features= fake_features, 
+                real_vgg_features=real_vgg_features, 
+                fake_vgg_features=fake_vgg_features, 
+                real_y=real_y, 
+                fake_y=fake_y,
+                real_label=real_label
             )
             
             # Smooth the generator loss

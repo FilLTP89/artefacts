@@ -145,7 +145,7 @@ def load_model(task ="GAN",
             vgg = VGG19(classifier_training= False, n_class=n_class, load_whole_architecture=True)
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
-            model = OptimizedAttentionMEDGAN(*args, **kwargs)
+            model = AttentionMEDGAN(*args, **kwargs)
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
