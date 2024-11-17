@@ -33,7 +33,6 @@ GAN_command="python3 pl_training.py \
     --max_epochs 100 \
     --train_bs 32 \
     --test_bs 32 \
-    --use_feature_extractor \
     --task=GAN \
     --no-use_deepspeed \
     --data_folder=complete"
