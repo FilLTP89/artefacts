@@ -34,6 +34,7 @@ GAN_command="python3 pl_training.py \
     --train_bs 32 \
     --test_bs 32 \
     --task=GAN \
+    --no-use_feature_extractor \
     --no-use_deepspeed \
     --data_folder=complete "
 
