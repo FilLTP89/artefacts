@@ -377,7 +377,8 @@ class Datav2Dataset(Dataset):
                 new_dcm.PixelData = arr.astype(orig_dcm.pixel_array.dtype).tobytes()
                 new_dcm.SOPInstanceUID = dicom.uid.generate_uid()
                 new_dcm.save_as(f"{output_dir}/{prefix}/{idx}.dcm")
-
+    def __len__(self):
+        return len(self.folder)
 class Stacked3DDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
