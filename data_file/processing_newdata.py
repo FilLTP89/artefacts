@@ -310,7 +310,8 @@ class Datav2Dataset(Dataset):
                  folder="datav2/protocole_1/",
                  data_folder="complete",
                  augmentation=None,
-                 prediction_mode=False):
+                 prediction_mode=False,
+                 *args, **kwargs):
         if data_folder == "complete":
             self.folder = gpt_create_all_dataset(folder)
         elif data_folder == "control":
