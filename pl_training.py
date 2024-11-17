@@ -171,6 +171,7 @@ def load_feature_extractor(data_folder = "complete",*args, **kwargs):
     return model
 
 def main(args,ds_config=None):
+    print(f"Using ruche : {args.ruche}")
     set_seed(42)
     device_count = torch.cuda.device_count()
     if args.ruche:

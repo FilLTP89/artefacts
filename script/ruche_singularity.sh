@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=SDD
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:2
 #SBATCH --mem=80GB
 #SBATCH --output=ruche_log/singularity_output.txt
 #SBATCH --error=ruche_log/singularity_error.txt
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=4
+#SBATCH --ntasks-per-node=2
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpua100
 #SBATCH --export=all
