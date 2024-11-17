@@ -31,8 +31,8 @@ command_to_run="python3 pl_training.py \
 
 GAN_COMMAND="python3 pl_training.py \
     --max_epochs 100 \
-    --train_bs 32 \
-    --test_bs 32 \
+    --train_bs 16 \
+    --test_bs 16 \
     --task=GAN \
     --ruche \
     --no-use_deepspeed \
