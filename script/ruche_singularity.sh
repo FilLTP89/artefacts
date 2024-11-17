@@ -50,4 +50,4 @@ VGG_COMMAND="python3 pl_training.py \
 
 
 
-srun $start_container_cmd /bin/bash -c "$VGG_COMMAND"
+srun $start_container_cmd /bin/bash -c "$GAN_COMMAND"
