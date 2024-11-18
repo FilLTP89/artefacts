@@ -207,6 +207,43 @@ class PatchGAN(nn.Module):
             features.append(x)
         return features[:-1], x  # Return features and last layer output
 
+
+class LargerPatchGAN(nn.Module):
+    def __init__(self, input_shape):
+        super(LargerPatchGAN, self).__init__()
+        self.model = self._build_model(input_shape[0])
+
+    def _build_model(self, in_channels):
+        def conv_block(in_channels, out_channels, normalize=True):
+            layers = [nn.Conv2d(in_channels, out_channels, 4, stride=2, padding=1)]
+            if normalize:
+                layers.append(nn.BatchNorm2d(out_channels))
+            layers.append(nn.LeakyReLU(0.2))
+            return layers
+
+        model = nn.Sequential(
+            *conv_block(in_channels, 64, normalize=False),
+            *conv_block(64, 64),
+            *conv_block(64, 128),
+            *conv_block(128, 128),
+            *conv_block(128, 256),
+            *conv_block(256, 256),
+            *conv_block(256, 512),
+            *conv_block(512, 512),
+            *conv_block(512, 1024),
+            *conv_block(1024, 1024),
+            nn.Conv2d(1024, 1, 4, padding=1)
+        )
+        return model
+
+    def forward(self, x):
+        features = []
+        for layer in self.model:
+            x = layer(x)
+            features.append(x)
+        return features[:-1], x  # Return features and last layer output
+
+
 class VGG19(pl.LightningModule):
     def __init__(
         self,
@@ -339,7 +376,7 @@ class AttentionMEDGAN(pl.LightningModule):
         self.cosine_decay = cosine_decay
 
         self.generator = generator or ConsNet(3, self.shape, filters=filters)
-        self.discriminator = discriminator or PatchGAN(self.shape)
+        self.discriminator = discriminator or LargerPatchGAN(self.shape)
         if feature_extractor :
             self.feature_extractor = feature_extractor 
             feature_extractor.eval()
@@ -806,6 +843,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.ema_generator.load_state_dict(checkpoint['ema_generator_state_dict'])
     
 if __name__ == "__main__":
+    """
     input_shape = (1, 577, 577)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AttentionMEDGAN(
@@ -818,6 +856,7 @@ if __name__ == "__main__":
     print(loss)
     summary(model, (1, 577,577))
     """
+    """
     vgg = VGG19(classifier_training=True, n_class=31).to("cuda")
     x = torch.randn((2,1,557,557)).to("cuda")
     y = torch.ones([2]).type(torch.LongTensor).to("cuda")
@@ -827,3 +866,6 @@ if __name__ == "__main__":
     v_loss = loss(pred,y)
     print(v_loss)
     """
+    model = LargerPatchGAN((1, 577, 577)).to("cuda")
+    x = torch.randn((2,1,577,577)).to("cuda")
+    summary(model)
