@@ -727,12 +727,12 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
             d_loss = self.discriminator_loss(real_output, fake_output)
 
         self.log_dict({
-            'val_g_loss': g_loss,
-            'val_d_loss': d_loss,
-            'val_perceptual_loss': self.perceptual_loss,
-            'val_style_loss': self.style_loss,
-            'val_content_loss': self.content_loss,
-            'val_mse_loss': self.mse_loss
+            'test_g_loss': g_loss,
+            'test_d_loss': d_loss,
+            'test_perceptual_loss': self.perceptual_loss,
+            'test_style_loss': self.style_loss,
+            'test_content_loss': self.content_loss,
+            'test_mse_loss': self.mse_loss
         }, prog_bar=True, sync_dist=True)
 
         return {'val_g_loss': g_loss, 'val_d_loss': d_loss}

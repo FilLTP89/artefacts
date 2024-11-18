@@ -306,6 +306,7 @@ class Datav2Dataset(Dataset):
                  data_folder="complete",
                  augmentation=None,
                  prediction_mode=False,
+                 img_size=557,
                  *args, **kwargs):
         if data_folder == "complete":
             self.folder = gpt_create_all_dataset(folder)
@@ -317,6 +318,12 @@ class Datav2Dataset(Dataset):
         self.prediction_mode = prediction_mode
         self.augmentation = augmentation
         self.n_class = 31
+        self.img_size = img_size
+        self.transform = transforms.Compose([
+            transforms.Resize((self.img_size, self.img_size), antialias=True),
+        ])
+
+
 
     def normalize(self, image_array):
         """Simple min-max normalization"""
