@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torchsummary import summary
 import pytorch_lightning as pl
 from torch.nn.utils import spectral_norm
-from copy import copy 
+import copy 
 
 
 class ImageSelfAttention(nn.Module):
