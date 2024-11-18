@@ -561,7 +561,8 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         N_g=5,
         vgg_whole_arc=False,
         cosine_decay=True,
-        filters=[8,16,32,64,128,256,512,1024]
+        filters=[8,16,32,64,128,256,512,1024],
+        *args, **kwargs 
     ):
         super().__init__()
         self.save_hyperparameters()
