@@ -558,22 +558,21 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         feature_extractor=None,
         g_lr=2e-4,
         d_lr=4e-4,
-        N_g=3,
+        N_g=5,
         vgg_whole_arc=False,
         cosine_decay=True,
-        filters=[8,16,32,64,128,256,512,1024],
-        *args, **kwargs
+        filters=[8,16,32,64,128,256,512,1024]
     ):
         super().__init__()
         self.save_hyperparameters()
         self.shape = input_shape
         self.N_g = N_g
         
-        # Adjusted loss weights based on typical GAN implementations
-        self.lambda_1 = 10.0  # Perceptual loss weight (reduced from 20)
-        self.lambda_2 = 1.0   # Style loss weight (increased from 1e-4)
+        # Adjusted loss weights
+        self.lambda_1 = 10.0  # Perceptual loss weight
+        self.lambda_2 = 1.0   # Style loss weight
         self.lambda_3 = 1.0   # Content loss weight
-        self.lambda_4 = 10.0  # MSE loss weight (increased for better reconstruction)
+        self.lambda_4 = 10.0  # MSE loss weight
         self.lambda_gp = 10.0 # Gradient penalty weight
         
         self.automatic_optimization = False
@@ -581,8 +580,8 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         self.d_lr = d_lr
         self.cosine_decay = cosine_decay
 
-        # Networks (keeping your original architectures)
-        self.generator = generator or ConsNet(6, self.shape, filters=filters)
+        # Networks
+        self.generator = generator or ConsNet(N_g, self.shape, filters=filters)
         self.discriminator = discriminator or PatchGAN(self.shape)
         
         if feature_extractor:
@@ -593,13 +592,11 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         else:
             self.feature_extractor = VGG19(self.shape, load_whole_architecture=vgg_whole_arc)
             
-        # Historical averaging for generator
-        self.register_buffer('generator_ema', None)
+        # EMA setup
         self.ema_beta = 0.999
-        
-        # Initialize metrics
-        self.validation_step_outputs = []
-        self.training_step_outputs = []
+        self.ema_generator = copy.deepcopy(self.generator)
+        for param in self.ema_generator.parameters():
+            param.requires_grad = False
 
     def configure_optimizers(self):
         g_opt = torch.optim.Adam(self.generator.parameters(), lr=self.g_lr, betas=(0.5, 0.999))
@@ -621,6 +618,9 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
             return [g_opt, d_opt], [g_scheduler, d_scheduler]
         return [g_opt, d_opt]
 
+    def forward(self, x):
+        return self.generator(x)
+
     def compute_gradient_penalty(self, real_y, fake_y):
         """Compute gradient penalty for WGAN-GP"""
         alpha = torch.rand((real_y.size(0), 1, 1, 1), device=self.device)
@@ -639,6 +639,11 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         gradients = gradients.view(gradients.size(0), -1)
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
         return gradient_penalty
+
+    def update_ema_generator(self):
+        with torch.no_grad():
+            for ema_param, param in zip(self.ema_generator.parameters(), self.generator.parameters()):
+                ema_param.data.mul_(self.ema_beta).add_(param.data, alpha=1 - self.ema_beta)
 
     def training_step(self, batch, batch_idx):
         real_x, real_y = batch
@@ -681,10 +686,13 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         d_opt.step()
 
         # Update EMA generator
-        if self.generator_ema is None:
-            self.generator_ema = copy.deepcopy(self.generator.state_dict())
-        else:
-            self.update_ema_generator()
+        self.update_ema_generator()
+
+        # Step learning rate schedulers
+        if self.cosine_decay and self.trainer.is_last_batch:
+            sch = self.lr_schedulers()
+            sch[0].step()
+            sch[1].step()
 
         # Logging
         self.log_dict({
@@ -701,12 +709,41 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
         
         return {'g_loss': g_loss, 'd_loss': d_loss}
 
-    def update_ema_generator(self):
+    def validation_step(self, batch, batch_idx):
+        real_x, real_y = batch
+        
         with torch.no_grad():
-            for param, ema_param in zip(self.generator.state_dict().items(), 
-                                      self.generator_ema.items()):
-                ema_param[1].data.mul_(self.ema_beta).add_(
-                    param[1].data, alpha=1 - self.ema_beta)
+            # Use EMA generator for validation
+            fake_y = self.ema_generator(real_x)
+            fake_features, fake_output = self.discriminator(fake_y)
+            real_features, real_output = self.discriminator(real_y)
+
+            fake_vgg_features = self.feature_extractor(fake_y)
+            real_vgg_features = self.feature_extractor(real_y)
+
+            g_loss = self.generator_loss(fake_output, real_features, fake_features,
+                                       real_vgg_features, fake_vgg_features, real_y, fake_y)
+            d_loss = self.discriminator_loss(real_output, fake_output)
+
+        self.log_dict({
+            'val_g_loss': g_loss,
+            'val_d_loss': d_loss,
+            'val_perceptual_loss': self.perceptual_loss,
+            'val_style_loss': self.style_loss,
+            'val_content_loss': self.content_loss,
+            'val_mse_loss': self.mse_loss
+        }, prog_bar=True, sync_dist=True)
+
+        return {'val_g_loss': g_loss, 'val_d_loss': d_loss}
+
+    def test_step(self, batch, batch_idx):
+        return self.validation_step(batch, batch_idx)
+
+    def predict_step(self, batch, batch_idx):
+        x = batch
+        # Use EMA generator for prediction
+        with torch.no_grad():
+            return self.ema_generator(x)
 
     def generator_loss(self, fake_output, real_features, fake_features, 
                       real_vgg_features, fake_vgg_features, real_y, fake_y):
@@ -733,7 +770,7 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
                 self.lambda_2 * style_loss + 
                 self.lambda_3 * content_loss + 
                 self.lambda_4 * mse_loss + 
-                0.1 * feat_matching_loss)  # Small weight for feature matching
+                0.1 * feat_matching_loss)
 
     def discriminator_loss(self, real_output, fake_output):
         # Hinge loss for discriminator
@@ -759,46 +796,13 @@ class OptimizedAttentionMEDGAN(pl.LightningModule):
             content_loss += nn.MSELoss()(fake_feat, real_feat)
         return content_loss
 
-    def validation_step(self, batch, batch_idx):
-        real_x, real_y = batch
-        
-        # Use EMA generator for validation
-        if self.generator_ema is not None:
-            generator_state = self.generator.state_dict()
-            self.generator.load_state_dict(self.generator_ema)
-        
-        with torch.no_grad():
-            fake_y = self.generator(real_x)
-            fake_features, fake_output = self.discriminator(fake_y)
-            real_features, real_output = self.discriminator(real_y)
+    def on_save_checkpoint(self, checkpoint):
+        # Save EMA generator state
+        checkpoint['ema_generator_state_dict'] = self.ema_generator.state_dict()
 
-            fake_vgg_features = self.feature_extractor(fake_y)
-            real_vgg_features = self.feature_extractor(real_y)
-
-            g_loss = self.generator_loss(fake_output, real_features, fake_features,
-                                       real_vgg_features, fake_vgg_features, real_y, fake_y)
-            d_loss = self.discriminator_loss(real_output, fake_output)
-        
-        # Restore generator weights if using EMA
-        if self.generator_ema is not None:
-            self.generator.load_state_dict(generator_state)
-
-        self.log_dict({
-            'val_g_loss': g_loss,
-            'val_d_loss': d_loss,
-            'val_perceptual_loss': self.perceptual_loss,
-            'val_style_loss': self.style_loss,
-            'val_content_loss': self.content_loss,
-            'val_mse_loss': self.mse_loss
-        }, prog_bar=True, sync_dist=True)
-
-        return {'val_g_loss': g_loss, 'val_d_loss': d_loss}
-
-    def on_train_epoch_end(self):
-        if self.cosine_decay:
-            sch = self.lr_schedulers()
-            sch[0].step()
-            sch[1].step()
+    def on_load_checkpoint(self, checkpoint):
+        # Load EMA generator state
+        self.ema_generator.load_state_dict(checkpoint['ema_generator_state_dict'])
     
 if __name__ == "__main__":
     input_shape = (1, 577, 577)
