@@ -160,6 +160,7 @@ def load_model(task ="GAN",
     return model
 
 def load_feature_extractor(data_folder = "complete",*args, **kwargs):
+    print(f"Loading feature extractor for {data_folder}")
     if data_folder =="complete":
         cpkt = VGG_COMPLETE_CPKT
     elif data_folder == "control":

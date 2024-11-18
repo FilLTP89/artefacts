@@ -380,6 +380,8 @@ class Datav2Dataset(Dataset):
     def __len__(self):
         return len(self.folder)
     
+ 
+    
 class Stacked3DDataset(Dataset):
     def __init__(self,
                  folder = "datav2/protocole_1/",
@@ -491,7 +493,7 @@ class LoadOneAcquisition(Dataset):
         for idx in tqdm(range(len(self))):
             input_path, target_path = self.folder[idx]
             input_tensor, target_tensor, (input_range, target_range) = self[idx]
-            
+            print(input_tensor.shape) 
             # Denormalize
             input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
             target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
@@ -499,6 +501,31 @@ class LoadOneAcquisition(Dataset):
             # Save DICOM
             for arr, orig_path, prefix in [(input_arr, input_path, 'input'), 
                                          (target_arr, target_path, 'target')]:
+                orig_dcm = dicom.dcmread(orig_path)
+                new_dcm = orig_dcm.copy()
+                new_dcm.PixelData = arr.astype(orig_dcm.pixel_array.dtype).tobytes()
+                new_dcm.SOPInstanceUID = dicom.uid.generate_uid()
+                new_dcm.save_as(f"{output_dir}/{prefix}/{idx}.dcm")
+
+    def generate(self, model, output_dir, device = "cuda"):
+        os.makedirs(f"{output_dir}/input", exist_ok=True)
+        os.makedirs(f"{output_dir}/target", exist_ok=True)
+        os.makedirs(f"{output_dir}/generated", exist_ok=True)
+        
+        for idx in range(len(self)):
+            input_path, target_path = self.folder[idx]
+            input_tensor, target_tensor, (input_range, target_range) = self[idx]
+            generated_tensor = model(input_tensor.unsqueeze(0).to(device)).squeeze(0)
+
+            
+            
+            input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
+            target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
+            generated_arr = self.denormalize(generated_tensor.squeeze().cpu().numpy(), target_range)
+            # Save DICOM
+            for arr, orig_path, prefix in [(input_arr, input_path, 'input'), 
+                                         (target_arr, target_path, 'target'),
+                                         (generated_arr, target_path, 'generated')]:
                 orig_dcm = dicom.dcmread(orig_path)
                 new_dcm = orig_dcm.copy()
                 new_dcm.PixelData = arr.astype(orig_dcm.pixel_array.dtype).tobytes()
@@ -549,6 +576,8 @@ class Datav2Module(pl.LightningDataModule):
                     enable_elastic=False  # Set to True if you want elastic deformation
             )
         }
+        self.args = args
+        self.kwargs = kwargs
 
     def get_optimal_num_workers(self):
         slurms_cpu = os.environ.get('SLURM_CPUS_PER_TASK')
@@ -568,7 +597,7 @@ class Datav2Module(pl.LightningDataModule):
         return cpu_used
         
     def setup(self, stage = None):
-        self.dataset = self.dataset_type(folder = self.folder, data_folder=self.data_folder, img_size=self.img_size)
+        self.dataset = self.dataset_type(folder = self.folder, data_folder=self.data_folder, img_size=self.img_size, *self.args, **self.kwargs)
         self.n_class = self.dataset.n_class
         total = len(self.dataset)
         train_size = int(self.train_ratio * total)
@@ -619,5 +648,5 @@ if __name__ == "__main__":
         categorie = categorie,
         acquisition = acquisition_number,
     )
-    ds.check_normalization()
+    #ds.check_normalization()
     ds.save_images()
