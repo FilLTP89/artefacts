@@ -338,7 +338,7 @@ class Datav2Dataset(Dataset):
 
     def __getitem__(self, idx):
         input_path, target_path = self.folder[idx]
-        
+
         # Load input
         input_dcm = dicom.dcmread(input_path)
         input_arr = input_dcm.pixel_array.astype(np.float32)
@@ -354,7 +354,8 @@ class Datav2Dataset(Dataset):
         # Convert to tensors
         input_tensor = torch.tensor(input_norm).unsqueeze(0)
         target_tensor = torch.tensor(target_norm).unsqueeze(0)
-        
+        input_tensor = self.transform(input_tensor)
+        target_tensor = self.transform(target_tensor)
         if self.prediction_mode:
             return input_tensor, target_tensor, (input_range, target_range)
         return input_tensor, target_tensor
