@@ -521,7 +521,7 @@ class LoadOneAcquisition(Dataset):
             
             input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
             target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
-            generated_arr = self.denormalize(generated_tensor.squeeze().detach().numpy(), target_range)
+            generated_arr = self.denormalize(generated_tensor.squeeze().detach().cpu().numpy(), target_range)
             # Save DICOM
             for arr, orig_path, prefix in [(input_arr, input_path, 'input'), 
                                          (target_arr, target_path, 'target'),
