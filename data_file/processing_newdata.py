@@ -152,12 +152,8 @@ def load_one_acquisition(path = "datav2/protocole_1/",
                          dcm=True,
                          categorie = "cocrhigh",
                          acquisition = 1):
-    dataset = gptcreate_dataset(path)
-    total_path = f"{path}{'control' if control else 'fracture'}/{acquisition}/dcm/Input/{categorie}/" 
-    print(f"Looking for data in : {total_path}")
-    items = os.listdir(total_path)
-    file_count = sum(1 for item in items if os.path.isfile(os.path.join(total_path, item)))
-    print(f"Found {file_count} files")
+    dataset = gptcreate_dataset(path, control=control, dcm=dcm)
+    control = "control" if control else "fracture"
     acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
     return acquisition
 
@@ -167,7 +163,6 @@ def load_all_acquisition(path = "datav2/protocole_1/",
     ):
     dataset = gptcreate_dataset(path)
     total_path = f"{path}{'control' if control else 'fracture'}/"
-    print(total_path)
     numbers = os.listdir(total_path) 
     categories = os.listdir(total_path + numbers[0] + "/dcm/Input/")
     all_acquisition = []
@@ -493,7 +488,6 @@ class LoadOneAcquisition(Dataset):
         for idx in tqdm(range(len(self))):
             input_path, target_path = self.folder[idx]
             input_tensor, target_tensor, (input_range, target_range) = self[idx]
-            print(input_tensor.shape) 
             # Denormalize
             input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
             target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
@@ -512,7 +506,7 @@ class LoadOneAcquisition(Dataset):
         os.makedirs(f"{output_dir}/target", exist_ok=True)
         os.makedirs(f"{output_dir}/generated", exist_ok=True)
 
-        for idx in range(len(self)):
+        for idx in tqdm(range(len(self))):
             input_path, target_path = self.folder[idx]
             input_tensor, target_tensor, (input_range, target_range) = self[idx]
             generated_tensor = model(input_tensor.unsqueeze(0).to(device)).squeeze(0)
@@ -641,9 +635,11 @@ if __name__ == "__main__":
     """ ds = Datav2Dataset("/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/", prediction_mode=True)
     ds.save_images()
     """   
-    acquisition_number = 5
-    categorie = "controllowmetal"
+    datav2 = Datav2Module(folder="/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/")
+    acquisition_number = 1
+    categorie = "guttalow"
     ds = LoadOneAcquisition(
+        control=False,
         path = "/media/gabrielidis/LaCie/Hugo/dataset/medicalv2/protocole_1/",
         categorie = categorie,
         acquisition = acquisition_number,

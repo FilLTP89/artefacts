@@ -145,7 +145,7 @@ def load_model(task ="GAN",
             vgg = VGG19(classifier_training= False, n_class=n_class, load_whole_architecture=True)
             model = AttentionMEDGAN(feature_extractor = vgg)
         else: 
-            model = AttentionMEDGAN(*args, **kwargs)
+            model = OptimizedAttentionMEDGAN(*args, **kwargs)
     elif task == "Diffusion":
         model = Diffusion_UNET(in_channels=1)
     elif task == "Conditional_Diffusion":
@@ -237,7 +237,7 @@ def main(args,ds_config=None):
     callbacks = [
             CustomModelCheckpoint(
         dirpath = repo_path,
-        filename="best_model-{epoch:02d}-{" + monitor_dict[model_name][0] + ":.2f}",
+        filename="best_model-{epoch:02d}-{" + monitor_dict[model_name][0] + ":.4f}",
         save_top_k = 1,
         verbose = True,   
         monitor = monitor_dict[model_name][0],
