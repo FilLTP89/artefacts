@@ -613,7 +613,8 @@ class Datav2Module(pl.LightningDataModule):
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
                           shuffle=True,
-                          collate_fn=self.augmentation_dict[self.dataset_type])
+                            )
+                          #collate_fn=self.augmentation_dict[self.dataset_type])
     
     def val_dataloader(self):
         return DataLoader(self.valid_ds, 
@@ -635,7 +636,6 @@ class Datav2Module(pl.LightningDataModule):
                           num_workers=self.num_workers,
                           pin_memory=self.pin_memory,
                           shuffle=False)
-
 
 
 
