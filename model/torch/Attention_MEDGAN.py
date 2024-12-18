@@ -10,6 +10,8 @@ from torch.nn.utils import spectral_norm
 import copy 
 
 
+
+
 class ImageSelfAttention(nn.Module):
     def __init__(self, in_channels, out_channels=None, kernel_size=1):
         super(ImageSelfAttention, self).__init__()

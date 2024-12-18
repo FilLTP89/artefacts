@@ -11,6 +11,10 @@ from tqdm import tqdm
 import bitsandbytes as bnb
 from torch.profiler import profile, record_function, ProfilerActivity
 from pytorch_lightning.utilities import rank_zero_info
+from diffusers.models import AutoencoderKL
+from diffusers import StableDiffusionPipeline
+
+
 
 def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
     if not isinstance(arr, torch.Tensor):
@@ -20,6 +24,23 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
     while len(res.shape) < len(broadcast_shape):
         res = res[..., None]
     return res.expand(broadcast_shape)
+
+class StableDiffusionVQVQAE(pl.LightningModule):
+    def __init__(self, 
+                 model_name = "stabilityai/sd-vae-ft-mse",
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        model = AutoencoderKL.from_pretrained(model_name)   
+        self.encoder = model.encoder
+        self.decoder = model.decoder
+
+    def encode(self, x):
+        z = self.encoder(x)
+        z_latent = z[:, :z.shape[1]//2, :, :]
+        return z_latent
+    
+    def decode(self, z):
+        return self.decoder(z)
 
 class Diffusion_UNET(pl.LightningModule):
     def __init__(self,
@@ -164,16 +185,18 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
                  *args, **kwargs
                  ):
         super().__init__()
-        self.img_size = img_size
+        self.img_size = 64
         self.num_channels = num_channels
         self.learning_rate = learning_rate
         self.num_inference_steps = num_inference_steps
+        self.vae = StableDiffusionVQVQAE()
+        self.vae.eval() # Ensure the VAE is in evaluation mode and not training mode
         
         # Initialize the UNet2DConditionModel
         self.unet = UNet2DConditionModel(
             sample_size=img_size,
-            in_channels=num_channels,
-            out_channels=num_channels,
+            in_channels=4,
+            out_channels=4,
             layers_per_block=2,
             block_out_channels=(128, 128, 256, 256, 512, 512),
             down_block_types=(
@@ -221,10 +244,19 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
         # Print shape information for debugging
         
         # Ensure timestep is a 1D tensor
-        timestep = timestep.view(-1) if timestep.dim() == 0 else timestep
-        condition = self.condition_embedding(bad_image).view(bad_image.shape[0], 1, -1)
-        return self.unet(good_image, timestep, condition).sample
+        with torch.no_grad():
+            encoded_bad_image = self.vae.encode(bad_image)
+            encoded_good_image = self.vae.encode(good_image)
 
+        print(f"Encoded bad image shape: {encoded_bad_image.shape}")
+        print(f"Encoded good image shape: {encoded_good_image.shape}")
+        timestep = timestep.view(-1) if timestep.dim() == 0 else timestep
+        condition = self.condition_embedding(encoded_bad_image).view(bad_image.shape[0], 1, -1)
+        output_latent = self.unet(encoded_good_image, timestep, condition).sample
+        print(f"Output latent shape: {output_latent.shape}")
+        decoded = self.vae.decode(output_latent)
+        print(f"Decoded shape: {decoded.shape}")
+        return decoded
     
     def training_step(self, batch, batch_idx):
         bad_images, good_images = batch
@@ -307,16 +339,10 @@ class ImageToImageDDIMLightningModule(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    """
-    model = Diffusion_UNET(in_channels=1).to("cuda")
-    x = torch.randn(16, 1, 32, 32).to("cuda")
-    t = torch.Tensor([16]).to("cuda")
-    out = model(x,x,t)
-    print(out.shape)
-    """
     img_size = 512
-    model = ImageToImageDDIMLightningModule(img_size=img_size, condition_embedding=True).to("cuda")
+    encoded_size = 64 
     bad_image = torch.randn(1, 1, img_size,img_size).to("cuda")
+    model = ImageToImageDDIMLightningModule(img_size=encoded_size, condition_embedding=True).to("cuda")
     t = torch.Tensor([1]).to("cuda")
     good_image = torch.randn(1, 1, img_size,img_size).to("cuda")
     out = model(bad_image, t, good_image)
