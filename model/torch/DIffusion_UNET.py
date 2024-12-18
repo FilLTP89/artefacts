@@ -28,16 +28,37 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
 class StableDiffusionVQVQAE(pl.LightningModule):
     def __init__(self, 
                  model_name = "stabilityai/sd-vae-ft-mse",
+                 model_path = "/lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/model/vae/",
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        model = AutoencoderKL.from_pretrained(
-            pretrained_model_name_or_path="/lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/model/vae/",
-                use_safetensors=False,
-                revision="main",
-                local_files_only=True  # Force download if needed
+        try:
+            # Try direct torch load first
+            state_dict = torch.load(f"{model_path}/diffusion_pytorch_model.bin")
+            
+            # Initialize the model first
+            model = AutoencoderKL(
+                in_channels=3,
+                out_channels=3,
+                down_block_types=["DownEncoderBlock2D", "DownEncoderBlock2D", "DownEncoderBlock2D", "DownEncoderBlock2D"],
+                up_block_types=["UpDecoderBlock2D", "UpDecoderBlock2D", "UpDecoderBlock2D", "UpDecoderBlock2D"],
+                block_out_channels=[128, 256, 512, 512],
+                layers_per_block=2,
+                act_fn="silu",
+                latent_channels=4,
+                norm_num_groups=32,
+                sample_size=512,
+                scaling_factor=0.18215
             )
-        self.encoder = model.encoder
-        self.decoder = model.decoder
+            
+            # Then load the state dict
+            model.load_state_dict(state_dict)
+            
+            self.encoder = model.encoder
+            self.decoder = model.decoder
+            
+        except Exception as e:
+            print(f"Detailed error: {str(e)}")
+            raise
 
     def encode(self, x):
         z = self.encoder(x)
