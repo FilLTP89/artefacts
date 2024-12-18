@@ -31,7 +31,7 @@ class StableDiffusionVQVQAE(pl.LightningModule):
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         model = AutoencoderKL.from_pretrained(
-            pretrained_model_name_or_path="/lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/model/vae/"
+            pretrained_model_name_or_path="/lustre/fswork/projects/rech/xvy/ucn85lb/medical_project/artefacts/model/vae/",
                 use_safetensors=True,
                 revision="main",
                 local_files_only=True  # Force download if needed
