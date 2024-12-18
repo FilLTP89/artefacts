@@ -27,11 +27,11 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape, device):
 
 class StableDiffusionVQVQAE(pl.LightningModule):
     def __init__(self, 
-                 model_name = "stabilityai/sd-vae-ft-mse",
+                 model_path = "/linkhome/rech/genunh01/ucn85lb/.cache/huggingface/hub/models--stabilityai--sd-vae-ft-mse/snapshots/main",
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         model = AutoencoderKL.from_pretrained(
-                model_name,
+                model_path = ,
                 use_safetensors=True,
                 local_files_only=True  # Force download if needed
             )
