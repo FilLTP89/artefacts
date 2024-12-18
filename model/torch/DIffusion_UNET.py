@@ -30,13 +30,19 @@ class StableDiffusionVQVQAE(pl.LightningModule):
                  model_name = "stabilityai/sd-vae-ft-mse",
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        model = AutoencoderKL.from_pretrained(model_name)   
+        model = AutoencoderKL.from_pretrained(
+                model_name,
+                torch_dtype=torch.float32,  # Try explicit dtype
+                revision="main",
+                use_safetensors=True,
+                local_files_only=False  # Force download if needed
+            )
         self.encoder = model.encoder
         self.decoder = model.decoder
 
     def encode(self, x):
         z = self.encoder(x)
-        z_latent = z[:, :z.shape[1]//2, :, :]
+        z_latent = z.latent_dist.sample()
         return z_latent
     
     def decode(self, z):
