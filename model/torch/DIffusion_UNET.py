@@ -31,7 +31,7 @@ class StableDiffusionVQVQAE(pl.LightningModule):
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         model = AutoencoderKL.from_pretrained(
-                model_path = ,
+                model_path = model_path,
                 use_safetensors=True,
                 local_files_only=True  # Force download if needed
             )
