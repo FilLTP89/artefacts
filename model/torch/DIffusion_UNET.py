@@ -34,24 +34,12 @@ class StableDiffusionVQVQAE(pl.LightningModule):
         try:
             # Try direct torch load first
             state_dict = torch.load(f"{model_path}/diffusion_pytorch_model.safetensors")
-            
-            # Initialize the model first
-            model = AutoencoderKL(
-                in_channels=3,
-                out_channels=3,
-                down_block_types=["DownEncoderBlock2D", "DownEncoderBlock2D", "DownEncoderBlock2D", "DownEncoderBlock2D"],
-                up_block_types=["UpDecoderBlock2D", "UpDecoderBlock2D", "UpDecoderBlock2D", "UpDecoderBlock2D"],
-                block_out_channels=[128, 256, 512, 512],
-                layers_per_block=2,
-                act_fn="silu",
-                latent_channels=4,
-                norm_num_groups=32,
-                sample_size=512,
-                scaling_factor=0.18215
+            model = AutoencoderKL.from_pretrained(
+                "CompVis/stable-diffusion-v1-4",
+                subfolder="vae",
+                use_auth_token=False,
+                local_files_only=False
             )
-            
-            # Then load the state dict
-            model.load_state_dict(state_dict)
             
             self.encoder = model.encoder
             self.decoder = model.decoder
