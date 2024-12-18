@@ -33,8 +33,9 @@ class StableDiffusionVQVQAE(pl.LightningModule):
         model = AutoencoderKL.from_pretrained(
                 model_name,
                 torch_dtype=torch.float32,  # Try explicit dtype
-                revision="main",
+                revision="31f26fdeee1355a5c34592e401dd41e45d25a493",
                 use_safetensors=True,
+                cache_dir=None,  # Use default cache dir
                 local_files_only=False  # Force download if needed
             )
         self.encoder = model.encoder
