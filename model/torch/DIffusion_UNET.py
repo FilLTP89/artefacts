@@ -33,7 +33,7 @@ class StableDiffusionVQVQAE(pl.LightningModule):
         super().__init__(*args, **kwargs)
         try:
             # Try direct torch load first
-            state_dict = torch.load(f"{model_path}/diffusion_pytorch_model.bin")
+            state_dict = torch.load(f"{model_path}/diffusion_pytorch_model.safetensors")
             
             # Initialize the model first
             model = AutoencoderKL(
