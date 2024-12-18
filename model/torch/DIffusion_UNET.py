@@ -34,7 +34,7 @@ class StableDiffusionVQVQAE(pl.LightningModule):
                 model_name,
                 use_safetensors=True,
                 revision="main",
-                local_files_only=False  # Force download if needed
+                local_files_only=True  # Force download if needed
             )
         self.encoder = model.encoder
         self.decoder = model.decoder
