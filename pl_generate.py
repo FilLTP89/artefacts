@@ -11,9 +11,7 @@ import pydicom as dicom
 
 
 
-CPKT_PATH = "model/saved_model/AttentionMEDGAN/zesty-monkey-164/best_model-epoch=00-test_mse_loss=0.00.ckpt"
-
-
+CPKT_PATH = "model/saved_model/AttentionMEDGAN/zesty-monkey-164/best_model-epoch=03-test_mse_loss=0.00.ckpt"
 
     
 
