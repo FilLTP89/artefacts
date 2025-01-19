@@ -29,13 +29,12 @@ def main():
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     saving_path = f"new_generated/complete/"
-    run_name = f"{categorie}"
-    """ 
+    run_name = f"{categorie}/"
+    test_name = f"test_0/"
     while os.path.exists(saving_path + run_name):
         i = i+1
-        run_name = f"test_{i}/" 
-    """
-    os.makedirs(saving_path + run_name)
+        test_name = f"test_{i}/" 
+    os.makedirs(saving_path + run_name + test_name)
     
     model = load_model(
         checkpoint_path=CPKT_PATH,
