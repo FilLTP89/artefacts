@@ -28,7 +28,7 @@ def main():
     categorie = "controlhighmetal"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    saving_path = "new_generated/complete/"
+    saving_path = f"new_generated/{categorie}/"
     run_name = f"test_{i}/"
     while os.path.exists(saving_path + run_name):
         i = i+1

@@ -378,7 +378,7 @@ class AttentionMEDGAN(pl.LightningModule):
         self.cosine_decay = cosine_decay
 
         self.generator = generator or ConsNet(3, self.shape, filters=filters)
-        self.discriminator = discriminator or PatchGAN(self.shape)
+        self.discriminator = discriminator or  PatchGAN(self.shape) #LargerPatchGAN(self.shape)
         if feature_extractor :
             self.feature_extractor = feature_extractor 
             feature_extractor.eval()
