@@ -28,11 +28,13 @@ def main():
     categorie = "controlhighmetal"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    saving_path = f"new_generated/{categorie}/"
-    run_name = f"test_{i}/"
+    saving_path = f"new_generated/complete/"
+    run_name = f"{categorie}"
+    """ 
     while os.path.exists(saving_path + run_name):
         i = i+1
-        run_name = f"test_{i}/"
+        run_name = f"test_{i}/" 
+    """
     os.makedirs(saving_path + run_name)
     
     model = load_model(
