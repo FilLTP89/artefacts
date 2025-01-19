@@ -154,7 +154,9 @@ def load_one_acquisition(path = "datav2/protocole_1/",
                          acquisition = 1):
     dataset = gptcreate_dataset(path, control=control, dcm=dcm)
     control = "control" if control else "fracture"
-    acquisition = [item for item in dataset if f"{acquisition}/dcm/Input/{categorie}" in item[0]]
+    folder_name = f"{control}/{acquisition}/dcm/Input/{categorie}"
+    print(f"Using folder: {folder_name}")
+    acquisition = [item for item in dataset if folder_name in item[0]]
     return acquisition
 
 def load_all_acquisition(path = "datav2/protocole_1/",
