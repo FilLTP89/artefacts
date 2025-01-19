@@ -35,12 +35,13 @@ def main():
         i = i+1
         test_name = f"test_{i}/" 
     os.makedirs(saving_path + run_name + test_name)
-    
+    print("Directories created")
     model = load_model(
         checkpoint_path=CPKT_PATH,
         device = device,
     )
     model = model.to(device)
+    print("Model loaded")
 
 
     # Count only the files (not directories)
@@ -50,7 +51,6 @@ def main():
         generating=True
     )
     print("Dataset size : ", len(ds))
-    print("Model loaded")
     saving_path = saving_path + run_name
     ds.generate(model = model, 
                 output_dir = saving_path,
