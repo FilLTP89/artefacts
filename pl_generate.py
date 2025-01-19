@@ -13,7 +13,6 @@ import pydicom as dicom
 
 CPKT_PATH = "model/saved_model/AttentionMEDGAN/zesty-monkey-164/best_model-epoch=03-test_mse_loss=0.00.ckpt"
 
-    
 
 def load_model(checkpoint_path, device, *args, **kwargs):
     model = AttentionMEDGAN.load_from_checkpoint(checkpoint_path=checkpoint_path, filters =  [8,16,32, 64,128,256,512,1024])
