@@ -48,7 +48,8 @@ def main():
     ds = LoadOneAcquisition(
         categorie = categorie,
         acquisition = acquisition_number,
-        generating=True
+        generating=True,
+        control=True
     )
     print("Dataset size : ", len(ds))
     saving_path = saving_path + run_name
