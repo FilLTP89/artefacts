@@ -156,10 +156,8 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     control = "control" if control else "fracture"
     dcm = "dcm" if dcm else "raw"
     folder_name = f"{control}/{acquisition}/{dcm}/Input/{categorie}"
-    print(f"Using folder: {folder_name}")
     print(f"The folder {path + folder_name} exists : {os.path.exists(path + folder_name)}")
     acquisition = [item for item in dataset if folder_name in item[0]]
-    print(f"Acquisition size: {len(acquisition)}")
     return acquisition
 
 def load_all_acquisition(path = "datav2/protocole_1/",
@@ -524,8 +522,6 @@ class LoadOneAcquisition(Dataset):
             input_tensor, target_tensor, (input_range, target_range) = self[idx]
             generated_tensor = model(input_tensor.unsqueeze(0).to(device)).squeeze(0)
 
-            
-            
             input_arr = self.denormalize(input_tensor.squeeze().numpy(), input_range)
             target_arr = self.denormalize(target_tensor.squeeze().numpy(), target_range)
             generated_arr = self.denormalize(generated_tensor.squeeze().detach().cpu().numpy(), target_range)

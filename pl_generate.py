@@ -28,8 +28,13 @@ def main():
     dcm = "dcm"
     control = "control"
     categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
-    #categorie = "controlhighmetal"
     print(f"Categorie : {categories}")
+    model = load_model(
+        checkpoint_path=CPKT_PATH,
+        device = device,
+    ).to(device)
+    model.eval()
+    print("Model loaded")
     for categorie in categories:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         saving_path = f"new_generated/complete/"
@@ -40,13 +45,6 @@ def main():
             test_name = f"test_{i}/" 
         os.makedirs(saving_path + run_name + test_name)
         print(f"Directories {saving_path + run_name + test_name} created")
-        model = load_model(
-            checkpoint_path=CPKT_PATH,
-            device = device,
-        )
-        model = model.to(device)
-        print("Model loaded")
-
 
         # Count only the files (not directories)
         ds = LoadOneAcquisition(
@@ -56,7 +54,8 @@ def main():
             control=True
         )
         print("Dataset size : ", len(ds))
-        saving_path = saving_path + run_name
+        saving_path = saving_path + run_name + str(acquisition_number) + "/" + test_name
+        print(f"Saving path : {saving_path}")
         ds.generate(model = model, 
                     output_dir = saving_path,
                     device = device
