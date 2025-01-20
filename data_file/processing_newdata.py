@@ -157,7 +157,9 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     dcm = "dcm" if dcm else "raw"
     folder_name = f"{control}/{acquisition}/{dcm}/Input/{categorie}"
     print(f"Using folder: {folder_name}")
+    print(f"Dataset size: {len(dataset)}")
     acquisition = [item for item in dataset if folder_name in item[0]]
+    print(f"Acquisition size: {len(acquisition)}")
     return acquisition
 
 def load_all_acquisition(path = "datav2/protocole_1/",
