@@ -29,6 +29,7 @@ def main():
     control = "control"
     categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
     print(f"Categorie : {categories}")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_model(
         checkpoint_path=CPKT_PATH,
         device = device,
@@ -36,7 +37,6 @@ def main():
     model.eval()
     print("Model loaded")
     for categorie in categories:
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         saving_path = f"new_generated/complete/"
         run_name = f"{categorie}/"
         test_name = f"test_0/"
