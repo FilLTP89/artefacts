@@ -24,7 +24,7 @@ def load_model(checkpoint_path, device, *args, **kwargs):
 def main():
     print("Start")
     i = 0
-    acquisition_number = 2
+    acquisition_number = 1
     categorie = "controlhighmetal"
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
