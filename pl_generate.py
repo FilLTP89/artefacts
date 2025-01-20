@@ -25,8 +25,9 @@ def main():
     print("Start")
     i = 0
     acquisition_number = 3
+    dcm = "dcm"
     control = "control"
-    categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/Input/")
+    categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
     #categorie = "controlhighmetal"
     print(f"Categorie : {categories}")
     for categorie in categories:
