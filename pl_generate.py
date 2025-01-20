@@ -31,7 +31,7 @@ def main():
     saving_path = f"new_generated/complete/"
     run_name = f"{categorie}/"
     test_name = f"test_0/"
-    while os.path.exists(saving_path + run_name):
+    while os.path.exists(saving_path + run_name + test_name):
         i = i+1
         test_name = f"test_{i}/" 
     os.makedirs(saving_path + run_name + test_name)
