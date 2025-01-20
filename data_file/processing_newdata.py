@@ -156,12 +156,8 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     control = "control" if control else "fracture"
     dcm = "dcm" if dcm else "raw"
     folder_name = f"{control}/{acquisition}/{dcm}/Input/{categorie}"
-    print(f"Dataset size: {len(dataset)}")
-    """ for item in dataset:
-        if categorie in item[0]:
-            print(item) """
     print(f"Using folder: {folder_name}")
-    print(f"Categories: {categorie}")
+    print(f"The folder {path + folder_name} exists : {os.path.exists(path + folder_name)}")
     acquisition = [item for item in dataset if folder_name in item[0]]
     print(f"Acquisition size: {len(acquisition)}")
     return acquisition
