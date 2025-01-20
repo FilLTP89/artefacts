@@ -22,6 +22,7 @@ def load_model(checkpoint_path, device, *args, **kwargs):
 
 
 def main():
+    print("Start")
     i = 0
     acquisition_number = 2
     categorie = "controlhighmetal"
@@ -34,7 +35,7 @@ def main():
         i = i+1
         test_name = f"test_{i}/" 
     os.makedirs(saving_path + run_name + test_name)
-    print("Directories created")
+    print(f"Directories {saving_path + run_name + test_name} created")
     model = load_model(
         checkpoint_path=CPKT_PATH,
         device = device,
