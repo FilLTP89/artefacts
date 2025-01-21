@@ -146,7 +146,7 @@ def gptcreate_dataset(path="datav2/protocole_1/", control=True, nb_folder=5, dcm
             paired_files = list(zip(input_files, target_files))
             dataset.extend(paired_files)
     return dataset
-
+""" 
 def load_one_acquisition(path = "datav2/protocole_1/", 
                          control=True, 
                          dcm=True,
@@ -158,7 +158,57 @@ def load_one_acquisition(path = "datav2/protocole_1/",
     folder_name = f"{control}/{acquisition}/{dcm}/Input/{categorie}"
     print(f"The folder {path + folder_name} exists : {os.path.exists(path + folder_name)}")
     acquisition = [item for item in dataset if folder_name in item[0]]
-    return acquisition
+    return acquisition """
+
+def load_one_acquisition(path="datav2/protocole_1/",
+                        control=True,
+                        dcm=True,
+                        categorie="cocrhigh",
+                        acquisition=1):
+    """
+    Load a specific acquisition from the dataset without loading the entire dataset.
+    
+    Args:
+        path (str): Base path for the dataset
+        control (bool): Whether to load from control or fracture folder
+        dcm (bool): Whether to use dcm or raw format
+        categorie (str): Category of the acquisition (e.g., "cocrhigh")
+        acquisition (int): Acquisition number
+        
+    Returns:
+        list: List of tuples containing paired input and target files
+    """
+    # Set up basic parameters
+    data_folder = "control" if control else "fracture"
+    data_format = "dcm" if dcm else "raw"
+    
+    # Construct input and target paths
+    input_path = f"{path}{data_folder}/{acquisition}/{data_format}/Input/{categorie}/"
+    target_path = f"{path}control/{acquisition}/{data_format}/Target/"
+    
+    # Verify the input path exists
+    if not os.path.exists(input_path):
+        print(f"The folder {input_path} does not exist")
+        return []
+        
+    # Get target category (should be either control_high or fracture_high)
+    try:
+        target_category = os.listdir(target_path)[0]
+        target_path = f"{target_path}{target_category}/"
+    except (IndexError, FileNotFoundError):
+        print(f"Target path {target_path} does not exist or is empty")
+        return []
+    
+    # Get all .dcm files from input and target directories
+    input_files = sorted(glob(f"{input_path}*.dcm"), key=sort_key)
+    target_files = sorted(glob(f"{target_path}*.dcm"), key=sort_key)
+    
+    # Pair input and target files
+    acquisition_pairs = list(zip(input_files, target_files))
+    print(f"Found {len(acquisition_pairs)} pairs for acquisition {acquisition}")
+    
+    return acquisition_pairs
+
 
 def load_all_acquisition(path = "datav2/protocole_1/",
                             control=True,
