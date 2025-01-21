@@ -54,7 +54,7 @@ def main():
             control=True
         )
         print("Dataset size : ", len(ds))
-        saving_path = saving_path + run_name + str(acquisition_number) + "/" + test_name
+        saving_path = saving_path + str(acquisition_number) + "/" + run_name + test_name
         print(f"Saving path : {saving_path}")
         ds.generate(model = model, 
                     output_dir = saving_path,
