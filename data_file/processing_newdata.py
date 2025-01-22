@@ -205,7 +205,7 @@ def load_one_acquisition(path="datav2/protocole_1/",
     
     # Pair input and target files
     acquisition_pairs = list(zip(input_files, target_files))
-    print(f"Found {len(acquisition_pairs)} pairs for acquisition {acquisition}")
+    print(f"Found {len(acquisition_pairs)} pairs for folder {input_path}")
     
     return acquisition_pairs
 

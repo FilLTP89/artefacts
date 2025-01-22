@@ -40,11 +40,12 @@ def main():
         saving_path = f"new_generated/complete/"
         run_name = f"{categorie}/"
         test_name = f"test_0/"
-        while os.path.exists(saving_path + run_name + test_name):
+        while os.path.exists(saving_path + str(acquisition_number) + "/" + run_name + test_name):
             i = i+1
             test_name = f"test_{i}/" 
-        os.makedirs(saving_path + run_name + test_name)
-        print(f"Directories {saving_path + run_name + test_name} created")
+        saving_path = saving_path + str(acquisition_number) + "/" + run_name + test_name
+        os.makedirs(saving_path)
+        print(f"Directories {saving_path} created")
 
         # Count only the files (not directories)
         ds = LoadOneAcquisition(
@@ -54,7 +55,6 @@ def main():
             control=True if control == "control" else False,
         )
         print("Dataset size : ", len(ds))
-        saving_path = saving_path + str(acquisition_number) + "/" + run_name + test_name
         print(f"Saving path : {saving_path}")
         ds.generate(model = model, 
                     output_dir = saving_path,
