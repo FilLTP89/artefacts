@@ -24,9 +24,9 @@ def load_model(checkpoint_path, device, *args, **kwargs):
 def main():
     print("Start")
     i = 0
-    acquisition_number = 3
+    acquisition_number = 4
     dcm = "dcm"
-    control = "fracture"
+    control = "control"
     categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
     print(f"Categorie : {categories}")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -51,7 +51,7 @@ def main():
             categorie = categorie,
             acquisition = acquisition_number,
             generating=True,
-            control=True
+            control=True if control == "control" else False,
         )
         print("Dataset size : ", len(ds))
         saving_path = saving_path + str(acquisition_number) + "/" + run_name + test_name
