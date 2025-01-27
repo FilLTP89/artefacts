@@ -37,7 +37,7 @@ def main():
     model.eval()
     print("Model loaded")
     for categorie in categories:
-        saving_path = f"new_generated/complete/"
+        saving_path = f"new_generated/complete/{control}/"
         run_name = f"{categorie}/"
         test_name = f"test_0/"
         while os.path.exists(saving_path + str(acquisition_number) + "/" + run_name + test_name):
