@@ -24,9 +24,9 @@ def load_model(checkpoint_path, device, *args, **kwargs):
 def main():
     print("Start")
     i = 0
-    acquisition_number = 5
+    acquisition_number = 1
     dcm = "dcm"
-    control = "control"
+    control = "fracture"
     categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
     print(f"Categorie : {categories}")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
