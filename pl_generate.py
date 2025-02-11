@@ -24,7 +24,7 @@ def load_model(checkpoint_path, device, *args, **kwargs):
 def main():
     print("Start")
     i = 0
-    acquisition_number = 4
+    acquisition_number = 5
     dcm = "dcm"
     control = "fracture"
     categories = os.listdir(f"datav2/protocole_1/{control}/{acquisition_number}/{dcm}/Input/")
