@@ -123,6 +123,9 @@ def load_module(
         *args, **kwargs):
     if task == "Classification":
         module = Datav2Module(dataset_type = ClassificationDataset, data_folder= data_folder,*args, **kwargs)
+    elif task == "old":
+        pass
+
     else:
         module = Datav2Module(dataset_type = Datav2Dataset,
                               data_folder = data_folder, 
@@ -157,6 +160,7 @@ def load_model(task ="GAN",
         model = VGG19(classifier_training= True,
                       n_class=31, 
                       *args, **kwargs)
+
     return model
 
 def load_feature_extractor(data_folder = "complete",*args, **kwargs):
