@@ -240,12 +240,12 @@ class Dataset:
 
 if __name__ == "__main__":
     print("Generating sample ....")
-    dataset = Dataset(path="../data/", batch_size=20, big_endian=True, shuffle=True)
+    dataset = Dataset(path="/media/gabrielidis/LaCie/Hugo/dataset/medical/", batch_size=20, big_endian=False, shuffle=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     print("Sample Generated!")
     for x, y in train_ds.take(1):
-        for i in range(8):
+        for i in range(3):
             visualize_from_dataset(
                 x[i],
                 y[i],

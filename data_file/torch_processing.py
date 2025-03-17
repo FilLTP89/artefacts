@@ -1,4 +1,5 @@
 import os
+from data_file.visualize import visualize_from_dataset    
 import re
 import numpy as np
 import torch
@@ -503,7 +504,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
 if __name__ == "__main__":
     # Create dataset
     print("Using pytorch dataset")
-    dataset = PyTorchDataset(path="data/", width=512, height=512, big_endian=True, shuffle=True, mode="train")
+    dataset = PyTorchDataset(path="/media/gabrielidis/LaCie/Hugo/dataset/medical/", width=512, height=512, big_endian=True, shuffle=True, mode="train")
     dataset.setup()
     x,y = dataset[0]
     print(x.shape, y.shape)
