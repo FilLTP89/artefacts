@@ -176,8 +176,8 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
         print("Original RMSE: ", original_rmse / len(acquisition))
         print()
         if acquisition_number < 2:
-            ssim_test.append(model_ssim / len(acquisition))
             psnr_test.append(model_psnr / len(acquisition))
+            ssim_test.append(model_ssim / len(acquisition))
             mae_test.append(model_mae / len(acquisition))
             rmse_test.append(model_rmse / len(acquisition))
 
@@ -185,14 +185,11 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
             original_psnr_test.append(original_psnr / len(acquisition))
             original_mae_test.append(original_mae / len(acquisition))
             original_rmse_test.append(original_rmse / len(acquisition))
-
-
         else : 
             ssim_train.append(model_ssim / len(acquisition))
             psnr_train.append(model_psnr / len(acquisition))
             mae_train.append(model_mae / len(acquisition))
             rmse_train.append(model_rmse / len(acquisition))
-
             original_ssim_train.append(original_ssim / len(acquisition))
             original_psnr_train.append(original_psnr / len(acquisition))
             original_mae_train.append(original_mae / len(acquisition))

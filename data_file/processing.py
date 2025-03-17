@@ -770,49 +770,19 @@ class MetalArtifactDataModule(pl.LightningDataModule):
 # Example usage
 if __name__ == "__main__":
     # Create dataset
-    dataset = PyTorchDataset(path="../data/", width=512, height=512, big_endian=True, shuffle=True, mode="train")
+    dataset = PyTorchDataset(path="data/", width=512, height=512, big_endian=True, shuffle=True, mode="train")
+    dataset.setup()
+    x,y = dataset[0]
+    print(x.shape, y.shape)
     
-    # Create data loader
-    train_loader = DataLoader(dataset, batch_size=20, shuffle=True, num_workers=4)
-    
-    # Iterate over batches
-    for idx, (inputs, labels) in enumerate(train_loader):
-        if idx == 0:
-            print(f"Input batch shape: {inputs.shape}")
-            print(f"Label batch shape: {labels.shape}")
-            print(f"Input data type: {inputs.dtype}")
-            print(f"Label data type: {labels.dtype}")
-        
-        # Verify constraints
-        assert torch.max(inputs) <= 1.0
-        assert torch.min(inputs) >= 0.0
-        assert torch.max(labels) <= 1.0
-        assert torch.min(labels) >= 0.0
-        assert not torch.isnan(inputs).any()
-        assert not torch.isnan(labels).any()
-        
-        if idx == 0:
-            # Example: save a batch for visualization
-            sample_input = inputs[0].squeeze().numpy()
-            sample_label = labels[0].squeeze().numpy()
-            print(f"Sample input range: {sample_input.min()} to {sample_input.max()}")
-            print(f"Sample label range: {sample_label.min()} to {sample_label.max()}")
-            
-            # Could add visualization code here
-            
-        if idx >= 5:  # Check just a few batches
-            break
-    
-    print("Dataset validation complete!")
 
 
-
+""" 
 if __name__ == "__main__":
     print("Generating sample ....")
     dataset = Dataset(path="../data/", batch_size=20, big_endian=True, shuffle=True)
     dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
-    """
     print("Sample Generated!")
     for x, y in train_ds.take(1):
         for i in range(8):
@@ -822,11 +792,8 @@ if __name__ == "__main__":
                 big_endian=dataset.big_endian,
                 brightness_fact=4,
             )
-    """
     for idx , (x,y) in enumerate(train_ds):
-        """
         Various check on data
-        """
         if idx == 0:
             print(x.shape, y.shape)
             print(x.dtype, y.dtype)
@@ -837,4 +804,4 @@ if __name__ == "__main__":
         assert tf.math.reduce_any(tf.math.is_nan(x)) == False
         assert tf.math.reduce_any(tf.math.is_nan(y)) == False
 
-        
+         """
