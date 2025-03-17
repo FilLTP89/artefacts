@@ -125,8 +125,7 @@ def load_module(
     if task == "Classification":
         module = Datav2Module(dataset_type = ClassificationDataset, data_folder= data_folder,*args, **kwargs)
     elif task == "old":
-        module = MetalArtifactDataModule(data_folder = data_folder, 
-                                         train_bs = train_bs,
+        module = MetalArtifactDataModule( train_bs = train_bs,
                                          test_bs = test_bs,
                                          *args, 
                                          img_size=img_size,

@@ -339,7 +339,7 @@ class PyTorchDataset(Dataset):
 class MetalArtifactDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_path: str = "./data/",
+        data_path: str = "data/",
         width: int = 512,
         height: int = 512,
         batch_size: int = 32,
