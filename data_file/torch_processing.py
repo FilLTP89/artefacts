@@ -9,36 +9,7 @@ from sklearn.model_selection import train_test_split
 from PIL import Image
 import torchvision.transforms as transforms
 import pytorch_lightning as pl
-
-
-def read_raw(path, image_size=(400, 400), big_endian=True):
-    """
-    Read a raw image file and convert it to a numpy array
-    
-    Args:
-        path (str): Path to the raw image file
-        image_size (tuple): Height and width of the image
-        big_endian (bool): Whether the raw file is in big endian format
-    
-    Returns:
-        numpy.ndarray: The image as a normalized numpy array
-    """
-    height, width = image_size
-    with open(path, 'rb') as f:
-        if big_endian:
-            img = np.fromfile(f, dtype='>f4')  # big endian float32
-        else:
-            img = np.fromfile(f, dtype='<f4')  # little endian float32
-    
-    img = img.reshape(height, width)
-    
-    # Normalize the image to [0, 1]
-    min_val = np.min(img)
-    max_val = np.max(img)
-    if max_val > min_val:
-        img = (img - min_val) / (max_val - min_val)
-    
-    return img
+from data_file.CBCT_preprocess import read_raw
 
 
 
