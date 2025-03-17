@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from glob import glob
 from sklearn.model_selection import train_test_split
-import h5py
+#import h5py
 from PIL import Image
 import torchvision.transforms as transforms
 import pytorch_lightning as pl
@@ -238,10 +238,8 @@ class PyTorchDataset(Dataset):
         
         return self.preprocess(x_path, y_path)
     
-    def save(self):
-        """
-        Save the dataset to disk
-        """
+    """ def save(self):
+        #Save the dataset to disk
         if self.saving_format in ["hdf5", "h5"]:
             # Save as HDF5
             os.makedirs(os.path.join(self.path, "save"), exist_ok=True)
@@ -296,11 +294,10 @@ class PyTorchDataset(Dataset):
                 f.write("\n".join(self.X_test))
             with open(os.path.join(self.test_saving_path, "labels.txt"), "w") as f:
                 f.write("\n".join(self.y_test))
-    
+     """
+    """ 
     def load(self):
-        """
-        Load the dataset from disk
-        """
+        #Load the dataset from disk
         if self.saving_format in ["hdf5", "h5"]:
             # Load is handled in __getitem__ for HDF5 format
             # This method would update the internal state to use the saved files instead
@@ -329,7 +326,7 @@ class PyTorchDataset(Dataset):
                 self.X, self.y = self.X_valid, self.y_valid
             elif self.mode == "test":
                 self.X, self.y = self.X_test, self.y_test
-    
+    """
     def load_single_acquisition(self, acquisition_number=1, low=False):
         """
         Create a dataset for a single acquisition
