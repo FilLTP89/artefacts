@@ -6,6 +6,7 @@ import numpy as np
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from pytorch_lightning.utilities import rank_zero_info
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+from data_file.torch_processing import MetalArtifactDataModule
 import pytorch_lightning as pl  
 from data_file.processing_newdata import Datav2Module, Datav2Dataset, ClassificationDataset
 from model.torch.Attention_MEDGAN import AttentionMEDGAN, VGG19,OptimizedAttentionMEDGAN
@@ -124,7 +125,12 @@ def load_module(
     if task == "Classification":
         module = Datav2Module(dataset_type = ClassificationDataset, data_folder= data_folder,*args, **kwargs)
     elif task == "old":
-        pass
+        module = MetalArtifactDataModule(data_folder = data_folder, 
+                                         train_bs = train_bs,
+                                         test_bs = test_bs,
+                                         *args, 
+                                         img_size=img_size,
+                                         **kwargs)
 
     else:
         module = Datav2Module(dataset_type = Datav2Dataset,
@@ -160,7 +166,8 @@ def load_model(task ="GAN",
         model = VGG19(classifier_training= True,
                       n_class=31, 
                       *args, **kwargs)
-
+    elif task == "old":
+        model = OptimizedAttentionMEDGAN(*args, **kwargs)
     return model
 
 def load_feature_extractor(data_folder = "complete",*args, **kwargs):
