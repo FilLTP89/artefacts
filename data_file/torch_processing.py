@@ -26,7 +26,7 @@ class PyTorchDataset(Dataset):
         test_saving_path: str = "test/",
         valid_saving_path: str = "valid/",
         seed: int = 42,
-        big_endian: bool = True,
+        big_endian: bool = False,
         shuffle: bool = False,
         mode: str = "train"  # 'train', 'valid', or 'test'
     ) -> None:
@@ -65,7 +65,7 @@ class PyTorchDataset(Dataset):
         # Initialize the data
         self.collect_data()
         self.setup()
-        
+        print(f"big_endian: {self.big_endian}")
         # Define transforms for resizing
         self.transform = transforms.Compose([
             transforms.Resize((self.height, self.width))
