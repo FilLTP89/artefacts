@@ -342,11 +342,14 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         data_path: str = "data/",
         width: int = 512,
         height: int = 512,
-        batch_size: int = 32,
+        train_bs: int = 32,
+        test_bs = 32,
         num_workers: int = 4,
         big_endian: bool = True,
         shuffle: bool = True,
-        seed: int = 42
+        seed: int = 42,
+        *args,
+        **kwargs
     ):
         """
         PyTorch Lightning DataModule for the Metal Artifact Reduction dataset
@@ -365,7 +368,8 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         self.data_path = data_path
         self.width = width
         self.height = height
-        self.batch_size = batch_size
+        self.train_bs = train_bs
+        self.test_bs = test_bs
         self.num_workers = num_workers
         self.big_endian = big_endian
         self.shuffle = shuffle
@@ -435,7 +439,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             self.train_dataset,
-            batch_size=self.batch_size,
+            batch_size=self.train_bs,
             shuffle=self.shuffle,
             num_workers=self.num_workers,
             pin_memory=True
@@ -450,7 +454,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             self.val_dataset,
-            batch_size=self.batch_size,
+            batch_size=self.test_bs,
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True
@@ -465,7 +469,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             self.test_dataset,
-            batch_size=self.batch_size,
+            batch_size=self.test_bs,
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True
