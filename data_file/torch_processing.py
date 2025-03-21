@@ -348,6 +348,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         big_endian: bool = True,
         shuffle: bool = True,
         seed: int = 42,
+        n_class = 31,
         *args,
         **kwargs
     ):
