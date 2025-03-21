@@ -39,6 +39,7 @@ GAN_COMMAND="python3 pl_training.py \
     --train_bs 8 \
     --test_bs 8 \
     --task=old \
+    --no-use_feature_extractor \
     --ruche \
     --no-use_deepspeed"
 

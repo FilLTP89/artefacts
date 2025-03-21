@@ -17,7 +17,9 @@ import tempfile
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+import warnings
 
+warnings.filterwarnings("ignore")
 
 torch.backends.cuda.enable_mem_efficient_sdp(True)
 torch.set_float32_matmul_precision('medium')
