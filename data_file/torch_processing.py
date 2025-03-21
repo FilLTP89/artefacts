@@ -375,6 +375,7 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         self.big_endian = big_endian
         self.shuffle = shuffle
         self.seed = seed
+        self.n_class = n_class
         
         self.train_dataset = None
         self.val_dataset = None
