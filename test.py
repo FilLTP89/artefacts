@@ -3,6 +3,7 @@ from data_file.processing import Dataset
 from data_file.processing_dicom import DicomDataset
 from data_file.utils import save_file, save_to_raw
 from model.metrics import ssim
+from tqdm import tqdm
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 from data_file.utils import save_to_raw
