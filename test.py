@@ -1,4 +1,3 @@
-import tensorflow as tf
 from data_file.processing import Dataset
 from data_file.processing_dicom import DicomDataset
 from model.metrics import ssim
@@ -6,9 +5,12 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 import numpy as np
 import os
+# Set TensorFlow logging level
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 #from data_file.processing_segmentation import SegmentationDataset 
 
 
+import tensorflow as tf
 from tensorflow.python.keras import backend as K
 tf.debugging.set_log_device_placement(True)
 
