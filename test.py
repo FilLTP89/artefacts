@@ -288,14 +288,6 @@ def segmentation_generation():
     return  
 
 def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, metal_low=True):
-    # Set up GPU
-    physical_devices = tf.config.list_physical_devices('GPU')
-    if physical_devices:
-        tf.config.experimental.set_memory_growth(physical_devices[0], True)
-        print(f"Using GPU: {physical_devices[0].name}")
-    else:
-        print("No GPU found. Using CPU instead.")
-    
     # Load model and dataset
     if dicom:
         model = load_model_with_weights()
@@ -351,15 +343,15 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
 
 
 if __name__ == "__main__":
-    gpus = tf.config.list_physical_devices('GPU')
-    if gpus:
-      # Restrict TensorFlow to only use the first GPU
+    physical_devices = tf.config.list_physical_devices('GPU')
+    if physical_devices:
         try:
-            tf.config.set_visible_devices(gpus[0], 'GPU')
-            logical_gpus = tf.config.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
-        except:
-            pass
+            # Must be done before any other TensorFlow operations
+            for device in physical_devices:
+                tf.config.experimental.set_memory_growth(device, True)
+            print(f"Memory growth enabled on {len(physical_devices)} GPU(s)")
+        except RuntimeError as e:
+            print(f"Error setting memory growth: {e}")
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
