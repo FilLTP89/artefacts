@@ -6,7 +6,7 @@ from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 import numpy as np
 import os
-from data_file.processing_segmentation import SegmentationDataset 
+#from data_file.processing_segmentation import SegmentationDataset 
 
 
 from tensorflow.python.keras import backend as K
