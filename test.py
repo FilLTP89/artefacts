@@ -13,6 +13,7 @@ from data_file.processing_segmentation import SegmentationDataset
 
 
 from tensorflow.python.keras import backend as K
+tf.debugging.set_log_device_placement(True)
 
 # adjust values to your needs
 config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 8} )
@@ -33,14 +34,25 @@ def best_model_path(model_name):
 def load_model(
     model_path="model/saved_models/MedGAN/big_endian/vibrant-dawn-3/40",
 ):
-    try:
-        model = tf.keras.models.load_model(model_path)
-        model.compile()
-    except:
-        model_path += "/model.ckpt"
-        model = MEDGAN()
-        model.build(input_shape=(None, 512, 512, 1))
-        model.load_weights(model_path).expect_partial()
+    # Set TensorFlow to use GPU
+    physical_devices = tf.config.list_physical_devices('GPU')
+    if physical_devices:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        print(f"Using GPU: {physical_devices[0].name}")
+    else:
+        print("No GPU found. Using CPU instead.")
+    
+    # Use GPU device context for model loading and operations
+    with tf.device('/GPU:0'):
+        try:
+            model = tf.keras.models.load_model(model_path)
+            model.compile()
+        except:
+            model_path += "/model.ckpt"
+            model = MEDGAN()
+            model.build(input_shape=(None, 512, 512, 1))
+            model.load_weights(model_path).expect_partial()
+    
     return model
 
 def load_segmentation_model(
@@ -275,37 +287,53 @@ def segmentation_generation():
 
     return  
 
-
-def metrics_one_acqusition(dicom = False,acquisition_number = 1,batch_size = 32, metal_low = True):
-    if dicom : 
+def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, metal_low=True):
+    # Set up GPU
+    physical_devices = tf.config.list_physical_devices('GPU')
+    if physical_devices:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        print(f"Using GPU: {physical_devices[0].name}")
+    else:
+        print("No GPU found. Using CPU instead.")
+    
+    # Load model and dataset
+    if dicom:
         model = load_model_with_weights()
-        dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+        dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle=False) if dicom else Dataset(height=512, width=512, batch_size=32)
         dataset.setup()
         acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
-    else :
+    else:
         model = load_model()
         big_endian = True
-        dataset = Dataset(big_endian = True, batch_size=batch_size)
+        dataset = Dataset(big_endian=True, batch_size=batch_size)
         dataset.setup()
-        acquisition = dataset.load_single_acquisition(acquisition_number, low = metal_low)
+        acquisition = dataset.load_single_acquisition(acquisition_number, low=metal_low)
+    
+    # Metrics initialization
     d = 0
     metal = "metal_low" if metal_low else "metal_high"
     file = 0
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
-    for i, (x, y) in enumerate(tqdm(acquisition)):
-        if i > 10:
-            break 
-        preds = model(x)
-        model_ssim += ssim(y, preds)
-        model_psnr += psnr(y, preds)
-        model_mae += mae(y, preds)
-        model_rmse += rmse(y, preds)
-
-        original_ssim += ssim(y, x)
-        original_psnr += psnr(y, x)
-        original_mae += mae(y, x)
-        original_rmse += rmse(y, x)
+    
+    # Process with GPU acceleration
+    with tf.device('/GPU:0'):
+        for i, (x, y) in enumerate(tqdm(acquisition)):
+            if i > 10:
+                break
+                
+            preds = model(x)
+            
+            # Calculate metrics
+            model_ssim += ssim(y, preds)
+            model_psnr += psnr(y, preds)
+            model_mae += mae(y, preds)
+            model_rmse += rmse(y, preds)
+            
+            original_ssim += ssim(y, x)
+            original_psnr += psnr(y, x)
+            original_mae += mae(y, x)
+            original_rmse += rmse(y, x)
     
     print("Model SSIM: ", model_ssim / len(acquisition))
     print("Model PSNR: ", model_psnr / len(acquisition))
@@ -321,6 +349,15 @@ def metrics_one_acqusition(dicom = False,acquisition_number = 1,batch_size = 32,
 
 
 if __name__ == "__main__":
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+      # Restrict TensorFlow to only use the first GPU
+        try:
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            logical_gpus = tf.config.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
+        except:
+            pass
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
