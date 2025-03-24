@@ -31,3 +31,4 @@ notebooks/*
 notes/*
 testing_processing/*
 .qodo
+*.png
