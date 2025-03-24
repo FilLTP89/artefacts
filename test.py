@@ -6,7 +6,7 @@ from model.metrics import ssim, psnr, mae, rmse
 import numpy as np
 import os
 # Set TensorFlow logging level
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 #from data_file.processing_segmentation import SegmentationDataset 
 
 
@@ -315,8 +315,6 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
     with tf.device('/GPU:0'):
         for i, (x, y) in enumerate(acquisition):
             print(f"Step {i} on acquisition {len(acquisition)}")
-            if i > 10:
-                break
                 
             preds = model(x)
             
