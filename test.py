@@ -1,12 +1,10 @@
 import tensorflow as tf
 from data_file.processing import Dataset
 from data_file.processing_dicom import DicomDataset
-from data_file.utils import save_file, save_to_raw
 from model.metrics import ssim
 from tqdm import tqdm
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
-from data_file.utils import save_to_raw
 import numpy as np
 import os
 from data_file.processing_segmentation import SegmentationDataset 
@@ -95,6 +93,7 @@ def test(big_endian=False, model_name="ResUnet"):
 
 
 def generate_image(dicom = True):
+    from data_file.utils import save_file, save_to_raw
     print("Generate model...")
     model = load_model_with_weights()
     model = model.generator
@@ -119,6 +118,8 @@ def generate_image(dicom = True):
     print("Finish generating images!")
 
 def test_single_acquistion(dicom = False,acquisition_number = 1,batch_size = 32, metal_low = True):
+    
+    from data_file.utils import save_file, save_to_raw
     if dicom : 
         model = load_model_with_weights()
         dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)

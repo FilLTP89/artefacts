@@ -4,7 +4,6 @@ from PIL import Image, ImageEnhance
 import numpy as np
 import SimpleITK as sitk
 import os
-import cv2
 
 """
 TODO:
@@ -132,6 +131,7 @@ def save_to_raw(
     big_endian=True,
 ):
  
+    import cv2
     x = x.numpy().squeeze(axis = -1)
     y = y.numpy().squeeze(axis = -1)
     preds = preds.numpy().squeeze(axis = -1)
