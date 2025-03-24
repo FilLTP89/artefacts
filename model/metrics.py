@@ -1,5 +1,4 @@
 import tensorflow as tf
-from keras import backend as K
 
 def ssim(y_true, y_pred):
     return tf.reduce_mean(tf.image.ssim(y_true, y_pred, 2.0)).numpy()
@@ -26,7 +25,7 @@ def accuracy(y_true, y_pred):
     return tf.reduce_mean(correct_predictions)
 
 
-
+""" 
 def iou(y_true, y_pred, smooth=1.):
     y_pred = K.round(y_pred)
     intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
@@ -53,3 +52,4 @@ def recall(y_true, y_pred):
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
     recall = true_positives / (possible_positives + K.epsilon())
     return recall
+"""
