@@ -316,7 +316,7 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
     
-    from tqdm import tqdm
+    #from tqdm import tqdm
     # Process with GPU acceleration
     with tf.device('/GPU:0'):
         for i, (x, y) in enumerate(acquisition):
