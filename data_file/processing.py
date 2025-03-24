@@ -6,7 +6,7 @@ from glob import glob
 import re
 from sklearn.model_selection import train_test_split
 from CBCT_preprocess import read_raw
-import pytorch_lightning as pl
+#import pytorch_lightning as pl
 from visualize import visualize_from_dataset
 import h5py
 from sklearn.utils import shuffle

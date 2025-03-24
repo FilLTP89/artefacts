@@ -10,6 +10,16 @@ from data_file.utils import save_to_raw
 import numpy as np
 import os
 from data_file.processing_segmentation import SegmentationDataset 
+
+
+from tensorflow.python.keras import backend as K
+
+# adjust values to your needs
+config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 8} )
+sess = tf.compat.v1.Session(config=config) 
+K.set_session(sess)
+
+
 def best_model_path(model_name):
     if model_name == 'MedGAN':
         return "model/saved_models/MedGAN/big_endian/heartfelt-etchings-23/20"
@@ -283,7 +293,9 @@ def metrics_one_acqusition(dicom = False,acquisition_number = 1,batch_size = 32,
     file = 0
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
-    for _, (x, y) in enumerate(tqdm(acquisition)):
+    for i, (x, y) in enumerate(tqdm(acquisition)):
+        if i > 10:
+            break 
         preds = model(x)
         model_ssim += ssim(y, preds)
         model_psnr += psnr(y, preds)
