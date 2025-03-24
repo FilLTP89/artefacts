@@ -176,6 +176,8 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
         model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
         original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
         acquisition = dataset.load_single_acquisition(acquisition_number, low = low)
+        
+    with tf.device('/GPU:0'):
         for _, (x, y) in enumerate(acquisition):
             preds = model(x)
             model_ssim += ssim(y, preds)
