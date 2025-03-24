@@ -266,6 +266,45 @@ def segmentation_generation():
     return  
 
 
+def metrics_one_acqusition(dicom = False,acquisition_number = 1,batch_size = 32, metal_low = True):
+    if dicom : 
+        model = load_model_with_weights()
+        dataset = DicomDataset(height=512, width=512, batch_size=batch_size, shuffle= False) if dicom else Dataset(height=512, width=512, batch_size=32)
+        dataset.setup()
+        acquisition = dataset.load_single_acquisition(acquistion_number=acquisition_number)
+    else :
+        model = load_model()
+        big_endian = True
+        dataset = Dataset(big_endian = True, batch_size=batch_size)
+        dataset.setup()
+        acquisition = dataset.load_single_acquisition(acquisition_number, low = metal_low)
+    d = 0
+    metal = "metal_low" if metal_low else "metal_high"
+    file = 0
+    model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
+    original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
+    for _, (x, y) in enumerate(tqdm(acquisition)):
+        preds = model(x)
+        model_ssim += ssim(y, preds)
+        model_psnr += psnr(y, preds)
+        model_mae += mae(y, preds)
+        model_rmse += rmse(y, preds)
+
+        original_ssim += ssim(y, x)
+        original_psnr += psnr(y, x)
+        original_mae += mae(y, x)
+        original_rmse += rmse(y, x)
+    
+    print("Model SSIM: ", model_ssim / len(acquisition))
+    print("Model PSNR: ", model_psnr / len(acquisition))
+    print("Model MAE: ", model_mae / len(acquisition))
+    print("Model RMSE: ", model_rmse / len(acquisition))
+
+    print("Original SSIM: ", original_ssim / len(acquisition))
+    print("Original PSNR: ", original_psnr / len(acquisition))
+    print("Original MAE: ", original_mae / len(acquisition))
+    print("Original RMSE: ", original_rmse / len(acquisition))
+
 
 
 
@@ -273,7 +312,8 @@ if __name__ == "__main__":
     # test_metrics()
     # test(model_name="Baseline")
     #generate_image()
+    metrics_one_acqusition(dicom=False, acquisition_number=4, batch_size=1, metal_low = False)
     #test_single_acquistion(dicom=False, acquisition_number=4, batch_size=1, metal_low = False) # batch_size = 1 to avoid memory error on GPU
-    test_metrics(dicom = False, big_endian = True, batch_size = 16, low=False)
+    #test_metrics(dicom = False, big_endian = True, batch_size = 16, low=False)
 
 
