@@ -2,7 +2,6 @@ import tensorflow as tf
 from data_file.processing import Dataset
 from data_file.processing_dicom import DicomDataset
 from model.metrics import ssim
-from tqdm import tqdm
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 import numpy as np
@@ -317,9 +316,11 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
     
+    from tqdm import tqdm
     # Process with GPU acceleration
     with tf.device('/GPU:0'):
-        for i, (x, y) in enumerate(tqdm(acquisition)):
+        for i, (x, y) in enumerate(acquisition):
+            print(f"Step {i} on acquisition {len(acquisition)}")
             if i > 10:
                 break
                 
