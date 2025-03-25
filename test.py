@@ -222,8 +222,6 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
             original_mae_train.append(original_mae / len(acquisition))
             original_rmse_train.append(original_rmse / len(acquisition))
 
-        
-    
     print(f"Mean MAE on train : {np.mean(mae_train)} STD MAE on train : {np.std(mae_train)}")
     print(f"Mean PSNR on train : {np.mean(psnr_train)} STD PSNR on train : {np.std(psnr_train)}")
     print(f"Mean SSIM on train : {np.mean(ssim_train)} STD SSIM on train : {np.std(ssim_train)}")
@@ -233,7 +231,6 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
     print(f"Mean PSNR on test : {np.mean(psnr_test)} STD PSNR on test : {np.std(psnr_test)}")
     print(f"Mean SSIM on test : {np.mean(ssim_test)} STD SSIM on test : {np.std(ssim_test)}")
     print(f"Mean RMSE on test : {np.mean(rmse_test)} STD RMSE on test : {np.std(rmse_test)}")
-    
     
     print(f"Mean Original MAE on train : {np.mean(original_mae_train)} STD Original MAE on train : {np.std(original_mae_train)}")
     print(f"Mean Original PSNR on train : {np.mean(original_psnr_train)} STD Original PSNR on train : {np.std(original_psnr_train)}")
@@ -346,7 +343,7 @@ if __name__ == "__main__":
             print(f"Memory growth enabled on {len(physical_devices)} GPU(s)")
         except RuntimeError as e:
             print(f"Error setting memory growth: {e}")
-    test_metricsvsBaseline
+    test_metricsvsBaseline(dicom=False)
     #test_metrics()
     #test(model_name="Baseline")
     #generate_image(0)
