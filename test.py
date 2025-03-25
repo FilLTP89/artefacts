@@ -12,7 +12,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
 from tensorflow.python.keras import backend as K
-tf.debugging.set_log_device_placement(True)
+tf.debugging.set_log_device_placement(False)
 
 # adjust values to your needs
 config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 8} )
