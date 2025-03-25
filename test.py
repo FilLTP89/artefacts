@@ -4,6 +4,7 @@ from model.metrics import ssim
 from model.MedGAN import MEDGAN
 from model.metrics import ssim, psnr, mae, rmse
 import numpy as np
+from tqdm import tqdm
 import os
 # Set TensorFlow logging level
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -259,7 +260,7 @@ def test_metricsvsBaseline(dicom = False):
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     baseline_ssim, baseline_psnr, baseline_mae, baseline_rmse = 0, 0, 0, 0
-    for x, y in test_ds.take(len(test_ds)):
+    for x, y in tqdm(test_ds.take(len(test_ds),total = len(test_ds))):
         preds = model(x)
         model_ssim += ssim(preds, y)
         model_psnr += psnr(preds, y)
@@ -300,7 +301,6 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
     metal = "metal_low" if metal_low else "metal_high"
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
-    from tqdm import tqdm
     # Process with GPU acceleration
     with tf.device('/GPU:0'):
         for i, (x, y) in enumerate(tqdm(acquisition)):
