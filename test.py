@@ -247,29 +247,32 @@ def test_metrics(dicom = False, big_endian = True, batch_size = 32, low = False)
 
 
 
-def test_metricsvsBaseline():
-    """model = load_model()
-    model = model.generator
-    """
-    model = load_model_with_weights()
-    model = model.generator
-
-    dataset = DicomDataset(height=512, width=512, batch_size=32)
-    dataset.setup()
+def test_metricsvsBaseline(dicom = False):
+    if dicom:
+        print(f"Testing metrics with dicom")
+        model = load_model_with_weights()
+        model = model.generator
+        dataset = DicomDataset(height=512, width=512, batch_size=32)
+        dataset.setup()
+    else:
+        print(f"Testing metrics with raw big endian")
+        model = load_model()
+        dataset = Dataset(height=512, width=512, batch_size=32)
+        dataset.setup()
     train_ds, valid_ds, test_ds = dataset.train_ds, dataset.valid_ds, dataset.test_ds
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     baseline_ssim, baseline_psnr, baseline_mae, baseline_rmse = 0, 0, 0, 0
     for x, y in test_ds.take(len(test_ds)):
         preds = model(x)
-        model_ssim += ssim(y, preds)
-        model_psnr += psnr(y, preds)
-        model_mae += mae(y, preds)
-        model_rmse += rmse(y, preds)
+        model_ssim += ssim(preds, y)
+        model_psnr += psnr(preds, y)
+        model_mae += mae(preds, y)  
+        model_rmse += rmse(preds, y)
 
-        baseline_ssim += ssim(y, x)
-        baseline_psnr += psnr(y, x)
-        baseline_mae += mae(y, x)
-        baseline_rmse += rmse(y, x)
+        baseline_ssim += ssim(x, y)
+        baseline_psnr += psnr(x, y)
+        baseline_mae += mae(x, y)
+        baseline_rmse += rmse(x, y)
 
     print("Model SSIM: ", model_ssim / len(test_ds))
     print("Model PSNR: ", model_psnr / len(test_ds))
@@ -281,15 +284,6 @@ def test_metricsvsBaseline():
     print("Baseline MAE: ", baseline_mae / len(test_ds))
     print("Baseline RMSE: ", baseline_rmse / len(test_ds))
 
-def segmentation_generation():
-    dataset = SegmentationDataset()
-    dataset.setup()
-    model = load_segmentation_model()
-    for batch, (x, y) in enumerate(dataset.train_ds):
-        preds = model(x)
-        preds = tf.math.round(preds)
-
-    return  
 
 def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, metal_low=True):
     # Load model and dataset
@@ -306,31 +300,29 @@ def metrics_one_acqusition(dicom=False, acquisition_number=1, batch_size=32, met
         acquisition = dataset.load_single_acquisition(acquisition_number, low=metal_low)
     
     # Metrics initialization
-    d = 0
     metal = "metal_low" if metal_low else "metal_high"
-    file = 0
     model_ssim, model_psnr, model_mae, model_rmse = 0, 0, 0, 0
     original_ssim, original_psnr, original_mae, original_rmse = 0, 0, 0, 0
-    
-    #from tqdm import tqdm
+    from tqdm import tqdm
     # Process with GPU acceleration
     with tf.device('/GPU:0'):
-        for i, (x, y) in enumerate(acquisition):
-            print(f"Step {i} on acquisition {len(acquisition)}")
-                
+        for i, (x, y) in enumerate(tqdm(acquisition)):
+            #print(f"Step {i} on acquisition {len(acquisition)}")
             preds = model(x)
             
             # Calculate metrics
-            model_ssim += ssim(y, preds)
-            model_psnr += psnr(y, preds)
-            model_mae += mae(y, preds)
-            model_rmse += rmse(y, preds)
-            
-            original_ssim += ssim(y, x)
-            original_psnr += psnr(y, x)
-            original_mae += mae(y, x)
-            original_rmse += rmse(y, x)
+            model_ssim += ssim(preds, y)
+            model_psnr += psnr(preds, y)
+            model_mae += mae(preds, y)
+            model_rmse += rmse(preds, y)
+
+            original_ssim += ssim(x, y)
+            original_psnr += psnr(x, y)
+            original_mae += mae(x, y)
+            original_rmse += rmse(x, y)
+
     
+    print(f"Acquisition number : {acquisition_number}, {metal_low} amount of metal")
     print("Model SSIM: ", model_ssim / len(acquisition))
     print("Model PSNR: ", model_psnr / len(acquisition))
     print("Model MAE: ", model_mae / len(acquisition))
@@ -354,11 +346,12 @@ if __name__ == "__main__":
             print(f"Memory growth enabled on {len(physical_devices)} GPU(s)")
         except RuntimeError as e:
             print(f"Error setting memory growth: {e}")
-    # test_metrics()
-    # test(model_name="Baseline")
-    #generate_image()
+    test_metricsvsBaseline
+    #test_metrics()
+    #test(model_name="Baseline")
+    #generate_image(0)
     #metrics_one_acqusition(dicom=False, acquisition_number=4, batch_size=1, metal_low = False)
     #test_single_acquistion(dicom=False, acquisition_number=4, batch_size=1, metal_low = False) # batch_size = 1 to avoid memory error on GPU
-    test_metrics(dicom = False, big_endian = True, batch_size = 16, low=True)
+    #test_metrics(dicom = False, big_endian = True, batch_size = 16, low=True)
 
 

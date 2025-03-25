@@ -210,95 +210,6 @@ class PyTorchDataset(Dataset):
         
         return self.preprocess(x_path, y_path)
     
-    """ def save(self):
-        #Save the dataset to disk
-        if self.saving_format in ["hdf5", "h5"]:
-            # Save as HDF5
-            os.makedirs(os.path.join(self.path, "save"), exist_ok=True)
-            
-            # Save train dataset
-            with h5py.File(f"{self.path}/save/train_dataset.h5", "w") as f:
-                x_dset = f.create_dataset("inputs", (len(self.X_train), 1, self.height, self.width), dtype='f')
-                y_dset = f.create_dataset("labels", (len(self.y_train), 1, self.height, self.width), dtype='f')
-                
-                for i in range(len(self.X_train)):
-                    x, y = self.preprocess(self.X_train[i], self.y_train[i])
-                    x_dset[i] = x.numpy()
-                    y_dset[i] = y.numpy()
-            
-            # Save validation dataset
-            with h5py.File(f"{self.path}/save/valid_dataset.h5", "w") as f:
-                x_dset = f.create_dataset("inputs", (len(self.X_valid), 1, self.height, self.width), dtype='f')
-                y_dset = f.create_dataset("labels", (len(self.y_valid), 1, self.height, self.width), dtype='f')
-                
-                for i in range(len(self.X_valid)):
-                    x, y = self.preprocess(self.X_valid[i], self.y_valid[i])
-                    x_dset[i] = x.numpy()
-                    y_dset[i] = y.numpy()
-            
-            # Save test dataset
-            with h5py.File(f"{self.path}/save/test_dataset.h5", "w") as f:
-                x_dset = f.create_dataset("inputs", (len(self.X_test), 1, self.height, self.width), dtype='f')
-                y_dset = f.create_dataset("labels", (len(self.y_test), 1, self.height, self.width), dtype='f')
-                
-                for i in range(len(self.X_test)):
-                    x, y = self.preprocess(self.X_test[i], self.y_test[i])
-                    x_dset[i] = x.numpy()
-                    y_dset[i] = y.numpy()
-        else:
-            # Save paths
-            os.makedirs(self.train_saving_path, exist_ok=True)
-            os.makedirs(self.valid_saving_path, exist_ok=True)
-            os.makedirs(self.test_saving_path, exist_ok=True)
-            
-            # Save the paths to text files
-            with open(os.path.join(self.train_saving_path, "inputs.txt"), "w") as f:
-                f.write("\n".join(self.X_train))
-            with open(os.path.join(self.train_saving_path, "labels.txt"), "w") as f:
-                f.write("\n".join(self.y_train))
-                
-            with open(os.path.join(self.valid_saving_path, "inputs.txt"), "w") as f:
-                f.write("\n".join(self.X_valid))
-            with open(os.path.join(self.valid_saving_path, "labels.txt"), "w") as f:
-                f.write("\n".join(self.y_valid))
-                
-            with open(os.path.join(self.test_saving_path, "inputs.txt"), "w") as f:
-                f.write("\n".join(self.X_test))
-            with open(os.path.join(self.test_saving_path, "labels.txt"), "w") as f:
-                f.write("\n".join(self.y_test))
-     """
-    """ 
-    def load(self):
-        #Load the dataset from disk
-        if self.saving_format in ["hdf5", "h5"]:
-            # Load is handled in __getitem__ for HDF5 format
-            # This method would update the internal state to use the saved files instead
-            self.use_saved = True
-        else:
-            # Load paths from text files
-            with open(os.path.join(self.train_saving_path, "inputs.txt"), "r") as f:
-                self.X_train = f.read().splitlines()
-            with open(os.path.join(self.train_saving_path, "labels.txt"), "r") as f:
-                self.y_train = f.read().splitlines()
-                
-            with open(os.path.join(self.valid_saving_path, "inputs.txt"), "r") as f:
-                self.X_valid = f.read().splitlines()
-            with open(os.path.join(self.valid_saving_path, "labels.txt"), "r") as f:
-                self.y_valid = f.read().splitlines()
-                
-            with open(os.path.join(self.test_saving_path, "inputs.txt"), "r") as f:
-                self.X_test = f.read().splitlines()
-            with open(os.path.join(self.test_saving_path, "labels.txt"), "r") as f:
-                self.y_test = f.read().splitlines()
-            
-            # Update the current data based on mode
-            if self.mode == "train":
-                self.X, self.y = self.X_train, self.y_train
-            elif self.mode == "valid":
-                self.X, self.y = self.X_valid, self.y_valid
-            elif self.mode == "test":
-                self.X, self.y = self.X_test, self.y_test
-    """
     def load_single_acquisition(self, acquisition_number=1, low=False):
         """
         Create a dataset for a single acquisition
@@ -381,15 +292,6 @@ class MetalArtifactDataModule(pl.LightningDataModule):
         self.val_dataset = None
         self.test_dataset = None
     
-    def prepare_data(self):
-        """
-        Prepare data method
-        This method is called only once and on 1 GPU
-        Use this to download/prepare data (one-time operations)
-        """
-        # We don't need to download anything since data is already available
-        # But we could add any one-time operations like checking if files exist
-        pass
     
     def setup(self, stage = None):
         """
